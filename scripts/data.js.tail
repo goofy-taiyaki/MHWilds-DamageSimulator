@@ -1,0 +1,68 @@
+﻿
+export const RESTORATION_PARTS = [
+    { id: 'none', name: 'なし', attack: 0, affinity: 0 },
+    { id: 'attack', name: '基礎攻撃増強', attack: 5, affinity: 0 },
+    { id: 'affinity', name: '会心率増強', attack: 0, affinity: 5 }
+];
+
+export const RESTORATION_BONUSES = [
+    { id: 'none', name: 'なし', group: 'none', value: 0 },
+    // 基礎攻撃力
+    { id: 'atk_1', name: '基礎攻撃力強化Ⅰ', group: 'atk', attack: 3 },
+    { id: 'atk_2', name: '基礎攻撃力強化Ⅱ', group: 'atk', attack: 6 },
+    { id: 'atk_3', name: '基礎攻撃力強化Ⅲ', group: 'atk', attack: 9 },
+    { id: 'atk_ex', name: '基礎攻撃力強化EX', group: 'atk', attack: 12 },
+    // 会心
+    { id: 'aff_1', name: '会心率強化Ⅰ', group: 'aff', affinity: 4 },
+    { id: 'aff_2', name: '会心率強化Ⅱ', group: 'aff', affinity: 6 },
+    { id: 'aff_3', name: '会心率強化Ⅲ', group: 'aff', affinity: 8 },
+    { id: 'aff_ex', name: '会心率強化EX', group: 'aff', affinity: 10 },
+    // 属性
+    { id: 'elem_1', name: '属性強化Ⅰ', group: 'elem', value: 50 },
+    { id: 'elem_2', name: '属性強化Ⅱ', group: 'elem', value: 100 },
+    { id: 'elem_ex', name: '属性強化EX', group: 'elem', value: 150 },
+    // 切れ味・装填
+    { id: 'sharp_load', name: '切れ味・装填強化', group: 'sharp_load', value: 1 },
+    { id: 'sharp_load_ex', name: '切れ味・装填強化EX', group: 'sharp_load', value: 2 }
+];
+
+export const SHARPNESS = {
+    red: { name: '赤', raw: 0.5, element: 0.25 },
+    orange: { name: '橙', raw: 0.75, element: 0.5 },
+    yellow: { name: '黄', raw: 1.0, element: 0.75 },
+    green: { name: '緑', raw: 1.05, element: 1.0 },
+    blue: { name: '青', raw: 1.2, element: 1.0625 },
+    white: { name: '白', raw: 1.32, element: 1.15 },
+    purple: { name: '紫', raw: 1.39, element: 1.25 }
+};
+
+export const MONSTERS = {
+    "ゴグマジオス": {
+        "parts": [
+            { "name": "頭", "sever": 40, "blunt": 40, "ammo": 32, "fire": 15, "water": 0, "thunder": 0, "ice": 0, "dragon": 5 },
+            { "name": "頭固体", "sever": 45, "blunt": 45, "ammo": 45, "fire": 15, "water": 0, "thunder": 0, "ice": 0, "dragon": 25 },
+            { "name": "頭液体", "sever": 50, "blunt": 50, "ammo": 45, "fire": 5, "water": 0, "thunder": 0, "ice": 0, "dragon": 50 },
+            { "name": "頭気体", "sever": 75, "blunt": 75, "ammo": 50, "fire": 20, "water": 0, "thunder": 5, "ice": 0, "dragon": 65 },
+            { "name": "頭傷口", "sever": 45, "blunt": 45, "ammo": 36, "fire": 15, "water": 0, "thunder": 0, "ice": 0, "dragon": 5 },
+            { "name": "頭弱点", "sever": 65, "blunt": 65, "ammo": 60, "fire": 20, "water": 0, "thunder": 5, "ice": 0, "dragon": 55 },
+            { "name": "背中", "sever": 38, "blunt": 38, "ammo": 30, "fire": 10, "water": 0, "thunder": 0, "ice": 0, "dragon": 5 },
+            { "name": "左翼脚", "sever": 40, "blunt": 40, "ammo": 32, "fire": 15, "water": 0, "thunder": 0, "ice": 0, "dragon": 5 },
+            { "name": "胸", "sever": 25, "blunt": 25, "ammo": 5, "fire": 10, "water": 0, "thunder": 0, "ice": 0, "dragon": 0 }
+        ]
+    },
+    // ... rest of the monsters same
+    "オメガ": { "parts": [{ "name": "頭", "sever": 45, "blunt": 50, "ammo": 45, "fire": 0, "water": 10, "thunder": 25, "ice": 5, "dragon": 20 }, { "name": "頭傷口", "sever": 50, "blunt": 55, "ammo": 50, "fire": 0, "water": 10, "thunder": 25, "ice": 5, "dragon": 20 }, { "name": "左前脚", "sever": 40, "blunt": 65, "ammo": 60, "fire": 0, "water": 5, "thunder": 20, "ice": 5, "dragon": 15 }, { "name": "胴", "sever": 20, "blunt": 20, "ammo": 20, "fire": 0, "water": 5, "thunder": 5, "ice": 0, "dragon": 5 }] },
+    "ラギアクルス": { "parts": [{ "name": "頭", "sever": 45, "blunt": 45, "ammo": 45, "fire": 15, "water": 0, "thunder": 0, "ice": 10, "dragon": 10 }, { "name": "胸", "sever": 55, "blunt": 45, "ammo": 35, "fire": 10, "water": 0, "thunder": 0, "ice": 10, "dragon": 10 }, { "name": "背中", "sever": 45, "blunt": 45, "ammo": 15, "fire": 25, "water": 0, "thunder": 0, "ice": 15, "dragon": 15 }, { "name": "尻尾", "sever": 30, "blunt": 35, "ammo": 20, "fire": 20, "water": 0, "thunder": 0, "ice": 10, "dragon": 10 }] },
+    "セルレギオス": { "parts": [{ "name": "頭", "sever": 45, "blunt": 55, "ammo": 40, "fire": 0, "water": 5, "thunder": 15, "ice": 10, "dragon": 5 }, { "name": "脚", "sever": 50, "blunt": 45, "ammo": 45, "fire": 0, "water": 10, "thunder": 20, "ice": 15, "dragon": 5 }, { "name": "尻尾", "sever": 40, "blunt": 35, "ammo": 25, "fire": 0, "water": 5, "thunder": 10, "ice": 5, "dragon": 5 }] },
+    "タマミツネ": { "parts": [{ "name": "頭", "sever": 63, "blunt": 63, "ammo": 45, "fire": 5, "water": 0, "thunder": 10, "ice": 5, "dragon": 8 }, { "name": "背中", "sever": 43, "blunt": 43, "ammo": 25, "fire": 5, "water": 0, "thunder": 20, "ice": 5, "dragon": 20 }, { "name": "尻尾", "sever": 43, "blunt": 38, "ammo": 35, "fire": 5, "water": 0, "thunder": 15, "ice": 5, "dragon": 15 }] },
+    "アルシュベルド": { "parts": [{ "name": "頭", "sever": 45, "blunt": 48, "ammo": 45, "fire": 5, "water": 5, "thunder": 5, "ice": 5, "dragon": 5 }, { "name": "胴", "sever": 28, "blunt": 30, "ammo": 20, "fire": 1, "water": 1, "thunder": 1, "ice": 1, "dragon": 1 }, { "name": "鎖翼刃", "sever": 52, "blunt": 52, "ammo": 48, "fire": 20, "water": 20, "thunder": 20, "ice": 20, "dragon": 25 }] },
+    "ゴアマガラ": { "parts": [{ "name": "頭", "sever": 70, "blunt": 70, "ammo": 70, "fire": 25, "water": 0, "thunder": 0, "ice": 15, "dragon": 15 }, { "name": "翼脚", "sever": 25, "blunt": 25, "ammo": 15, "fire": 10, "water": 0, "thunder": 0, "ice": 5, "dragon": 5 }, { "name": "尻尾", "sever": 45, "blunt": 45, "ammo": 25, "fire": 15, "water": 0, "thunder": 0, "ice": 10, "dragon": 10 }] },
+    "グラビモス": { "parts": [{ "name": "頭", "sever": 30, "blunt": 30, "ammo": 20, "fire": 0, "water": 25, "thunder": 5, "ice": 15, "dragon": 15 }, { "name": "腹", "sever": 20, "blunt": 20, "ammo": 15, "fire": 0, "water": 35, "thunder": 5, "ice": 20, "dragon": 25 }, { "name": "腹(破壊)", "sever": 55, "blunt": 50, "ammo": 45, "fire": 0, "water": 40, "thunder": 5, "ice": 20, "dragon": 30 }] },
+    "リオレウス": { "parts": [{ "name": "頭", "sever": 65, "blunt": 70, "ammo": 60, "fire": 0, "water": 15, "thunder": 20, "ice": 15, "dragon": 30 }, { "name": "翼", "sever": 25, "blunt": 25, "ammo": 20, "fire": 0, "water": 5, "thunder": 10, "ice": 5, "dragon": 20 }, { "name": "尻尾", "sever": 45, "blunt": 40, "ammo": 35, "fire": 0, "water": 5, "thunder": 10, "ice": 15, "dragon": 20 }] },
+    "ゾシア": { "parts": [{ "name": "頭", "sever": 65, "blunt": 70, "ammo": 65, "fire": 15, "water": 5, "thunder": 5, "ice": 10, "dragon": 30 }, { "name": "胴", "sever": 25, "blunt": 25, "ammo": 20, "fire": 10, "water": 5, "thunder": 5, "ice": 5, "dragon": 15 }, { "name": "左翼腕", "sever": 85, "blunt": 85, "ammo": 60, "fire": 20, "water": 5, "thunder": 5, "ice": 5, "dragon": 30 }] },
+    "ジンダハド": { "parts": [{ "name": "頭", "sever": 65, "blunt": 65, "ammo": 45, "fire": 20, "water": 5, "thunder": 5, "ice": 5, "dragon": 15 }, { "name": "胴", "sever": 30, "blunt": 30, "ammo": 20, "fire": 5, "water": 5, "thunder": 5, "ice": 5, "dragon": 5 }, { "name": "前脚", "sever": 45, "blunt": 45, "ammo": 30, "fire": 5, "water": 5, "thunder": 5, "ice": 5, "dragon": 5 }] },
+    "レダウ": { "parts": [{ "name": "頭", "sever": 60, "blunt": 65, "ammo": 50, "fire": 5, "water": 5, "thunder": 5, "ice": 15, "dragon": 100 }, { "name": "胴", "sever": 30, "blunt": 30, "ammo": 20, "fire": 5, "water": 5, "thunder": 5, "ice": 5, "dragon": 5 }, { "name": "左翼脚", "sever": 65, "blunt": 65, "ammo": 55, "fire": 5, "water": 5, "thunder": 5, "ice": 10, "dragon": 10 }] },
+    "ウズトゥナ": { "parts": [{ "name": "頭", "sever": 60, "blunt": 60, "ammo": 45, "fire": 5, "water": 30, "thunder": 15, "ice": 15, "dragon": 15 }, { "name": "胴", "sever": 25, "blunt": 25, "ammo": 25, "fire": 5, "water": 15, "thunder": 5, "ice": 5, "dragon": 10 }, { "name": "尻尾", "sever": 35, "blunt": 35, "ammo": 40, "fire": 10, "water": 15, "thunder": 5, "ice": 5, "dragon": 10 }] },
+    "ネコ式訓練タルパンチャー": { "parts": [{ "name": "全身", "sever": 80, "blunt": 80, "ammo": 80, "fire": 30, "water": 30, "thunder": 30, "ice": 30, "dragon": 30 }, { "name": "傷口", "sever": 100, "blunt": 100, "ammo": 100, "fire": 30, "water": 30, "thunder": 30, "ice": 30, "dragon": 30 }, { "name": "背面", "sever": 20, "blunt": 20, "ammo": 20, "fire": 5, "water": 5, "thunder": 5, "ice": 5, "dragon": 5 }] }
+};
+
