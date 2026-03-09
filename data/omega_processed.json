@@ -1,0 +1,233 @@
+[
+  {
+    "name": "頭",
+    "slash": 45,
+    "strike": 50,
+    "shell": 45,
+    "fire": 0,
+    "water": 10,
+    "thunder": 25,
+    "ice": 5,
+    "dragon": 20
+  },
+  {
+    "name": "頭_パントラクルモード",
+    "slash": 40,
+    "strike": 45,
+    "shell": 40,
+    "fire": 0,
+    "water": 10,
+    "thunder": 25,
+    "ice": 5,
+    "dragon": 20
+  },
+  {
+    "name": "頭_傷口",
+    "slash": 50,
+    "strike": 55,
+    "shell": 50,
+    "fire": 0,
+    "water": 10,
+    "thunder": 25,
+    "ice": 5,
+    "dragon": 20
+  },
+  {
+    "name": "頭_弱点",
+    "slash": 55,
+    "strike": 60,
+    "shell": 55,
+    "fire": 0,
+    "water": 10,
+    "thunder": 25,
+    "ice": 5,
+    "dragon": 20
+  },
+  {
+    "name": "前脚",
+    "slash": 40,
+    "strike": 65,
+    "shell": 60,
+    "fire": 0,
+    "water": 5,
+    "thunder": 20,
+    "ice": 5,
+    "dragon": 15
+  },
+  {
+    "name": "前脚_パントラクルモード",
+    "slash": 28,
+    "strike": 40,
+    "shell": 35,
+    "fire": 0,
+    "water": 5,
+    "thunder": 15,
+    "ice": 5,
+    "dragon": 10
+  },
+  {
+    "name": "前脚_傷口",
+    "slash": 65,
+    "strike": 70,
+    "shell": 65,
+    "fire": 0,
+    "water": 5,
+    "thunder": 15,
+    "ice": 5,
+    "dragon": 10
+  },
+  {
+    "name": "前脚_弱点",
+    "slash": 45,
+    "strike": 70,
+    "shell": 65,
+    "fire": 0,
+    "water": 5,
+    "thunder": 15,
+    "ice": 5,
+    "dragon": 10
+  },
+  {
+    "name": "後脚",
+    "slash": 60,
+    "strike": 40,
+    "shell": 40,
+    "fire": 0,
+    "water": 5,
+    "thunder": 20,
+    "ice": 5,
+    "dragon": 15
+  },
+  {
+    "name": "後脚_パントラクルモード",
+    "slash": 35,
+    "strike": 28,
+    "shell": 28,
+    "fire": 0,
+    "water": 5,
+    "thunder": 15,
+    "ice": 5,
+    "dragon": 10
+  },
+  {
+    "name": "後脚_傷口",
+    "slash": 65,
+    "strike": 70,
+    "shell": 65,
+    "fire": 0,
+    "water": 5,
+    "thunder": 15,
+    "ice": 5,
+    "dragon": 10
+  },
+  {
+    "name": "後脚_弱点",
+    "slash": 65,
+    "strike": 45,
+    "shell": 45,
+    "fire": 0,
+    "water": 5,
+    "thunder": 15,
+    "ice": 5,
+    "dragon": 10
+  },
+  {
+    "name": "胴",
+    "slash": 20,
+    "strike": 20,
+    "shell": 5,
+    "fire": 0,
+    "water": 5,
+    "thunder": 5,
+    "ice": 0,
+    "dragon": 5
+  },
+  {
+    "name": "胴_パントラクルモード",
+    "slash": 10,
+    "strike": 10,
+    "shell": 5,
+    "fire": 0,
+    "water": 5,
+    "thunder": 5,
+    "ice": 0,
+    "dragon": 5
+  },
+  {
+    "name": "胴_傷口",
+    "slash": 65,
+    "strike": 70,
+    "shell": 65,
+    "fire": 0,
+    "water": 5,
+    "thunder": 15,
+    "ice": 5,
+    "dragon": 10
+  },
+  {
+    "name": "背中ユニット",
+    "slash": 75,
+    "strike": 100,
+    "shell": 10,
+    "fire": 0,
+    "water": 5,
+    "thunder": 15,
+    "ice": 5,
+    "dragon": 30
+  },
+  {
+    "name": "背中ユニット_パントラクルモード",
+    "slash": 40,
+    "strike": 65,
+    "shell": 5,
+    "fire": 0,
+    "water": 5,
+    "thunder": 10,
+    "ice": 5,
+    "dragon": 20
+  },
+  {
+    "name": "背中ユニット_傷口",
+    "slash": 80,
+    "strike": 100,
+    "shell": 20,
+    "fire": 0,
+    "water": 5,
+    "thunder": 15,
+    "ice": 5,
+    "dragon": 30
+  },
+  {
+    "name": "背中",
+    "slash": 45,
+    "strike": 30,
+    "shell": 30,
+    "fire": 0,
+    "water": 5,
+    "thunder": 20,
+    "ice": 5,
+    "dragon": 15
+  },
+  {
+    "name": "背中_パントラクルモード",
+    "slash": 30,
+    "strike": 20,
+    "shell": 20,
+    "fire": 0,
+    "water": 5,
+    "thunder": 20,
+    "ice": 5,
+    "dragon": 15
+  },
+  {
+    "name": "背中_傷口",
+    "slash": 65,
+    "strike": 70,
+    "shell": 65,
+    "fire": 0,
+    "water": 5,
+    "thunder": 15,
+    "ice": 5,
+    "dragon": 10
+  }
+]
