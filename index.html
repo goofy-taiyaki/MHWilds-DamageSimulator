@@ -65,58 +65,118 @@
         <div class="calculator-grid">
             <!-- Left: Selection Panel -->
             <aside class="selection-panel glass-card">
-                <h2 class="panel-title">アーティア設定</h2>
+                <!-- 参照ステータス (計算の前提条件を集約) -->
+                <div class="damage-section-box" id="status-section-box"
+                    style="margin-bottom: 0.8rem; padding: 0.8rem; background: rgba(255, 215, 0, 0.05); border: 2px solid rgba(255, 215, 0, 0.2); border-radius: 8px; position: relative; overflow: hidden;">
+                    <h3
+                        style="font-size: 1rem; color: var(--color-primary); margin-bottom: 0.6rem; text-align: center; letter-spacing: 0.1em; font-weight: bold; position: relative; z-index: 2;">
+                        参照ステータス</h3>
+
+                    <div
+                        style="display: flex; justify-content: space-around; text-align: center; gap: 0.2rem; margin-bottom: 0.8rem; position: relative; z-index: 2;">
+                        <div style="font-size: 0.7rem; color: var(--color-text-muted);">攻撃力<br><span id="display-attack"
+                                style="color: white; font-weight: bold; font-size: 1rem;">0</span></div>
+                        <div style="font-size: 0.7rem; color: var(--color-text-muted);">会心率<br><span
+                                id="display-affinity"
+                                style="color: white; font-weight: bold; font-size: 1rem;">0%</span></div>
+                        <div style="font-size: 0.7rem; color: var(--color-text-muted);">属性値<br><span
+                                id="display-element" style="color: white; font-weight: bold; font-size: 1rem;">0</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px solid rgba(255,215,0,0.1);">
+                        <label style="font-size: 0.7rem;">モーション</label>
+                        <select id="motion-select" style="font-size: 0.8rem; width: 100%;">
+                            <option value="custom">手入力</option>
+                        </select>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-top: 0.6rem;">
+                        <div class="input-group" style="margin-bottom: 0;">
+                            <label style="font-size: 0.7rem;">モーション値</label>
+                            <input type="text" id="target-motion-value-input" value="100" placeholder="例: 33, 16"
+                                style="padding: 0.4rem; font-size: 0.8rem;">
+                        </div>
+                        <div class="input-group" style="margin-bottom: 0;">
+                            <label style="font-size: 0.7rem;">属性補正</label>
+                            <input type="text" id="target-element-mod-input" value="1.0" placeholder="例: 1.0, 0.5"
+                                style="padding: 0.4rem; font-size: 0.8rem;">
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-top: 0.8rem;">
+                        <div class="input-group" id="target-sharpness-container" style="margin-bottom: 0;">
+                            <label style="font-size: 0.7rem;">斬れ味</label>
+                            <select id="target-sharpness-select"
+                                style="padding: 0.35rem; font-size: 0.8rem; width: 100%;">
+                                <option value="red">赤</option>
+                                <option value="orange">橙</option>
+                                <option value="yellow">黄</option>
+                                <option value="green">緑</option>
+                                <option value="blue">青</option>
+                                <option value="white" selected>白</option>
+                                <option value="purple">紫</option>
+                            </select>
+                        </div>
+                        <div class="input-group" id="bowgun-settings-container"
+                            style="display: none; grid-column: span 2; margin-top: 0.2rem;">
+                            <label
+                                style="font-size: 0.7rem; color: #ffcc00; display: block; margin-bottom: 0.3rem;">ボウガン特有補正</label>
+                            <div
+                                style="display: flex; flex-direction: row; gap: 1rem; background: rgba(255,215,0,0.05); padding: 0.5rem; border-radius: 4px; border: 1px solid rgba(255,215,0,0.1); justify-content: center;">
+                                <label
+                                    style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; font-size: 0.75rem; color: #ffcc00;">
+                                    <input type="checkbox" id="bowgun-rapid-fire"> 速射
+                                </label>
+                                <label
+                                    style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; font-size: 0.75rem; color: #ffcc00;">
+                                    <input type="checkbox" id="bowgun-chase-shot"> チェイスショット
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h2 class="panel-title"
+                    style="margin-top: 1.2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">アーティア設定
+                </h2>
 
                 <div class="weapon-stats-display"
-                    style="margin-bottom: 0.6rem; padding: 0.6rem; background: rgba(255, 215, 0, 0.08); border: 2px solid rgba(255, 215, 0, 0.3); border-radius: 8px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5);">
+                    style="margin-bottom: 0.8rem; padding: 0.6rem; background: rgba(255, 215, 0, 0.08); border: 2px solid rgba(255, 215, 0, 0.3); border-radius: 8px;">
                     <h3
-                        style="font-size: 1.0rem; color: var(--color-primary); margin-bottom: 0.4rem; text-align: center; letter-spacing: 0.1em; font-weight: bold;">
-                        武器ステータス</h3>
+                        style="font-size: 0.9rem; color: var(--color-primary); margin-bottom: 0.4rem; text-align: center; letter-spacing: 0.1em; font-weight: bold;">
+                        武器基礎ステータス</h3>
                     <div style="display: flex; justify-content: space-around; text-align: center; gap: 0.3rem;">
-                        <div style="font-size: 0.85rem; color: var(--color-text-muted);">攻撃力<br><span
+                        <div style="font-size: 0.75rem; color: var(--color-text-muted);">攻撃力<br><span
                                 id="base-atk-display"
-                                style="color: white; font-weight: bold; font-size: 1.2rem;">0</span></div>
-                        <div style="font-size: 0.85rem; color: var(--color-text-muted);">会心率<br><span
+                                style="color: white; font-weight: bold; font-size: 1.1rem;">0</span></div>
+                        <div style="font-size: 0.75rem; color: var(--color-text-muted);">会心率<br><span
                                 id="base-aff-display"
                                 style="color: white; font-weight: bold; font-size: 1.2rem;">0%</span></div>
-                        <div style="font-size: 0.85rem; color: var(--color-text-muted);">属性値<br><span
+                        <div style="font-size: 0.75rem; color: var(--color-text-muted);">属性値<br><span
                                 id="base-elem-display"
                                 style="color: white; font-weight: bold; font-size: 1.2rem;">0</span></div>
                     </div>
                 </div>
 
-                <!-- 最適解セクション -->
                 <div class="input-group"
-                    style="margin-bottom: 0.8rem; padding: 0.6rem; background: rgba(50, 205, 50, 0.1); border: 1px solid rgba(50, 205, 50, 0.3); border-radius: 8px;">
+                    style="margin-bottom: 1rem; padding: 0.6rem; background: rgba(50, 205, 50, 0.1); border: 1px solid rgba(50, 205, 50, 0.3); border-radius: 8px;">
                     <label
-                        style="color: #32cd32; font-weight: bold; margin-bottom: 0.3rem; display: block; font-size: 0.85rem;">最適解（最大期待値）</label>
-                    <div style="font-size: 0.75rem; margin-bottom: 0.4rem; color: var(--color-text-muted);">
-                        武器種・属性を維持し他を最適化
-                    </div>
+                        style="color: #32cd32; font-weight: bold; margin-bottom: 0.2rem; display: block; font-size: 0.8rem;">最適解（最大期待値）</label>
                     <button id="btn-calculate-optimal" class="btn-primary"
-                        style="width: 100%; padding: 0.4rem; margin-bottom: 0.3rem; background: #32cd32; color: #000; font-weight: bold; font-size: 0.8rem;">最適解を計算</button>
+                        style="width: 100%; padding: 0.4rem; background: #32cd32; color: #000; font-weight: bold; font-size: 0.8rem;">最適解を計算</button>
                     <div id="opt-calculating"
-                        style="display: none; font-size: 0.75rem; color: #ffcc00; text-align: center; margin-bottom: 0.3rem;">
+                        style="display: none; font-size: 0.7rem; color: #ffcc00; text-align: center; margin-top: 0.3rem;">
                         計算中...</div>
                     <div id="optimal-result-panel"
-                        style="display: none; font-size: 0.75rem; background: rgba(0,0,0,0.3); padding: 0.6rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);">
-                        <div style="margin-bottom: 0.4rem;"><strong>期待値:</strong> <span id="opt-expected-damage"
-                                style="color: #ffcc00; font-size: 1.1rem; font-weight: bold; margin-left: 0.5rem;">0</span>
-                        </div>
-                        <div style="margin-bottom: 0.2rem;"><strong>激化:</strong> <span id="opt-excitation"
-                                style="margin-left: 0.5rem;"></span></div>
-                        <div style="margin-bottom: 0.2rem; margin-top: 0.4rem;"><strong>パーツ:</strong>
-                            <div id="opt-parts"
-                                style="margin-left: 0.5rem; display: flex; flex-direction: column; gap: 0.1rem; margin-top: 0.1rem; color: #a9dfbf;">
-                            </div>
-                        </div>
-                        <div style="margin-bottom: 0.2rem; margin-top: 0.4rem;"><strong>ボーナス:</strong>
-                            <div id="opt-bonuses"
-                                style="margin-left: 0.5rem; display: flex; flex-direction: column; gap: 0.1rem; margin-top: 0.1rem; color: #a9dfbf;">
-                            </div>
-                        </div>
+                        style="display: none; margin-top: 0.5rem; font-size: 0.75rem; background: rgba(0,0,0,0.3); padding: 0.5rem; border-radius: 4px;">
+                        <div style="margin-bottom: 0.3rem;">期待値: <span id="opt-expected-damage"
+                                style="color: #ffcc00; font-weight: bold;">0</span></div>
+                        <div id="opt-excitation" style="font-size: 0.7rem; margin-bottom: 0.2rem;"></div>
+                        <div id="opt-parts" style="font-size: 0.7rem; color: #a9dfbf;"></div>
+                        <div id="opt-bonuses" style="font-size: 0.7rem; color: #a9dfbf;"></div>
                         <button id="btn-apply-optimal" class="btn-primary"
-                            style="width: 100%; padding: 0.3rem; margin-top: 0.5rem; font-size: 0.75rem; border: 1px solid #32cd32; background: transparent; color: #32cd32;">この組み合わせを適用</button>
+                            style="width: 100%; padding: 0.2rem; margin-top: 0.4rem; font-size: 0.7rem; background: transparent; border: 1px solid #32cd32; color: #32cd32;">適用</button>
                     </div>
                 </div>
 
@@ -127,10 +187,10 @@
 
                 <div class="input-group">
                     <label>激化タイプ</label>
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div style="display: flex; align-items: center; gap: 0.4rem;">
                         <select id="excitation-select" style="flex: 1;"></select>
                         <label
-                            style="font-size: 0.75rem; display: flex; align-items: center; gap: 0.2rem; cursor: pointer;">
+                            style="font-size: 0.7rem; display: flex; align-items: center; gap: 0.2rem; cursor: pointer;">
                             <input type="checkbox" id="lock-exci"> 固定
                         </label>
                     </div>
@@ -144,24 +204,24 @@
                 <div class="input-group">
                     <label>復元パーツ (生産時3枠選択)</label>
                     <div style="display: flex; flex-direction: column; gap: 0.3rem;">
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div style="display: flex; align-items: center; gap: 0.4rem;">
                             <select class="part-select" id="part-1" style="flex: 1;"></select>
                             <label
-                                style="font-size: 0.75rem; display: flex; align-items: center; gap: 0.2rem; cursor: pointer;">
+                                style="font-size: 0.7rem; display: flex; align-items: center; gap: 0.2rem; cursor: pointer;">
                                 <input type="checkbox" id="lock-part-1"> 固定
                             </label>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div style="display: flex; align-items: center; gap: 0.4rem;">
                             <select class="part-select" id="part-2" style="flex: 1;"></select>
                             <label
-                                style="font-size: 0.75rem; display: flex; align-items: center; gap: 0.2rem; cursor: pointer;">
+                                style="font-size: 0.7rem; display: flex; align-items: center; gap: 0.2rem; cursor: pointer;">
                                 <input type="checkbox" id="lock-part-2"> 固定
                             </label>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div style="display: flex; align-items: center; gap: 0.4rem;">
                             <select class="part-select" id="part-3" style="flex: 1;"></select>
                             <label
-                                style="font-size: 0.75rem; display: flex; align-items: center; gap: 0.2rem; cursor: pointer;">
+                                style="font-size: 0.7rem; display: flex; align-items: center; gap: 0.2rem; cursor: pointer;">
                                 <input type="checkbox" id="lock-part-3"> 固定
                             </label>
                         </div>
@@ -169,58 +229,45 @@
                 </div>
 
                 <div class="input-group">
-                    <label>復元ボーナス (最大5つ / 重複2まで)</label>
-                    <div id="bonus-slots">
-                        <div class="bonus-select-row" style="display: flex; align-items: center; gap: 0.5rem;">
+                    <label>復元ボーナス (最大5つ)</label>
+                    <div id="bonus-slots" style="display: flex; flex-direction: column; gap: 0.2rem;">
+                        <div class="bonus-select-row" style="display: flex; align-items: center; gap: 0.4rem;">
                             <select class="bonus-select" id="bonus-1" style="flex: 1;"></select>
                             <label
-                                style="font-size: 0.75rem; display: flex; align-items: center; gap: 0.2rem; cursor: pointer;">
+                                style="font-size: 0.7rem; display: flex; align-items: center; gap: 0.2rem; cursor: pointer;">
                                 <input type="checkbox" id="lock-bonus-1"> 固定
                             </label>
                         </div>
-                        <div class="bonus-select-row" style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div class="bonus-select-row" style="display: flex; align-items: center; gap: 0.4rem;">
                             <select class="bonus-select" id="bonus-2" style="flex: 1;"></select>
                             <label
-                                style="font-size: 0.75rem; display: flex; align-items: center; gap: 0.2rem; cursor: pointer;">
+                                style="font-size: 0.7rem; display: flex; align-items: center; gap: 0.2rem; cursor: pointer;">
                                 <input type="checkbox" id="lock-bonus-2"> 固定
                             </label>
                         </div>
-                        <div class="bonus-select-row" style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div class="bonus-select-row" style="display: flex; align-items: center; gap: 0.4rem;">
                             <select class="bonus-select" id="bonus-3" style="flex: 1;"></select>
                             <label
-                                style="font-size: 0.75rem; display: flex; align-items: center; gap: 0.2rem; cursor: pointer;">
+                                style="font-size: 0.7rem; display: flex; align-items: center; gap: 0.2rem; cursor: pointer;">
                                 <input type="checkbox" id="lock-bonus-3"> 固定
                             </label>
                         </div>
-                        <div class="bonus-select-row" style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div class="bonus-select-row" style="display: flex; align-items: center; gap: 0.4rem;">
                             <select class="bonus-select" id="bonus-4" style="flex: 1;"></select>
                             <label
-                                style="font-size: 0.75rem; display: flex; align-items: center; gap: 0.2rem; cursor: pointer;">
+                                style="font-size: 0.7rem; display: flex; align-items: center; gap: 0.2rem; cursor: pointer;">
                                 <input type="checkbox" id="lock-bonus-4"> 固定
                             </label>
                         </div>
-                        <div class="bonus-select-row" style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div class="bonus-select-row" style="display: flex; align-items: center; gap: 0.4rem;">
                             <select class="bonus-select" id="bonus-5" style="flex: 1;"></select>
                             <label
-                                style="font-size: 0.75rem; display: flex; align-items: center; gap: 0.2rem; cursor: pointer;">
+                                style="font-size: 0.7rem; display: flex; align-items: center; gap: 0.2rem; cursor: pointer;">
                                 <input type="checkbox" id="lock-bonus-5" checked> 固定
                             </label>
                         </div>
                     </div>
                     <div id="bonus-warning" class="warning-text">※同じボーナスは2つまで選択可能です。</div>
-                </div>
-
-                <div class="input-group" id="target-sharpness-container" style="margin-top: 1rem; margin-bottom: 0;">
-                    <label>斬れ味</label>
-                    <select id="target-sharpness-select">
-                        <option value="red">赤</option>
-                        <option value="orange">橙</option>
-                        <option value="yellow">黄</option>
-                        <option value="green">緑</option>
-                        <option value="blue">青</option>
-                        <option value="white" selected>白</option>
-                        <option value="purple">紫</option>
-                    </select>
                 </div>
             </aside>
 
@@ -235,27 +282,24 @@
                             現在のマイセット: <span id="current-myset-display"
                                 style="color: var(--color-primary); font-weight: bold;">(未保存)</span>
                         </div>
-                        <select id="myset-list" style="width:160px; padding:0.4rem; font-size: 0.8rem;">
+                        <select id="myset-list" style="width:140px; padding:0.4rem; font-size: 0.8rem;">
                             <option value="">マイセット選択...</option>
                         </select>
                         <button id="btn-load-myset" class="btn-primary"
-                            style="padding:0.4rem 0.8rem; font-size: 0.8rem;">読込</button>
+                            style="padding:0.4rem 0.6rem; font-size: 0.8rem;">読込</button>
                         <button id="btn-save-myset" class="btn-primary"
-                            style="padding:0.4rem 0.8rem; font-size: 0.8rem; background:var(--color-secondary);"
-                            title="新規保存">保存</button>
+                            style="padding:0.4rem 0.6rem; font-size: 0.8rem; background:var(--color-secondary);">保存</button>
                         <button id="btn-overwrite-myset" class="btn-primary"
-                            style="padding:0.4rem 0.8rem; font-size: 0.8rem; background: #4a6fa5;"
-                            title="現在選択中の名前に上書き">上書き</button>
+                            style="padding:0.4rem 0.6rem; font-size: 0.8rem; background: #4a6fa5;">上書き</button>
                         <button id="btn-delete-myset" class="btn-primary"
-                            style="padding:0.4rem 0.8rem; font-size: 0.8rem; background:#8b0000; box-shadow:none;">削除</button>
+                            style="padding:0.4rem 0.6rem; font-size: 0.8rem; background:#8b0000; box-shadow:none;">削除</button>
                         <button id="btn-share-build" class="btn-primary"
-                            style="padding:0.4rem 0.8rem; font-size: 0.8rem; background: #2a9d8f;"
-                            title="現在のビルドをURLで共有">URL共有</button>
+                            style="padding:0.4rem 0.6rem; font-size: 0.8rem; background: #2a9d8f;">共有</button>
                     </div>
                 </div>
+
                 <hr style="border:none; border-bottom:1px solid rgba(212,175,55,0.3); margin: 0.5rem 0 1rem 0;">
 
-                <!-- Active Skills Overview -->
                 <div id="active-skills-container"
                     style="background: rgba(255, 255, 255, 0.02); padding: 0.8rem; border: 1px solid rgba(212,175,55,0.2); border-left: 3px solid var(--color-primary); border-radius: 4px; margin-bottom: 1rem;">
                     <div
@@ -274,102 +318,61 @@
 
             <!-- Right: Results Panel -->
             <aside class="stats-panel glass-card">
-                <h2 class="panel-title">ダメージ計算</h2>
+                <h2 class="panel-title">シミュレーション結果</h2>
 
                 <div class="damage-section-box" id="target-section-box"
-                    style="margin-bottom: 0.6rem; padding: 0.8rem; background: rgba(255, 215, 0, 0.05); border: 1px solid rgba(255, 215, 0, 0.2); border-radius: 6px; position: relative; overflow: hidden;">
+                    style="margin-bottom: 0.8rem; padding: 0.8rem; background: rgba(255, 215, 0, 0.05); border: 1px solid rgba(255, 215, 0, 0.2); border-radius: 8px; position: relative; overflow: hidden;">
                     <h3
                         style="font-size: 1rem; color: var(--color-primary); margin-bottom: 0.6rem; text-align: center; letter-spacing: 0.1em; font-weight: bold; position: relative; z-index: 2;">
                         ターゲット</h3>
-                    <div class="monster-selection"
-                        style="position: relative; z-index: 2; background: rgba(0,0,0,0.4); border-radius: 4px;">
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                            <div class="input-group" style="margin-bottom: 0;">
-                                <label>ターゲット</label>
-                                <select id="monster-select"></select>
-                            </div>
-                            <div class="input-group" style="margin-bottom: 0;">
-                                <label>攻撃部位</label>
-                                <select id="hitzone-select"></select>
-                            </div>
+                    <div
+                        style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; position: relative; z-index: 2;">
+                        <div class="input-group" style="margin-bottom: 0;">
+                            <label style="font-size: 0.7rem;">モンスター</label>
+                            <select id="monster-select" style="font-size: 0.8rem;"></select>
                         </div>
-                        <div id="hitzone-detail-panel"
-                            style="margin-top: 1rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,215,0,0.1); display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; font-size: 0.75rem;">
-                            <!-- JS populated -->
+                        <div class="input-group" style="margin-bottom: 0;">
+                            <label style="font-size: 0.7rem;">攻撃部位</label>
+                            <select id="hitzone-select" style="font-size: 0.8rem;"></select>
                         </div>
                     </div>
-                </div> <!-- ターゲットボックスの閉じ -->
+                    <div id="hitzone-detail-panel"
+                        style="margin-top: 0.8rem; padding-top: 0.6rem; border-top: 1px solid rgba(255,215,0,0.1); display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.4rem; font-size: 0.7rem; position: relative; z-index: 2;">
+                        <!-- JS populated -->
+                    </div>
+                </div>
+
                 <div class="damage-section-box" id="buff-section-box"
-                    style="margin-bottom: 0.6rem; padding: 0.8rem; background: rgba(50, 205, 50, 0.04); border: 1px solid rgba(50, 205, 50, 0.2); border-radius: 6px;">
+                    style="margin-bottom: 0.8rem; padding: 0.8rem; background: rgba(50, 205, 50, 0.04); border: 1px solid rgba(50, 205, 50, 0.2); border-radius: 8px;">
                     <h3
                         style="font-size: 1rem; color: #32cd32; margin-bottom: 0.6rem; text-align: center; letter-spacing: 0.1em; font-weight: bold;">
-                        バフ</h3>
+                        バフ設定</h3>
                     <div id="buff-container"
                         style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.75rem;">
                         <!-- JS populated -->
                     </div>
                 </div>
-                <div class="damage-section-box" id="status-section-box"
-                    style="margin-bottom: 0.6rem; padding: 0.8rem; background: rgba(255, 215, 0, 0.05); border: 1px solid rgba(255, 215, 0, 0.2); border-radius: 6px; position: relative; overflow: hidden;">
-                    <h3
-                        style="font-size: 1rem; color: var(--color-primary); margin-bottom: 0.6rem; text-align: center; letter-spacing: 0.1em; font-weight: bold; position: relative; z-index: 2;">
-                        参照ステータス</h3>
-                    <div
-                        style="display: flex; justify-content: space-around; text-align: center; gap: 0.2rem; margin-bottom: 0.6rem; position: relative; z-index: 2;">
-                        <div style="font-size: 0.7rem; color: var(--color-text-muted);">攻撃力<br><span id="display-attack"
-                                style="color: white; font-weight: bold; font-size: 1rem;">0</span></div>
-                        <div style="font-size: 0.7rem; color: var(--color-text-muted);">会心率<br><span
-                                id="display-affinity"
-                                style="color: white; font-weight: bold; font-size: 1rem;">0%</span></div>
-                        <div style="font-size: 0.7rem; color: var(--color-text-muted);">属性値<br><span
-                                id="display-element" style="color: white; font-weight: bold; font-size: 1rem;">0</span>
-                        </div>
-                    </div>
-
-                    <!-- Move selection -->
-                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,215,0,0.1);">
-                        <label>モーション</label>
-                        <select id="motion-select">
-                            <option value="custom">手入力</option>
-                        </select>
-                    </div>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-top: 0.6rem;">
-                        <div class="input-group" style="margin-bottom: 0;">
-                            <label style="font-size: 0.7rem;">モーション値</label>
-                            <input type="text" id="target-motion-value-input" value="100" placeholder="例: 33, 16"
-                                style="padding: 0.4rem; font-size: 0.8rem;">
-                        </div>
-                        <div class="input-group" style="margin-bottom: 0;">
-                            <label style="font-size: 0.7rem;">属性補正</label>
-                            <input type="text" id="target-element-mod-input" value="1.0" placeholder="例: 1.0, 0.5"
-                                style="padding: 0.4rem; font-size: 0.8rem;">
-                        </div>
-                    </div>
-
-                </div>
 
                 <div class="damage-section-box"
-                    style="margin-bottom: 0.6rem; padding: 0.8rem; background: rgba(255, 215, 0, 0.05); border: 1px solid rgba(255, 215, 0, 0.2); border-radius: 6px;">
+                    style="margin-bottom: 0px; padding: 0.8rem; background: rgba(255, 215, 0, 0.05); border: 2px solid rgba(255, 215, 0, 0.2); border-radius: 8px;">
                     <h3
-                        style="font-size: 1rem; color: var(--color-primary); margin-bottom: 0.4rem; text-align: center; letter-spacing: 0.1em; font-weight: bold;">
+                        style="font-size: 1rem; color: var(--color-primary); margin-bottom: 0.6rem; text-align: center; letter-spacing: 0.1em; font-weight: bold;">
                         ダメージ期待値</h3>
 
                     <div
-                        style="text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.4rem; margin-bottom: 0.6rem;">
+                        style="text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.6rem; margin-bottom: 0.8rem;">
                         <div id="display-expected-damage"
-                            style="color: #ffcc00; font-weight: bold; font-size: 2rem; text-shadow: 0 0 10px rgba(255,204,0,0.5);">
+                            style="color: #ffcc00; font-weight: bold; font-size: 2.2rem; text-shadow: 0 0 15px rgba(255,204,0,0.4);">
                             0</div>
                     </div>
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem;">
-                        <!-- Normal Hit -->
-                        <div style="background: rgba(255,255,255,0.03); padding: 0.4rem; border-radius: 4px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem;">
+                        <div
+                            style="background: rgba(255,255,255,0.03); padding: 0.5rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.05);">
                             <div
-                                style="font-size: 0.7rem; color: var(--color-text-muted); margin-bottom: 0.3rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                                通常ヒット</div>
-                            <div
-                                style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.2rem; text-align: left; font-size: 0.75rem;">
+                                style="font-size: 0.65rem; color: var(--color-text-muted); margin-bottom: 0.3rem; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: center;">
+                                通常</div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.1rem; font-size: 0.7rem;">
                                 <span style="color: var(--color-text-muted);">物理:</span><span
                                     id="display-phys-damage-normal"
                                     style="color: white; font-weight: bold; text-align: right;">0</span>
@@ -377,20 +380,15 @@
                                     id="display-elem-damage-normal"
                                     style="color: white; font-weight: bold; text-align: right;">0</span>
                             </div>
-                            <div
-                                style="margin-top: 0.3rem; font-size: 0.9rem; text-align: right; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.2rem;">
-                                <span style="color: #ffcc00; font-weight: bold;"
-                                    id="display-total-damage-normal">0</span>
-                            </div>
+                            <div style="margin-top: 0.4rem; font-size: 1rem; text-align: right; color: #ffcc00; font-weight: bold; border-top: 1px solid rgba(255,255,255,0.1);"
+                                id="display-total-damage-normal">0</div>
                         </div>
-                        <!-- Crit Hit -->
                         <div
-                            style="background: rgba(255,215,0,0.05); padding: 0.4rem; border-radius: 4px; border: 1px solid rgba(255,215,0,0.1);">
+                            style="background: rgba(255,215,0,0.05); padding: 0.5rem; border-radius: 4px; border: 1px solid rgba(255,215,0,0.1);">
                             <div
-                                style="font-size: 0.7rem; color: #ffcc00; margin-bottom: 0.3rem; border-bottom: 1px solid rgba(255,215,0,0.2);">
-                                会心ヒット</div>
-                            <div
-                                style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.2rem; text-align: left; font-size: 0.75rem;">
+                                style="font-size: 0.65rem; color: #ffcc00; margin-bottom: 0.3rem; border-bottom: 1px solid rgba(255,215,0,0.2); text-align: center;">
+                                会心</div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.1rem; font-size: 0.7rem;">
                                 <span style="color: rgba(255,255,255,0.6);">物理:</span><span
                                     id="display-phys-damage-crit"
                                     style="color: white; font-weight: bold; text-align: right;">0</span>
@@ -398,10 +396,8 @@
                                     id="display-elem-damage-crit"
                                     style="color: white; font-weight: bold; text-align: right;">0</span>
                             </div>
-                            <div
-                                style="margin-top: 0.3rem; font-size: 0.9rem; text-align: right; border-top: 1px solid rgba(255,215,0,0.2); padding-top: 0.2rem;">
-                                <span style="color: #ffcc00; font-weight: bold;" id="display-total-damage-crit">0</span>
-                            </div>
+                            <div style="margin-top: 0.4rem; font-size: 1rem; text-align: right; color: #ffcc00; font-weight: bold; border-top: 1px solid rgba(255,215,0,0.2);"
+                                id="display-total-damage-crit">0</div>
                         </div>
                     </div>
                 </div>

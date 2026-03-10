@@ -231,6 +231,19 @@ label {
   transform: translateY(-5px);
 }
 
+.selection-panel,
+.stats-panel {
+  position: sticky;
+  top: var(--spacing-md);
+  align-self: start;
+  z-index: 10;
+}
+
+.selection-panel.glass-card:hover,
+.stats-panel.glass-card:hover {
+  transform: none;
+}
+
 .btn-primary {
   display: inline-block;
   padding: 0.8rem 2rem;
