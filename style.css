@@ -278,3 +278,113 @@ label {
 .animate-fade-in {
   animation: fadeIn 1s ease forwards;
 }
+/* Artia Details Accordion */
+details.artia-details {
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.15);
+  margin-bottom: 1rem;
+  overflow: hidden;
+}
+
+details.artia-details summary {
+  padding: 0.6rem 0.8rem;
+  cursor: pointer;
+  color: var(--color-primary);
+  font-weight: bold;
+  font-size: 0.85rem;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(212, 175, 55, 0.05);
+  transition: background 0.2s;
+  border-bottom: 1px solid transparent;
+}
+
+details.artia-details summary:hover {
+  background: rgba(212, 175, 55, 0.1);
+}
+
+details.artia-details[open] summary {
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+  background: rgba(212, 175, 55, 0.08);
+}
+
+details.artia-details summary::-webkit-details-marker {
+  display: none;
+}
+
+details.artia-details summary::after {
+  content: '▼';
+  font-size: 0.7rem;
+  transition: transform 0.3s;
+}
+
+details.artia-details[open] summary::after {
+  transform: rotate(180deg);
+}
+
+/* Mobile Tabs Navigation */
+.mobile-tabs {
+  display: none; /* Default hidden */
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: var(--color-bg-dark);
+  border-bottom: 2px solid rgba(212, 175, 55, 0.3);
+  padding: 0.5rem;
+  gap: 0.5rem;
+  backdrop-filter: blur(10px);
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 0.6rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--color-text-muted);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.tab-btn.active {
+  background: var(--color-primary);
+  color: var(--color-bg-dark);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+}
+
+/* Tab Panel visibility */
+@media (max-width: 1024px) {
+  .mobile-tabs {
+    display: flex;
+  }
+  .tab-panel {
+    display: none;
+  }
+  .tab-panel.active {
+    display: flex;
+  }
+  .calculator-grid {
+    gap: 0;
+    margin-top: 1rem;
+  }
+}
+
+/* PC view should always show all panels */
+@media (min-width: 1025px) {
+  .tab-panel {
+    display: flex !important;
+  }
+}
+
+.details-content {
+  padding: 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}

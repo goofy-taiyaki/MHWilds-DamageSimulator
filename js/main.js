@@ -810,7 +810,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // UI反映と再計算
-            updateCalculator();
+            updateCalculation();
             alert('最適解を適用しました！');
         });
     }
@@ -963,6 +963,24 @@ document.addEventListener('DOMContentLoaded', () => {
             if (bowgunChaseShot) bowgunChaseShot.checked = false;
         }
 
+        // 武器固有設定の復元（操虫棍・太刀・スラアク・双剣）
+        if (state.weaponSpecificParams) {
+            if (igExtract && state.weaponSpecificParams.igExtract !== undefined)
+                igExtract.value = state.weaponSpecificParams.igExtract;
+            if (lsSpiritGauge && state.weaponSpecificParams.lsSpiritGauge !== undefined)
+                lsSpiritGauge.value = state.weaponSpecificParams.lsSpiritGauge;
+            if (saPhialType && state.weaponSpecificParams.saPhialType !== undefined)
+                saPhialType.value = state.weaponSpecificParams.saPhialType;
+            if (dbDemonMode && state.weaponSpecificParams.dbDemonMode !== undefined)
+                dbDemonMode.checked = !!state.weaponSpecificParams.dbDemonMode;
+        } else {
+            // 旧セーブデータ互換: 武器固有設定が存在しない場合はデフォルト値に
+            if (igExtract) igExtract.value = 'none';
+            if (lsSpiritGauge) lsSpiritGauge.value = 'none';
+            if (saPhialType) saPhialType.value = 'none';
+            if (dbDemonMode) dbDemonMode.checked = false;
+        }
+
         updateWeaponSpecificUI();
 
         // バフ状態の復元
@@ -1000,24 +1018,6 @@ document.addEventListener('DOMContentLoaded', () => {
         updateWeaponSpecificUI();
     }
 
-    if (btnApplyOptimal) {
-        btnApplyOptimal.addEventListener('click', () => {
-            if (!currentOptimalConfig) return;
-            excitationSelect.value = currentOptimalConfig.excitation;
-
-            partSelects.forEach((s, i) => {
-                if (currentOptimalConfig.parts[i]) s.value = currentOptimalConfig.parts[i];
-            });
-
-            bonusSelects.forEach((s, i) => {
-                if (currentOptimalConfig.bonuses[i]) s.value = currentOptimalConfig.bonuses[i];
-                else s.value = 'none';
-            });
-
-            updateCalculation();
-            alert('最適解を適用しました。');
-        });
-    }
 
     function findOptimalArtiaConfiguration() {
         return runOptimizer(getCurrentState());

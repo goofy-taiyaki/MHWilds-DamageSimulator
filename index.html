@@ -62,10 +62,42 @@
     </header>
 
     <main class="section-container">
-        <div class="calculator-grid">
-            <!-- Left: Selection Panel -->
-            <aside class="selection-panel glass-card">
-                <!-- 参照ステータス (計算の前提条件を集約) -->
+        <!-- スマホ専用タブナビゲーション -->
+        <nav class="mobile-tabs" id="mobile-tabs">
+            <button class="tab-btn active" data-tab="0">設定</button>
+            <button class="tab-btn" data-tab="1">スキル</button>
+            <button class="tab-btn" data-tab="2">結果</button>
+        </nav>
+
+        <div class="calculator-grid" id="main-grid">
+            <!-- Left Panel (Setup): ターゲット, バフ, ステータス -->
+            <aside class="selection-panel glass-card tab-panel active">
+                <h2 class="panel-title">シミュレーション設定</h2>
+
+                <!-- ターゲット設定 -->
+                <div class="damage-section-box" id="target-section-box"
+                    style="margin-bottom: 0.8rem; padding: 0.8rem; background: rgba(255, 215, 0, 0.05); border: 1px solid rgba(255, 215, 0, 0.2); border-radius: 8px; position: relative; overflow: hidden;">
+                    <h3
+                        style="font-size: 1rem; color: var(--color-primary); margin-bottom: 0.6rem; text-align: center; letter-spacing: 0.1em; font-weight: bold; position: relative; z-index: 2;">
+                        ターゲット</h3>
+                    <div
+                        style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; position: relative; z-index: 2;">
+                        <div class="input-group" style="margin-bottom: 0;">
+                            <label style="font-size: 0.7rem;">モンスター</label>
+                            <select id="monster-select" style="font-size: 0.8rem;"></select>
+                        </div>
+                        <div class="input-group" style="margin-bottom: 0;">
+                            <label style="font-size: 0.7rem;">攻撃部位</label>
+                            <select id="hitzone-select" style="font-size: 0.8rem;"></select>
+                        </div>
+                    </div>
+                    <div id="hitzone-detail-panel"
+                        style="margin-top: 0.8rem; padding-top: 0.6rem; border-top: 1px solid rgba(255,215,0,0.1); display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.4rem; font-size: 0.7rem; position: relative; z-index: 2;">
+                        <!-- JS populated -->
+                    </div>
+                </div>
+
+                <!-- 参照ステータス -->
                 <div class="damage-section-box" id="status-section-box"
                     style="margin-bottom: 0.8rem; padding: 0.8rem; background: rgba(255, 215, 0, 0.05); border: 2px solid rgba(255, 215, 0, 0.2); border-radius: 8px; position: relative; overflow: hidden;">
                     <h3
@@ -208,41 +240,6 @@
                     style="margin-top: 1.2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">アーティア設定
                 </h2>
 
-                <div class="input-group"
-                    style="margin-bottom: 1rem; padding: 0.6rem; background: rgba(50, 205, 50, 0.1); border: 1px solid rgba(50, 205, 50, 0.3); border-radius: 8px;">
-                    <label
-                        style="color: #32cd32; font-weight: bold; margin-bottom: 0.2rem; display: block; font-size: 0.8rem;">最適解（最大期待値）</label>
-                    <button id="btn-calculate-optimal" class="btn-primary"
-                        style="width: 100%; padding: 0.4rem; background: #32cd32; color: #000; font-weight: bold; font-size: 0.8rem;">最適解を計算</button>
-                    <div id="opt-calculating"
-                        style="display: none; font-size: 0.7rem; color: #ffcc00; text-align: center; margin-top: 0.3rem;">
-                        計算中...</div>
-                    <div id="optimal-result-panel"
-                        style="display: none; margin-top: 0.8rem; font-size: 0.8rem; background: rgba(0,0,0,0.4); padding: 1rem; border-radius: 8px; border: 1px solid rgba(50, 205, 50, 0.3);">
-                        <div style="text-align: center; margin-bottom: 0.8rem; padding-bottom: 0.6rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                            <div style="font-size: 0.7rem; color: #32cd32; margin-bottom: 0.2rem;">期待値</div>
-                            <div id="opt-expected-damage" style="color: #ffcc00; font-weight: bold; font-size: 1.8rem; text-shadow: 0 0 10px rgba(255,204,0,0.3);">0</div>
-                        </div>
-                        
-                        <div style="display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1rem;">
-                            <div>
-                                <div style="color: var(--color-primary); font-size: 0.7rem; font-weight: bold; margin-bottom: 0.2rem;">激化タイプ</div>
-                                <div id="opt-excitation" style="font-size: 0.75rem; margin-left: 0.4rem;"></div>
-                            </div>
-                            <div>
-                                <div style="color: var(--color-primary); font-size: 0.7rem; font-weight: bold; margin-bottom: 0.2rem;">復元パーツ</div>
-                                <div id="opt-parts" style="font-size: 0.75rem; margin-left: 0.4rem; line-height: 1.3;"></div>
-                            </div>
-                            <div>
-                                <div style="color: var(--color-primary); font-size: 0.7rem; font-weight: bold; margin-bottom: 0.2rem;">復元ボーナス</div>
-                                <div id="opt-bonuses" style="font-size: 0.75rem; margin-left: 0.4rem; line-height: 1.3;"></div>
-                            </div>
-                        </div>
-                        <button id="btn-apply-optimal" class="btn-primary"
-                            style="width: 100%; padding: 0.2rem; margin-top: 0.4rem; font-size: 0.7rem; background: transparent; border: 1px solid #32cd32; color: #32cd32;">適用</button>
-                    </div>
-                </div>
-
                 <div class="weapon-stats-display"
                     style="margin-bottom: 0.8rem; padding: 0.6rem; background: rgba(255, 215, 0, 0.08); border: 2px solid rgba(255, 215, 0, 0.3); border-radius: 8px;">
                     <h3
@@ -271,89 +268,95 @@
                     <select id="element-type-select"></select>
                 </div>
 
-                <div class="input-group">
-                    <label>激化タイプ</label>
-                    <div style="display: flex; align-items: center; gap: 0.4rem;">
-                        <select id="excitation-select" style="flex: 1;"></select>
-                        <label
-                            style="font-size: 0.7rem; display: flex; align-items: center; gap: 0.2rem; cursor: pointer;">
-                            <input type="checkbox" id="lock-exci"> 固定
-                        </label>
-                    </div>
-                </div>
+                <!-- 詳細設定をアコーディオン化 -->
+                <details class="artia-details" open>
+                    <summary>詳細設定（激化・復元）</summary>
+                    <div class="details-content">
+                        <div class="input-group" style="margin-bottom: 0;">
+                            <label>激化タイプ</label>
+                            <div style="display: flex; align-items: center; gap: 0.4rem;">
+                                <select id="excitation-select" style="flex: 1;"></select>
+                                <label
+                                    style="font-size: 0.7rem; display: flex; align-items: center; gap: 0.2rem; cursor: pointer;">
+                                    <input type="checkbox" id="lock-exci"> 固定
+                                </label>
+                            </div>
+                        </div>
 
-                <div class="input-group">
-                    <label>復元パーツ (生産時3枠選択)</label>
-                    <div style="display: flex; flex-direction: column; gap: 0.3rem;">
-                        <div style="display: flex; align-items: center; gap: 0.4rem;">
-                            <select class="part-select" id="part-1" style="flex: 1;"></select>
-                            <label
-                                style="font-size: 0.7rem; display: flex; align-items: center; gap: 0.2rem; cursor: pointer;">
-                                <input type="checkbox" id="lock-part-1"> 固定
-                            </label>
+                        <div class="input-group" style="margin-bottom: 0;">
+                            <label>復元パーツ (生産時3枠選択)</label>
+                            <div style="display: flex; flex-direction: column; gap: 0.3rem;">
+                                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                                    <select class="part-select" id="part-1" style="flex: 1;"></select>
+                                    <label
+                                        style="font-size: 0.7rem; display: flex; align-items: center; gap: 0.2rem; cursor: pointer;">
+                                        <input type="checkbox" id="lock-part-1"> 固定
+                                    </label>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                                    <select class="part-select" id="part-2" style="flex: 1;"></select>
+                                    <label
+                                        style="font-size: 0.7rem; display: flex; align-items: center; gap: 0.2rem; cursor: pointer;">
+                                        <input type="checkbox" id="lock-part-2"> 固定
+                                    </label>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                                    <select class="part-select" id="part-3" style="flex: 1;"></select>
+                                    <label
+                                        style="font-size: 0.7rem; display: flex; align-items: center; gap: 0.2rem; cursor: pointer;">
+                                        <input type="checkbox" id="lock-part-3"> 固定
+                                    </label>
+                                </div>
+                            </div>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 0.4rem;">
-                            <select class="part-select" id="part-2" style="flex: 1;"></select>
-                            <label
-                                style="font-size: 0.7rem; display: flex; align-items: center; gap: 0.2rem; cursor: pointer;">
-                                <input type="checkbox" id="lock-part-2"> 固定
-                            </label>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 0.4rem;">
-                            <select class="part-select" id="part-3" style="flex: 1;"></select>
-                            <label
-                                style="font-size: 0.7rem; display: flex; align-items: center; gap: 0.2rem; cursor: pointer;">
-                                <input type="checkbox" id="lock-part-3"> 固定
-                            </label>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="input-group">
-                    <label>復元ボーナス (最大5つ)</label>
-                    <div id="bonus-slots" style="display: flex; flex-direction: column; gap: 0.2rem;">
-                        <div class="bonus-select-row" style="display: flex; align-items: center; gap: 0.4rem;">
-                            <select class="bonus-select" id="bonus-1" style="flex: 1;"></select>
-                            <label
-                                style="font-size: 0.7rem; display: flex; align-items: center; gap: 0.2rem; cursor: pointer;">
-                                <input type="checkbox" id="lock-bonus-1"> 固定
-                            </label>
-                        </div>
-                        <div class="bonus-select-row" style="display: flex; align-items: center; gap: 0.4rem;">
-                            <select class="bonus-select" id="bonus-2" style="flex: 1;"></select>
-                            <label
-                                style="font-size: 0.7rem; display: flex; align-items: center; gap: 0.2rem; cursor: pointer;">
-                                <input type="checkbox" id="lock-bonus-2"> 固定
-                            </label>
-                        </div>
-                        <div class="bonus-select-row" style="display: flex; align-items: center; gap: 0.4rem;">
-                            <select class="bonus-select" id="bonus-3" style="flex: 1;"></select>
-                            <label
-                                style="font-size: 0.7rem; display: flex; align-items: center; gap: 0.2rem; cursor: pointer;">
-                                <input type="checkbox" id="lock-bonus-3"> 固定
-                            </label>
-                        </div>
-                        <div class="bonus-select-row" style="display: flex; align-items: center; gap: 0.4rem;">
-                            <select class="bonus-select" id="bonus-4" style="flex: 1;"></select>
-                            <label
-                                style="font-size: 0.7rem; display: flex; align-items: center; gap: 0.2rem; cursor: pointer;">
-                                <input type="checkbox" id="lock-bonus-4"> 固定
-                            </label>
-                        </div>
-                        <div class="bonus-select-row" style="display: flex; align-items: center; gap: 0.4rem;">
-                            <select class="bonus-select" id="bonus-5" style="flex: 1;"></select>
-                            <label
-                                style="font-size: 0.7rem; display: flex; align-items: center; gap: 0.2rem; cursor: pointer;">
-                                <input type="checkbox" id="lock-bonus-5" checked> 固定
-                            </label>
+                        <div class="input-group" style="margin-bottom: 0;">
+                            <label>復元ボーナス (最大5つ)</label>
+                            <div id="bonus-slots" style="display: flex; flex-direction: column; gap: 0.2rem;">
+                                <div class="bonus-select-row" style="display: flex; align-items: center; gap: 0.4rem;">
+                                    <select class="bonus-select" id="bonus-1" style="flex: 1;"></select>
+                                    <label
+                                        style="font-size: 0.7rem; display: flex; align-items: center; gap: 0.2rem; cursor: pointer;">
+                                        <input type="checkbox" id="lock-bonus-1"> 固定
+                                    </label>
+                                </div>
+                                <div class="bonus-select-row" style="display: flex; align-items: center; gap: 0.4rem;">
+                                    <select class="bonus-select" id="bonus-2" style="flex: 1;"></select>
+                                    <label
+                                        style="font-size: 0.7rem; display: flex; align-items: center; gap: 0.2rem; cursor: pointer;">
+                                        <input type="checkbox" id="lock-bonus-2"> 固定
+                                    </label>
+                                </div>
+                                <div class="bonus-select-row" style="display: flex; align-items: center; gap: 0.4rem;">
+                                    <select class="bonus-select" id="bonus-3" style="flex: 1;"></select>
+                                    <label
+                                        style="font-size: 0.7rem; display: flex; align-items: center; gap: 0.2rem; cursor: pointer;">
+                                        <input type="checkbox" id="lock-bonus-3"> 固定
+                                    </label>
+                                </div>
+                                <div class="bonus-select-row" style="display: flex; align-items: center; gap: 0.4rem;">
+                                    <select class="bonus-select" id="bonus-4" style="flex: 1;"></select>
+                                    <label
+                                        style="font-size: 0.7rem; display: flex; align-items: center; gap: 0.2rem; cursor: pointer;">
+                                        <input type="checkbox" id="lock-bonus-4"> 固定
+                                    </label>
+                                </div>
+                                <div class="bonus-select-row" style="display: flex; align-items: center; gap: 0.4rem;">
+                                    <select class="bonus-select" id="bonus-5" style="flex: 1;"></select>
+                                    <label
+                                        style="font-size: 0.7rem; display: flex; align-items: center; gap: 0.2rem; cursor: pointer;">
+                                        <input type="checkbox" id="lock-bonus-5" checked> 固定
+                                    </label>
+                                </div>
+                            </div>
+                            <div id="bonus-warning" class="warning-text">※同じボーナスは2つまで選択可能です。</div>
                         </div>
                     </div>
-                    <div id="bonus-warning" class="warning-text">※同じボーナスは2つまで選択可能です。</div>
-                </div>
+                </details>
             </aside>
 
             <!-- Center: Skills Selection Panel -->
-            <section class="skills-panel glass-card">
+            <section class="skills-panel glass-card tab-panel">
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
                     <h2 class="panel-title" style="margin-bottom:0; border:none; padding-bottom:0;">スキル設定</h2>
                     <div class="myset-controls"
@@ -395,36 +398,10 @@
                 </div>
 
                 <div id="skills-selection-list"></div>
-            </section>
 
-            <!-- Right: Results Panel -->
-            <aside class="stats-panel glass-card">
-                <h2 class="panel-title">シミュレーション結果</h2>
-
-                <div class="damage-section-box" id="target-section-box"
-                    style="margin-bottom: 0.8rem; padding: 0.8rem; background: rgba(255, 215, 0, 0.05); border: 1px solid rgba(255, 215, 0, 0.2); border-radius: 8px; position: relative; overflow: hidden;">
-                    <h3
-                        style="font-size: 1rem; color: var(--color-primary); margin-bottom: 0.6rem; text-align: center; letter-spacing: 0.1em; font-weight: bold; position: relative; z-index: 2;">
-                        ターゲット</h3>
-                    <div
-                        style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; position: relative; z-index: 2;">
-                        <div class="input-group" style="margin-bottom: 0;">
-                            <label style="font-size: 0.7rem;">モンスター</label>
-                            <select id="monster-select" style="font-size: 0.8rem;"></select>
-                        </div>
-                        <div class="input-group" style="margin-bottom: 0;">
-                            <label style="font-size: 0.7rem;">攻撃部位</label>
-                            <select id="hitzone-select" style="font-size: 0.8rem;"></select>
-                        </div>
-                    </div>
-                    <div id="hitzone-detail-panel"
-                        style="margin-top: 0.8rem; padding-top: 0.6rem; border-top: 1px solid rgba(255,215,0,0.1); display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.4rem; font-size: 0.7rem; position: relative; z-index: 2;">
-                        <!-- JS populated -->
-                    </div>
-                </div>
-
+                <!-- バフ設定 (スキル設定末尾へ移動) -->
                 <div class="damage-section-box" id="buff-section-box"
-                    style="margin-bottom: 0.8rem; padding: 0.8rem; background: rgba(50, 205, 50, 0.04); border: 1px solid rgba(50, 205, 50, 0.2); border-radius: 8px;">
+                    style="margin-top: 1rem; padding: 0.8rem; background: rgba(50, 205, 50, 0.04); border: 1px solid rgba(50, 205, 50, 0.2); border-radius: 8px;">
                     <h3
                         style="font-size: 1rem; color: #32cd32; margin-bottom: 0.6rem; text-align: center; letter-spacing: 0.1em; font-weight: bold;">
                         バフ設定</h3>
@@ -433,9 +410,14 @@
                         <!-- JS populated -->
                     </div>
                 </div>
+            </section>
+
+            <!-- Right: Results Panel -->
+            <aside class="stats-panel glass-card tab-panel">
+                <h2 class="panel-title">シミュレーション結果</h2>
 
                 <div class="damage-section-box"
-                    style="margin-bottom: 0px; padding: 0.8rem; background: rgba(255, 215, 0, 0.05); border: 2px solid rgba(255, 215, 0, 0.2); border-radius: 8px;">
+                    style="margin-bottom: 0.8rem; padding: 0.8rem; background: rgba(255, 215, 0, 0.05); border: 2px solid rgba(255, 215, 0, 0.2); border-radius: 8px;">
                     <h3
                         style="font-size: 1rem; color: var(--color-primary); margin-bottom: 0.6rem; text-align: center; letter-spacing: 0.1em; font-weight: bold;">
                         ダメージ期待値</h3>
@@ -487,6 +469,47 @@
                         style="margin-top: 1rem; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 0.8rem; display: flex; flex-direction: column; gap: 0.4rem;">
                     </div>
                 </div>
+
+                <!-- 最適化パネル（右パネルへ移動・ボタン横並び） -->
+                <div class="input-group"
+                    style="margin-top: 1rem; padding: 0.8rem; background: rgba(50, 205, 50, 0.1); border: 1px solid rgba(50, 205, 50, 0.3); border-radius: 8px;">
+                    <label
+                        style="color: #32cd32; font-weight: bold; margin-bottom: 0.4rem; display: block; font-size: 0.8rem;">アーティア構成 最適化</label>
+                    
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                        <button id="btn-calculate-optimal" class="btn-primary"
+                            style="flex: 1; padding: 0.4rem; background: #32cd32; color: #000; font-weight: bold; font-size: 0.8rem; white-space: nowrap;">最適解を計算</button>
+                        <button id="btn-apply-optimal" class="btn-primary"
+                            style="flex: 0 0 auto; padding: 0.4rem 1rem; font-size: 0.8rem; background: transparent; border: 1px solid #32cd32; color: #32cd32;">適用</button>
+                    </div>
+
+                    <div id="opt-calculating"
+                        style="display: none; font-size: 0.7rem; color: #ffcc00; text-align: center; margin-top: 0.3rem;">
+                        計算中...</div>
+                    
+                    <div id="optimal-result-panel"
+                        style="display: none; margin-top: 0.8rem; font-size: 0.8rem; background: rgba(0,0,0,0.4); padding: 1rem; border-radius: 8px; border: 1px solid rgba(50, 205, 50, 0.3);">
+                        <div style="text-align: center; margin-bottom: 0.8rem; padding-bottom: 0.6rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                            <div style="font-size: 0.7rem; color: #32cd32; margin-bottom: 0.2rem;">最大期待値</div>
+                            <div id="opt-expected-damage" style="color: #ffcc00; font-weight: bold; font-size: 1.8rem; text-shadow: 0 0 10px rgba(255,204,0,0.3);">0</div>
+                        </div>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+                            <div>
+                                <div style="color: var(--color-primary); font-size: 0.7rem; font-weight: bold; margin-bottom: 0.2rem;">激化タイプ</div>
+                                <div id="opt-excitation" style="font-size: 0.75rem; margin-left: 0.4rem;"></div>
+                            </div>
+                            <div>
+                                <div style="color: var(--color-primary); font-size: 0.7rem; font-weight: bold; margin-bottom: 0.2rem;">復元パーツ</div>
+                                <div id="opt-parts" style="font-size: 0.75rem; margin-left: 0.4rem; line-height: 1.3;"></div>
+                            </div>
+                            <div>
+                                <div style="color: var(--color-primary); font-size: 0.7rem; font-weight: bold; margin-bottom: 0.2rem;">復元ボーナス</div>
+                                <div id="opt-bonuses" style="font-size: 0.75rem; margin-left: 0.4rem; line-height: 1.3;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </aside>
         </div>
     </main>
@@ -496,6 +519,25 @@
     </footer>
 
     <script type="module" src="js/main.js"></script>
+    <script>
+        // タブ切り替えロジック (スマホ版専用)
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabs = document.querySelectorAll('.tab-btn');
+            const panels = document.querySelectorAll('.tab-panel');
+
+            tabs.forEach((tab, index) => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    panels.forEach(p => p.classList.remove('active'));
+
+                    tab.classList.add('active');
+                    panels[index].classList.add('active');
+
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+            });
+        });
+    </script>
 </body>
 
 </html>
