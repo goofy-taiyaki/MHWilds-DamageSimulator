@@ -395,7 +395,7 @@ details.artia-details[open] summary::after {
 
 /* Site Logo Styles */
 .site-logo {
-  width: 50%;
+  width: 350px;
   max-width: 100%;
   height: auto;
   object-fit: contain;
@@ -403,7 +403,7 @@ details.artia-details[open] summary::after {
 
 @media (max-width: 1024px) {
   .site-logo {
-    width: 100%;
+    width: 100vw;
   }
 }
 
