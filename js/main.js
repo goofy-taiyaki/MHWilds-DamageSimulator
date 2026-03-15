@@ -2,6 +2,7 @@ import { WEAPON_TYPES, WEAPONS, SKILLS, SHARPNESS, RESTORATION_PARTS, RESTORATIO
 import { MHWCalculator } from './calculator.js';
 import { findOptimalArtiaConfiguration as runOptimizer } from './modules/optimizer.js';
 import { BuildShare } from './modules/share.js';
+import { initOCR } from './modules/ocr.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const calc = new MHWCalculator();
@@ -291,10 +292,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         initMotions();
 
+        // OCR初期化（スクショからスキル自動認識）
+        initOCR(SKILLS, cachedSkillSelects, updateCalculation);
+
         // Initial update
         updateMotionOptions();
         updateWeaponSpecificUI();
-        performCalculation(); // Execute immediately for initial load
+        performCalculation();
     }
 
     let calcTimeout = null;
