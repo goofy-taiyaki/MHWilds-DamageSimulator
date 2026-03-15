@@ -929,10 +929,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (select) select.value = "0";
         });
 
-        // 2. 基本設定の復元
         if (state.weaponTypeId) {
-            weaponTypeSelect.value = state.weaponTypeId;
-            updateMotionOptions();
+            const hasWeapon = Array.from(weaponTypeSelect.options).some(o => o.value === state.weaponTypeId);
+            if (hasWeapon) {
+                weaponTypeSelect.value = state.weaponTypeId;
+                updateMotionOptions();
+                updateWeaponSpecificUI();
+                updateBonusOptions(); // これが必要
+            }
         }
         if (state.excitationType) excitationSelect.value = state.excitationType;
         if (state.elementType) elementTypeSelect.value = state.elementType;
@@ -942,8 +946,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (state.sharpness) sharpnessSelect.value = state.sharpness;
 
         if (state.monsterName) {
-            monsterSelect.value = state.monsterName;
-            updateHitzoneOptions();
+            const hasMonster = Array.from(monsterSelect.options).some(o => o.value === state.monsterName);
+            if (hasMonster) {
+                monsterSelect.value = state.monsterName;
+                updateHitzoneOptions();
+            }
         }
         if (state.hitzonePartIndex !== undefined) {
             hitzoneSelect.value = state.hitzonePartIndex;
@@ -974,7 +981,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (dbDemonMode && state.weaponSpecificParams.dbDemonMode !== undefined)
                 dbDemonMode.checked = !!state.weaponSpecificParams.dbDemonMode;
         } else {
-            // 旧セーブデータ互換: 武器固有設定が存在しない場合はデフォルト値に
             if (igExtract) igExtract.value = 'none';
             if (lsSpiritGauge) lsSpiritGauge.value = 'none';
             if (saPhialType) saPhialType.value = 'none';
@@ -982,6 +988,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         updateWeaponSpecificUI();
+        updateBonusOptions(); // 武器に応じたボーナスリストの更新を確実に行う
 
         // バフ状態の復元
         if (state.buffStates) {
@@ -1033,8 +1040,14 @@ document.addEventListener('DOMContentLoaded', () => {
     function getMySets() {
         try {
             const stored = localStorage.getItem(MYSET_STORAGE_KEY);
-            return stored ? JSON.parse(stored) : {};
-        } catch { return {}; }
+            if (!stored) return {};
+            const parsed = JSON.parse(stored);
+            if (parsed && typeof parsed === 'object') return parsed;
+            return {};
+        } catch (e) {
+            console.error('Failed to load mysets:', e);
+            return {};
+        }
     }
 
     function saveMySets(sets) { localStorage.setItem(MYSET_STORAGE_KEY, JSON.stringify(sets)); }
@@ -1113,21 +1126,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Keep the init call safe by injecting at the very end
-    const _originalInit = init;
-    init = function () {
-        _originalInit();
-        updateMySetList();
-
-        // Check for shared build in URL
-        const sharedBuild = BuildShare.decodeUrl();
-        if (sharedBuild) {
-            setTimeout(() => {
-                loadStateIntoUI(sharedBuild);
-                alert('共有URLからビルドを読み込みました。');
-            }, 100);
-        }
-    };
-
+    // 初期化の実行
     init();
+    updateMySetList();
+
+    // 共有URLからのビルド読込チェック
+    const sharedBuild = BuildShare.decodeUrl();
+    if (sharedBuild) {
+        setTimeout(() => {
+            loadStateIntoUI(sharedBuild);
+            alert('共有URLからビルドを読み込みました。');
+        }, 100);
+    }
 });

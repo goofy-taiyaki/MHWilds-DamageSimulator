@@ -40,9 +40,13 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Marcellus', 'Shippori Mincho', 'Noto Serif JP', serif;
+  font-family: "MS Mincho", "Hiragino Mincho ProN", serif;
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
 }
 
 body {
