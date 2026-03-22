@@ -765,13 +765,17 @@ export const SKILLS = [
     "maxLevel": 3,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "resAdd": 6
       },
       {
-        "level": 2
+        "level": 2,
+        "resAdd": 12
       },
       {
-        "level": 3
+        "level": 3,
+        "resAdd": 20,
+        "defAdd": 10
       }
     ]
   },
@@ -783,13 +787,17 @@ export const SKILLS = [
     "maxLevel": 3,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "resAdd": 6
       },
       {
-        "level": 2
+        "level": 2,
+        "resAdd": 12
       },
       {
-        "level": 3
+        "level": 3,
+        "resAdd": 20,
+        "defAdd": 10
       }
     ]
   },
@@ -801,13 +809,17 @@ export const SKILLS = [
     "maxLevel": 3,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "resAdd": 6
       },
       {
-        "level": 2
+        "level": 2,
+        "resAdd": 12
       },
       {
-        "level": 3
+        "level": 3,
+        "resAdd": 20,
+        "defAdd": 10
       }
     ]
   },
@@ -819,13 +831,17 @@ export const SKILLS = [
     "maxLevel": 3,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "resAdd": 6
       },
       {
-        "level": 2
+        "level": 2,
+        "resAdd": 12
       },
       {
-        "level": 3
+        "level": 3,
+        "resAdd": 20,
+        "defAdd": 10
       }
     ]
   },
@@ -837,13 +853,17 @@ export const SKILLS = [
     "maxLevel": 3,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "resAdd": 6
       },
       {
-        "level": 2
+        "level": 2,
+        "resAdd": 12
       },
       {
-        "level": 3
+        "level": 3,
+        "resAdd": 20,
+        "defAdd": 10
       }
     ]
   },

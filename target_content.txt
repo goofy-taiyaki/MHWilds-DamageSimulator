@@ -1,0 +1,248 @@
+            function solveChunkDFS() {
+                try {
+                    const startTime = Date.now();
+                    while (stack.length > 0) {
+                        const node = stack.pop();
+                        const pIdx = node.part;
+
+                        if (pIdx === 6) {
+                            const [h, c, a, w, l, t] = node.currentItems;
+                            const assignment = check(h, c, a, w, l, t, targetPoints, wSlots, wSkills, decoBySkill);
+                            if (assignment) {
+                                resultsCount++;
+                                allResults.push({ h, c, a, w, l, t, assignment });
+                            }
+                            if (resultsCount >= 2000) { break; }
+                        } else {
+                            const currentPartItems = parts[pIdx];
+                            for (let i = currentPartItems.length - 1; i >= 0; i--) {
+                                const item = currentPartItems[i];
+                                let possible = true;
+                                const itemSlotsVal = (item.slots || []).reduce((sum, s) => sum + ((s.lvl || s) > 0 ? 1 : 0), 0);
+                                const remSlotsVal = (pIdx < 5 ? maxRemainSlots[pIdx+1] : 0);
+                                const totalPotentialSlotsVal = itemSlotsVal + remSlotsVal + baseWeaponPotential;
+
+                                for (const sid in targetPoints) {
+                                    const cur = (node.currentSkills[sid] || 0) + (item.skills[sid] || 0);
+                                    const remMax = (pIdx < 5 ? maxRemainSkills[pIdx + 1][sid] : 0);
+
+                                    const fixedW = wSkills[sid] || 0;
+                                    const isAutoCat = (SKILL_BY_ID[sid].mainCategory === 'series' && wSkills.auto_ss) || (SKILL_BY_ID[sid].mainCategory === 'group' && wSkills.auto_gs);
+                                    const wPot = isAutoCat ? 1 : 0;
+
+                                    const potential = canBeDeco[sid] ? (remMax + totalPotentialSlotsVal + wPot) : (remMax + wPot);
+                                    if (cur + fixedW + potential < targetPoints[sid]) { possible = false; break; }
+                                }
+
+                                if (possible) {
+                                    const nextSkills = { ...node.currentSkills };
+                                    Object.keys(item.skills).forEach(sid => { nextSkills[sid] = (nextSkills[sid] || 0) + item.skills[sid]; });
+                                    stack.push({ part: pIdx + 1, currentSkills: nextSkills, currentItems: [...node.currentItems, item] });
+                                }
+                            }
+                        }
+                        if (Date.now() - startTime > 40) {
+                            statusText.innerHTML = `<span class="loader"></span>検索中... ${resultsCount}件抽出済 (残スタック量: ${stack.length})`;
+                            currentSearchTimeout = setTimeout(solveChunkDFS, 0);
+                            return;
+                        }
+                    }
+                    finish(allResults);
+                } catch (e) {
+                    console.error("solveChunkDFS Error:", e);
+                    statusText.innerHTML = `<span style="color:red">検索中のエラー(DFS): ${e.message}</span>`;
+                }
+            }
+
+            function check(h, c, a, w, l, t, tPoints, wS, wSkills, deccos) {
+                const pts = {};
+                for (const sid in tPoints) {
+                    pts[sid] = (h.skills[sid]||0) + (c.skills[sid]||0) + (a.skills[sid]||0) + (w.skills[sid]||0) + (l.skills[sid]||0) + (t.skills[sid]||0);
+                    // Add fixed weapon skills
+                    if (wSkills[sid]) pts[sid] += wSkills[sid];
+                }
+
+                const missing = {};
+                for (const sid in tPoints) {
+                    const diff = tPoints[sid] - (pts[sid]||0);
+                    if (diff > 0) missing[sid] = diff;
+                }
+
+                let usedAutoSS = null;
+                let usedAutoGS = null;
+
+                if (wSkills.auto_ss) {
+                    const ssMissing = Object.keys(missing).filter(id => SKILL_BY_ID[id].mainCategory === 'series');
+                    if (ssMissing.length === 1 && missing[ssMissing[0]] === 1) {
+                        usedAutoSS = ssMissing[0];
+                        delete missing[usedAutoSS];
+                    } else if (ssMissing.length === 0) {
+                        // All SS satisfied
+                    } else {
+                        return null; // Too many or more than 1pt
+                    }
+                }
+
+                if (wSkills.auto_gs) {
+                    const gsMissing = Object.keys(missing).filter(id => SKILL_BY_ID[id].mainCategory === 'group');
+                    if (gsMissing.length === 1 && missing[gsMissing[0]] === 1) {
+                        usedAutoGS = gsMissing[0];
+                        delete missing[usedAutoGS];
+                    } else if (gsMissing.length === 0) {
+                        // All GS satisfied
+                    } else {
+                        return null;
+                    }
+                }
+
+                const totalNeeded = Object.values(missing).reduce((a, b) => a + b, 0);
+                if (totalNeeded === 0) return { decos: [], autoSS: usedAutoSS, autoGS: usedAutoGS };
+
+                const slotObjects = [];
+                [h, c, a, w, l].forEach((item, idx) => { item.slots.filter(s => (s.lvl || s) > 0).forEach(s => slotObjects.push({ piece: idx, lvl: s.lvl || s, type: s.type || 'a' })); });
+                wS.forEach(s => slotObjects.push({ piece: 'weapon', lvl: s, type: 'w' }));
+                t.slots.forEach(s => slotObjects.push({ piece: 'talisman', lvl: s.lvl || s, type: s.type || 'a' }));
+                slotObjects.sort((x, y) => x.lvl - y.lvl);
+
+                const decosUsed = [];
+                if (canFillWithTracking(missing, slotObjects, deccos, decosUsed)) return { decos: decosUsed, autoSS: usedAutoSS, autoGS: usedAutoGS };
+                return null;
+            }
+
+        function canFillWithTracking(missing, slots, deccos, decosUsed) {
+            const missingIds = Object.keys(missing);
+            if (missingIds.length === 0) return true;
+            const skillId = missingIds[0];
+            const ptsNeeded = missing[skillId];
+            const usable = deccos[skillId] || [];
+            if (usable.length === 0) return false;
+
+            return (function branchFill(id, nPts, curSlots, dIdx) {
+                if (nPts <= 0) { const nextMissing = { ...missing }; delete nextMissing[id]; return canFillWithTracking(nextMissing, curSlots, deccos, decosUsed); }
+                if (dIdx >= usable.length) return false;
+                const deco = usable[dIdx];
+                const sIdx = curSlots.findIndex(s => s.lvl >= deco.lvl && s.type === deco.type);
+                if (sIdx === -1) return branchFill(id, nPts, curSlots, dIdx + 1);
+                const nextSlots = [...curSlots]; const usedSlot = nextSlots.splice(sIdx, 1)[0];
+                decosUsed.push({ deco, piece: usedSlot.piece });
+                if (branchFill(id, nPts - deco.pts, nextSlots, dIdx)) return true;
+                decosUsed.pop();
+                return branchFill(id, nPts, curSlots, dIdx + 1);
+            })(skillId, ptsNeeded, slots, 0);
+        }
+
+        function calculateFinalStats(h, c, a, w, l, t, assignment, ws, wSk, aSS, aGS) {
+            let def = (h.d||0) + (c.d||0) + (a.d||0) + (w.d||0) + (l.d||0);
+            let res = [0, 0, 0, 0, 0];
+            [h, c, a, w, l].forEach(p => { if (p.r) p.r.forEach((v, i) => res[i] += v); });
+            const pts = {};
+            const addP = (sid, n) => { if (sid) pts[sid] = (pts[sid]||0) + n; };
+            [h, c, a, w, l].forEach(item => {
+                if (item.sk) item.sk.forEach(s => addP(SKILL_NAME_TO_ID[s.n], s.l));
+                if (item.ss) { const sid = SKILL_NAME_TO_ID[item.ss]; if (sid) addP(sid, 1); }
+                if (item.gs) { const sid = SKILL_NAME_TO_ID[item.gs]; if (sid) addP(sid, 1); }
+            });
+            Object.entries(t.skills).forEach(([sid, n]) => addP(sid, n));
+            Object.entries(wSk).forEach(([sid, n]) => { if (sid !== 'auto_ss' && sid!=='auto_gs') addP(sid, n); });
+            if (aSS) addP(aSS, 1);
+            if (aGS) addP(aGS, 1);
+            assignment.forEach(d => { if (d.deco.sk) d.deco.sk.forEach(s => addP(SKILL_NAME_TO_ID[s.n], s.l)); });
+            Object.entries(pts).forEach(([sid, n]) => {
+                const s = SKILL_BY_ID[sid];
+                if (!s) return;
+                const lvl = Math.min(n, s.maxLevel);
+                const eff = s.effects && s.effects.find(e => e.level === lvl);
+                if (eff) {
+                    if (eff.defAdd) def += eff.defAdd;
+                    if (eff.resAdd) {
+                        const rIds = ['fire_resistance', 'water_resistance', 'thunder_resistance', 'ice_resistance', 'dragon_resistance'];
+                        const idx = rIds.indexOf(sid);
+                        if (idx !== -1) res[idx] += eff.resAdd;
+                    }
+                }
+            });
+            return { def, res };
+        }
+
+        function finish(results) {
+            progressBar.style.width = '100%';
+            const minRes = [0,1,2,3,4].map(i => parseInt(document.getElementById(`min-res-${i}`).value) || 0);
+            const sortType = document.getElementById('search-sort-type').value;
+
+            const processed = results.map(r => ({
+                ...r,
+                stats: calculateFinalStats(r.h, r.c, r.a, r.w, r.l, r.t, r.assignment.decos, wSlots, wSkills, r.assignment.autoSS, r.assignment.autoGS)
+            }));
+
+            const filtered = processed.filter(r => {
+                for (let i = 0; i < 5; i++) if (r.stats.res[i] < minRes[i]) return false;
+                return true;
+            });
+
+            const groups = new Map();
+            filtered.forEach(r => {
+                const key = `${r.h.n}-${r.c.n}-${r.a.n}-${r.w.n}-${r.l.n}`;
+                if (!groups.has(key)) groups.set(key, []);
+                groups.get(key).push(r);
+            });
+
+            const uniqueResults = [];
+            groups.forEach(vs => { vs.sort((a,b) => (a.t.rare || 5) - (b.t.rare || 5)); uniqueResults.push(vs[0]); });
+
+            if (sortType === 'def') uniqueResults.sort((a, b) => b.stats.def - a.stats.def);
+            else if (sortType.startsWith('res')) {
+                const ri = parseInt(sortType.replace('res', ''));
+                uniqueResults.sort((a, b) => b.stats.res[ri] - a.stats.res[ri]);
+            }
+
+            uniqueResults.slice(0, 100).forEach((r, idx) => {
+                renderResult(r.h, r.c, r.a, r.w, r.l, r.t, wSlots, wSkills, r.assignment.decos, idx + 1, target, armorLabels, r.assignment.autoSS, r.assignment.autoGS, r.stats);
+            });
+
+            resultCountEl.textContent = `${uniqueResults.length} sets`;
+            statusText.textContent = `検索完了! ${uniqueResults.length}種類の装備構成が見つかりました。${results.length > uniqueResults.length ? ` (全${results.length}パターンから集約表示)` : ''}`;
+        }
+            const minRes = [0,1,2,3,4].map(i => parseInt(document.getElementById(`min-res-${i}`).value) || 0);
+            const sortType = document.getElementById('search-sort-type').value;
+
+            const processed = results.map(r => ({
+                ...r,
+                stats: calculateFinalStats(r.h, r.c, r.a, r.w, r.l, r.t, r.assignment.decos, wSlots, wSkills, r.assignment.autoSS, r.assignment.autoGS)
+            }));
+
+            const filtered = processed.filter(r => {
+                for (let i = 0; i < 5; i++) if (r.stats.res[i] < minRes[i]) return false;
+                return true;
+            });
+
+            const groups = new Map();
+            filtered.forEach(r => {
+                const key = `${r.h.n}-${r.c.n}-${r.a.n}-${r.w.n}-${r.l.n}`;
+                if (!groups.has(key)) groups.set(key, []);
+                groups.get(key).push(r);
+            });
+
+            const uniqueResults = [];
+            groups.forEach(vs => { vs.sort((a,b) => (a.t.rare || 5) - (b.t.rare || 5)); uniqueResults.push(vs[0]); });
+
+            if (sortType === 'def') uniqueResults.sort((a, b) => b.stats.def - a.stats.def);
+            else if (sortType.startsWith('res')) {
+                const ri = parseInt(sortType.replace('res', ''));
+                uniqueResults.sort((a, b) => b.stats.res[ri] - a.stats.res[ri]);
+            }
+
+            uniqueResults.slice(0, 100).forEach((r, idx) => {
+                renderResult(r.h, r.c, r.a, r.w, r.l, r.t, wSlots, wSkills, r.assignment.decos, idx + 1, target, armorLabels, r.assignment.autoSS, r.assignment.autoGS, r.stats);
+            });
+
+            resultCountEl.textContent = `${uniqueResults.length} sets`;
+            statusText.textContent = `検索完了! ${uniqueResults.length}種類の装備構成が見つかりました。${results.length > uniqueResults.length ? ` (全${results.length}パターンから集約表示)` : ''}`;
+        }
+
+        currentSearchTimeout = setTimeout(solveChunkDFS, 0);
+        } catch (setupErr) {
+            console.error("Setup Error:", setupErr);
+            statusText.innerHTML = `<span style="color:red">エラー: ${setupErr.message}</span>`;
+        }
+    }
+
