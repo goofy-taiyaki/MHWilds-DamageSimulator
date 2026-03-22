@@ -1195,6 +1195,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 防具検索ボタン
     const btnSearchArmor = document.getElementById('btn-search-armor');
+    const btnClearSkills = document.getElementById('btn-clear-skills');
+
+    if (btnClearSkills) {
+        btnClearSkills.addEventListener('click', () => {
+            if (confirm('発動中のスキルをすべてクリアしますか？')) {
+                Object.values(cachedSkillSelects).forEach(select => {
+                    select.value = 0;
+                    const row = select.closest('.skill-selector-row');
+                    if (row) row.classList.remove('selected');
+                });
+                updateCalculation();
+            }
+        });
+    }
+
     if (btnSearchArmor) {
         btnSearchArmor.addEventListener('click', () => {
             const activeSkills = {};
