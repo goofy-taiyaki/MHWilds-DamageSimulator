@@ -7,7 +7,7 @@
     <title>DAMAGE _SIMULATOR | アーティア計算機</title>
     <link rel="icon" href="icon/title.png" type="image/png">
     <meta name="description" content="巨戟アーティア武器専用のダメージ計算機。復元パーツ・ボーナスとモンスター肉質を組み合わせた詳細シミュレーション。">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/style.css">
     <style>
         body {
             font-family: "MS Mincho", "Hiragino Mincho ProN", serif;
@@ -306,9 +306,9 @@
                     </div>
                 </div>
 
-                <!-- 詳細設定をアコーディオン化 -->
-                <details class="artia-details" open>
-                    <summary>詳細設定（加算・復元）</summary>
+                <!-- 詳細設定を常に表示 -->
+                <div class="artia-static-panel" style="background: rgba(0, 0, 0, 0.15); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 6px; margin-bottom: 1rem; overflow: hidden;">
+                    <div style="padding: 0.6rem 0.8rem; color: var(--color-primary); font-weight: bold; font-size: 0.85rem; background: rgba(212, 175, 55, 0.05); border-bottom: 1px solid rgba(212, 175, 55, 0.2);">詳細設定（加算・復元）</div>
                     <div class="details-content">
                         <div class="input-group" style="margin-bottom: 0;">
                             <label>激化タイプ</label>
@@ -390,7 +390,7 @@
                             <div id="bonus-warning" class="warning-text">※同じボーナスは2つまで選択可能です。</div>
                         </div>
                     </div>
-                </details>
+                </div>
             </aside>
 
             <!-- Center: Skills Selection Panel -->

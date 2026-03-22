@@ -747,13 +747,16 @@ export const SKILLS = [
     "maxLevel": 3,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackAdd": 85
       },
       {
-        "level": 2
+        "level": 2,
+        "attackAdd": 70
       },
       {
-        "level": 3
+        "level": 3,
+        "attackAdd": 50
       }
     ]
   },
@@ -765,13 +768,16 @@ export const SKILLS = [
     "maxLevel": 3,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackAdd": 6
       },
       {
-        "level": 2
+        "level": 2,
+        "attackAdd": 12
       },
       {
-        "level": 3
+        "level": 3,
+        "attackAdd": 10
       }
     ]
   },
@@ -783,13 +789,16 @@ export const SKILLS = [
     "maxLevel": 3,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackAdd": 6
       },
       {
-        "level": 2
+        "level": 2,
+        "attackAdd": 12
       },
       {
-        "level": 3
+        "level": 3,
+        "attackAdd": 10
       }
     ]
   },
@@ -801,13 +810,16 @@ export const SKILLS = [
     "maxLevel": 3,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackAdd": 6
       },
       {
-        "level": 2
+        "level": 2,
+        "attackAdd": 12
       },
       {
-        "level": 3
+        "level": 3,
+        "attackAdd": 10
       }
     ]
   },
@@ -819,13 +831,16 @@ export const SKILLS = [
     "maxLevel": 3,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackAdd": 6
       },
       {
-        "level": 2
+        "level": 2,
+        "attackAdd": 12
       },
       {
-        "level": 3
+        "level": 3,
+        "attackAdd": 10
       }
     ]
   },
@@ -837,13 +852,16 @@ export const SKILLS = [
     "maxLevel": 3,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackAdd": 6
       },
       {
-        "level": 2
+        "level": 2,
+        "attackAdd": 12
       },
       {
-        "level": 3
+        "level": 3,
+        "attackAdd": 10
       }
     ]
   },
@@ -855,13 +873,16 @@ export const SKILLS = [
     "maxLevel": 3,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackMult": 0.5
       },
       {
-        "level": 2
+        "level": 2,
+        "attackMult": 2
       },
       {
-        "level": 3
+        "level": 3,
+        "attackMult": 2
       }
     ]
   },
@@ -873,10 +894,12 @@ export const SKILLS = [
     "maxLevel": 3,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackAdd": 70
       },
       {
-        "level": 2
+        "level": 2,
+        "attackAdd": 40
       },
       {
         "level": 3
@@ -891,10 +914,12 @@ export const SKILLS = [
     "maxLevel": 3,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackAdd": 70
       },
       {
-        "level": 2
+        "level": 2,
+        "attackAdd": 40
       },
       {
         "level": 3
@@ -927,10 +952,12 @@ export const SKILLS = [
     "maxLevel": 3,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackAdd": 50
       },
       {
-        "level": 2
+        "level": 2,
+        "attackAdd": 25
       },
       {
         "level": 3
@@ -945,10 +972,12 @@ export const SKILLS = [
     "maxLevel": 3,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackAdd": 40
       },
       {
-        "level": 2
+        "level": 2,
+        "attackAdd": 10
       },
       {
         "level": 3
@@ -1050,13 +1079,16 @@ export const SKILLS = [
     "maxLevel": 3,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackMult": 1
       },
       {
-        "level": 2
+        "level": 2,
+        "attackMult": 2
       },
       {
-        "level": 3
+        "level": 3,
+        "attackMult": 3
       }
     ]
   },
@@ -1068,10 +1100,12 @@ export const SKILLS = [
     "maxLevel": 3,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackAdd": 50
       },
       {
-        "level": 2
+        "level": 2,
+        "attackAdd": 80
       },
       {
         "level": 3
@@ -1086,19 +1120,24 @@ export const SKILLS = [
     "maxLevel": 5,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackAdd": 10
       },
       {
-        "level": 2
+        "level": 2,
+        "attackAdd": 20
       },
       {
-        "level": 3
+        "level": 3,
+        "attackAdd": 30
       },
       {
-        "level": 4
+        "level": 4,
+        "attackAdd": 40
       },
       {
-        "level": 5
+        "level": 5,
+        "attackAdd": 50
       }
     ]
   },
@@ -1110,13 +1149,16 @@ export const SKILLS = [
     "maxLevel": 3,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackMult": 0.1
       },
       {
-        "level": 2
+        "level": 2,
+        "attackMult": 0.3
       },
       {
-        "level": 3
+        "level": 3,
+        "attackMult": 0.5
       }
     ]
   },
@@ -1128,13 +1170,16 @@ export const SKILLS = [
     "maxLevel": 3,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackAdd": 85
       },
       {
-        "level": 2
+        "level": 2,
+        "attackAdd": 70
       },
       {
-        "level": 3
+        "level": 3,
+        "attackAdd": 50
       }
     ]
   },
@@ -1709,19 +1754,24 @@ export const SKILLS = [
     "maxLevel": 5,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackMult": 0.05
       },
       {
-        "level": 2
+        "level": 2,
+        "attackMult": 0.1
       },
       {
-        "level": 3
+        "level": 3,
+        "attackMult": 0.15
       },
       {
-        "level": 4
+        "level": 4,
+        "attackMult": 0.2
       },
       {
-        "level": 5
+        "level": 5,
+        "attackMult": 0.25
       }
     ]
   },
@@ -1733,13 +1783,16 @@ export const SKILLS = [
     "maxLevel": 3,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackMult": 0.1
       },
       {
-        "level": 2
+        "level": 2,
+        "attackMult": 0.2
       },
       {
-        "level": 3
+        "level": 3,
+        "attackMult": 0.3
       }
     ]
   },
@@ -2254,10 +2307,12 @@ export const SKILLS = [
     "maxLevel": 3,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackAdd": 20
       },
       {
-        "level": 2
+        "level": 2,
+        "attackAdd": 10
       },
       {
         "level": 3
@@ -2272,13 +2327,16 @@ export const SKILLS = [
     "maxLevel": 3,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackMult": 0.1
       },
       {
-        "level": 2
+        "level": 2,
+        "attackMult": 0.2
       },
       {
-        "level": 3
+        "level": 3,
+        "attackMult": 0.4
       }
     ]
   },
@@ -2290,10 +2348,12 @@ export const SKILLS = [
     "maxLevel": 3,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackAdd": 50
       },
       {
-        "level": 2
+        "level": 2,
+        "attackAdd": 50
       },
       {
         "level": 3
@@ -2308,10 +2368,12 @@ export const SKILLS = [
     "maxLevel": 3,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackAdd": 50
       },
       {
-        "level": 2
+        "level": 2,
+        "attackAdd": 20
       },
       {
         "level": 3
@@ -2344,10 +2406,12 @@ export const SKILLS = [
     "maxLevel": 3,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackAdd": 50
       },
       {
-        "level": 2
+        "level": 2,
+        "attackAdd": 50
       },
       {
         "level": 3
@@ -2431,19 +2495,24 @@ export const SKILLS = [
     "maxLevel": 5,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackAdd": 33
       },
       {
-        "level": 2
+        "level": 2,
+        "attackAdd": 33
       },
       {
-        "level": 3
+        "level": 3,
+        "attackAdd": 66
       },
       {
-        "level": 4
+        "level": 4,
+        "attackAdd": 66
       },
       {
-        "level": 5
+        "level": 5,
+        "attackAdd": 100
       }
     ]
   },
@@ -2479,13 +2548,16 @@ export const SKILLS = [
     "maxLevel": 3,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackMult": 0.1
       },
       {
-        "level": 2
+        "level": 2,
+        "attackMult": 0.2
       },
       {
-        "level": 3
+        "level": 3,
+        "attackMult": 0.3
       }
     ]
   },
@@ -2515,13 +2587,16 @@ export const SKILLS = [
     "maxLevel": 3,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackMult": 0.1
       },
       {
-        "level": 2
+        "level": 2,
+        "attackMult": 0.25
       },
       {
-        "level": 3
+        "level": 3,
+        "attackMult": 0.5
       }
     ]
   },
@@ -2533,13 +2608,16 @@ export const SKILLS = [
     "maxLevel": 3,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackAdd": 10
       },
       {
-        "level": 2
+        "level": 2,
+        "attackAdd": 25
       },
       {
-        "level": 3
+        "level": 3,
+        "attackAdd": 45
       }
     ]
   },
@@ -2584,13 +2662,16 @@ export const SKILLS = [
     "maxLevel": 3,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackAdd": 1
       },
       {
-        "level": 2
+        "level": 2,
+        "attackAdd": 1
       },
       {
-        "level": 3
+        "level": 3,
+        "attackAdd": 1
       }
     ]
   },
@@ -3309,13 +3390,16 @@ export const SKILLS = [
     "maxLevel": 3,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackMult": 0.05
       },
       {
-        "level": 2
+        "level": 2,
+        "attackMult": 0.1
       },
       {
-        "level": 3
+        "level": 3,
+        "attackMult": 0.15
       }
     ]
   },
@@ -3418,116 +3502,44 @@ export const SKILLS = [
     "weaponSpecific": true,
     "weaponEffects": {
       "gs": [
-        {
-          "level": 1,
-          "elementMult": 0.15
-        },
-        {
-          "level": 2,
-          "elementMult": 0.2
-        },
-        {
-          "level": 3,
-          "elementMult": 0.25
-        }
+        { "level": 1, "elementMult": 0.15 },
+        { "level": 2, "elementMult": 0.2 },
+        { "level": 3, "elementMult": 0.25 }
       ],
       "ls": [
-        {
-          "level": 1,
-          "elementMult": 0.15
-        },
-        {
-          "level": 2,
-          "elementMult": 0.2
-        },
-        {
-          "level": 3,
-          "elementMult": 0.25
-        }
+        { "level": 1, "elementMult": 0.15 },
+        { "level": 2, "elementMult": 0.2 },
+        { "level": 3, "elementMult": 0.25 }
       ],
       "sns": [
-        {
-          "level": 1,
-          "elementMult": 0.15
-        },
-        {
-          "level": 2,
-          "elementMult": 0.2
-        },
-        {
-          "level": 3,
-          "elementMult": 0.25
-        }
+        { "level": 1, "elementMult": 0.15 },
+        { "level": 2, "elementMult": 0.2 },
+        { "level": 3, "elementMult": 0.25 }
       ],
       "hammer": [
-        {
-          "level": 1,
-          "elementMult": 0.15
-        },
-        {
-          "level": 2,
-          "elementMult": 0.2
-        },
-        {
-          "level": 3,
-          "elementMult": 0.25
-        }
+        { "level": 1, "elementMult": 0.15 },
+        { "level": 2, "elementMult": 0.2 },
+        { "level": 3, "elementMult": 0.25 }
       ],
       "lance": [
-        {
-          "level": 1,
-          "elementMult": 0.15
-        },
-        {
-          "level": 2,
-          "elementMult": 0.2
-        },
-        {
-          "level": 3,
-          "elementMult": 0.25
-        }
+        { "level": 1, "elementMult": 0.15 },
+        { "level": 2, "elementMult": 0.2 },
+        { "level": 3, "elementMult": 0.25 }
       ],
       "cb": [
-        {
-          "level": 1,
-          "elementMult": 0.15
-        },
-        {
-          "level": 2,
-          "elementMult": 0.2
-        },
-        {
-          "level": 3,
-          "elementMult": 0.25
-        }
+        { "level": 1, "elementMult": 0.15 },
+        { "level": 2, "elementMult": 0.2 },
+        { "level": 3, "elementMult": 0.25 }
       ],
       "ig": [
-        {
-          "level": 1,
-          "elementMult": 0.15
-        },
-        {
-          "level": 2,
-          "elementMult": 0.2
-        },
-        {
-          "level": 3,
-          "elementMult": 0.25
-        }
+        { "level": 1, "elementMult": 0.15 },
+        { "level": 2, "elementMult": 0.2 },
+        { "level": 3, "elementMult": 0.25 }
       ],
       "bow": [
-        {
-          "level": 1,
-          "elementMult": 0.05
-        },
-        {
-          "level": 2,
-          "elementMult": 0.1
-        },
-        {
-          "level": 3,
-          "elementMult": 0.15
-        }
+        { "level": 1, "elementMult": 0.05 },
+        { "level": 2, "elementMult": 0.1 },
+        { "level": 3, "elementMult": 0.15 }
       ]
     }
   },
@@ -3538,21 +3550,11 @@ export const SKILLS = [
     "subCategory": "utility",
     "maxLevel": 5,
     "effects": [
-      {
-        "level": 1
-      },
-      {
-        "level": 2
-      },
-      {
-        "level": 3
-      },
-      {
-        "level": 4
-      },
-      {
-        "level": 5
-      }
+      { "level": 1 },
+      { "level": 2 },
+      { "level": 3 },
+      { "level": 4 },
+      { "level": 5 }
     ]
   },
   {
@@ -3562,15 +3564,9 @@ export const SKILLS = [
     "subCategory": "utility",
     "maxLevel": 3,
     "effects": [
-      {
-        "level": 1
-      },
-      {
-        "level": 2
-      },
-      {
-        "level": 3
-      }
+      { "level": 1 },
+      { "level": 2 },
+      { "level": 3 }
     ]
   },
   {
@@ -3580,15 +3576,9 @@ export const SKILLS = [
     "subCategory": "utility",
     "maxLevel": 3,
     "effects": [
-      {
-        "level": 1
-      },
-      {
-        "level": 2
-      },
-      {
-        "level": 3
-      }
+      { "level": 1 },
+      { "level": 2 },
+      { "level": 3 }
     ]
   },
   {
@@ -3599,13 +3589,19 @@ export const SKILLS = [
     "maxLevel": 3,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "description": "５０％の確率で弾かれず、硬い部位への攻撃の威力が１．１倍",
+        "attackMult": 0.1
       },
       {
-        "level": 2
+        "level": 2,
+        "description": "１００％の確率で弾かれず、硬い部位への攻撃の威力が１．１５倍",
+        "attackMult": 0.15
       },
       {
-        "level": 3
+        "level": 3,
+        "description": "１００％の確率で弾かれず、硬い部位への攻撃の威力が１．３倍",
+        "attackMult": 0.3
       }
     ]
   },
@@ -3617,13 +3613,16 @@ export const SKILLS = [
     "maxLevel": 3,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackMult": 0.05
       },
       {
-        "level": 2
+        "level": 2,
+        "attackMult": 0.1
       },
       {
-        "level": 3
+        "level": 3,
+        "attackMult": 0.1
       }
     ]
   },
@@ -3635,10 +3634,12 @@ export const SKILLS = [
     "maxLevel": 2,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackMult": 0.1
       },
       {
-        "level": 2
+        "level": 2,
+        "attackMult": 0.2
       }
     ]
   },
@@ -3649,15 +3650,9 @@ export const SKILLS = [
     "subCategory": "utility",
     "maxLevel": 3,
     "effects": [
-      {
-        "level": 1
-      },
-      {
-        "level": 2
-      },
-      {
-        "level": 3
-      }
+      { "level": 1 },
+      { "level": 2 },
+      { "level": 3 }
     ]
   },
   {
@@ -3668,13 +3663,16 @@ export const SKILLS = [
     "maxLevel": 3,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackAdd": 3
       },
       {
-        "level": 2
+        "level": 2,
+        "attackAdd": 5
       },
       {
-        "level": 3
+        "level": 3,
+        "attackAdd": 7
       }
     ]
   },
@@ -3685,15 +3683,9 @@ export const SKILLS = [
     "subCategory": "utility",
     "maxLevel": 3,
     "effects": [
-      {
-        "level": 1
-      },
-      {
-        "level": 2
-      },
-      {
-        "level": 3
-      }
+      { "level": 1 },
+      { "level": 2 },
+      { "level": 3 }
     ]
   },
   {
@@ -3703,15 +3695,9 @@ export const SKILLS = [
     "subCategory": "utility",
     "maxLevel": 3,
     "effects": [
-      {
-        "level": 1
-      },
-      {
-        "level": 2
-      },
-      {
-        "level": 3
-      }
+      { "level": 1 },
+      { "level": 2 },
+      { "level": 3 }
     ]
   },
   {
@@ -3725,10 +3711,12 @@ export const SKILLS = [
         "level": 1
       },
       {
-        "level": 2
+        "level": 2,
+        "attackMult": 0.1
       },
       {
-        "level": 3
+        "level": 3,
+        "attackMult": 0.2
       }
     ]
   },
@@ -3739,15 +3727,9 @@ export const SKILLS = [
     "subCategory": "utility",
     "maxLevel": 3,
     "effects": [
-      {
-        "level": 1
-      },
-      {
-        "level": 2
-      },
-      {
-        "level": 3
-      }
+      { "level": 1 },
+      { "level": 2 },
+      { "level": 3 }
     ]
   },
   {
@@ -3758,44 +3740,57 @@ export const SKILLS = [
     "maxLevel": 7,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackAdd": 5
       },
       {
-        "level": 2
+        "level": 2,
+        "attackAdd": 10
       },
       {
-        "level": 3
+        "level": 3,
+        "attackAdd": 10,
+        "attackMult": 0.05
       },
       {
-        "level": 4
+        "level": 4,
+        "attackAdd": 20,
+        "attackMult": 0.05
       },
       {
-        "level": 5
+        "level": 5,
+        "attackAdd": 20,
+        "attackMult": 0.08
       },
       {
-        "level": 6
+        "level": 6,
+        "attackAdd": 35,
+        "attackMult": 0.08
       },
       {
-        "level": 7
+        "level": 7,
+        "attackAdd": 35,
+        "attackMult": 0.1
       }
     ]
   },
   {
     "id": "skill_7lihg8",
     "name": "達人芸",
-    "mainCategory": "weapon",
+    "mainCategory": "armor",
     "subCategory": "utility",
     "maxLevel": 1,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackAdd": 80
       }
     ]
   },
   {
     "id": "skill_a7c99l",
     "name": "弾導強化",
-    "mainCategory": "weapon",
+    "mainCategory": "armor",
     "subCategory": "utility",
     "maxLevel": 3,
     "effects": [
@@ -3813,7 +3808,7 @@ export const SKILLS = [
   {
     "id": "skill_67k7g7",
     "name": "毒ビン追加",
-    "mainCategory": "weapon",
+    "mainCategory": "armor",
     "subCategory": "utility",
     "maxLevel": 1,
     "effects": [
@@ -3825,7 +3820,7 @@ export const SKILLS = [
   {
     "id": "skill_5ff5pc",
     "name": "麻痺ビン追加",
-    "mainCategory": "weapon",
+    "mainCategory": "armor",
     "subCategory": "utility",
     "maxLevel": 1,
     "effects": [
@@ -3837,7 +3832,7 @@ export const SKILLS = [
   {
     "id": "skill_vpn7k3",
     "name": "睡眠ビン追加",
-    "mainCategory": "weapon",
+    "mainCategory": "armor",
     "subCategory": "utility",
     "maxLevel": 1,
     "effects": [
@@ -3849,7 +3844,7 @@ export const SKILLS = [
   {
     "id": "skill_pfngiv",
     "name": "爆破ビン追加",
-    "mainCategory": "weapon",
+    "mainCategory": "armor",
     "subCategory": "utility",
     "maxLevel": 1,
     "effects": [
@@ -3861,7 +3856,7 @@ export const SKILLS = [
   {
     "id": "skill_s93zgn",
     "name": "減気ビン追加",
-    "mainCategory": "weapon",
+    "mainCategory": "armor",
     "subCategory": "utility",
     "maxLevel": 1,
     "effects": [
@@ -3873,7 +3868,7 @@ export const SKILLS = [
   {
     "id": "skill_2kssqf",
     "name": "強化持続",
-    "mainCategory": "weapon",
+    "mainCategory": "armor",
     "subCategory": "utility",
     "maxLevel": 3,
     "effects": [
@@ -3891,25 +3886,28 @@ export const SKILLS = [
   {
     "id": "skill_r5b46j",
     "name": "スタミナ奪取",
-    "mainCategory": "weapon",
+    "mainCategory": "armor",
     "subCategory": "utility",
     "maxLevel": 3,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackMult": 0.2
       },
       {
-        "level": 2
+        "level": 2,
+        "attackMult": 0.3
       },
       {
-        "level": 3
+        "level": 3,
+        "attackMult": 0.4
       }
     ]
   },
   {
     "id": "skill_1r13b2",
     "name": "笛吹き名人",
-    "mainCategory": "weapon",
+    "mainCategory": "armor",
     "subCategory": "utility",
     "maxLevel": 2,
     "effects": [
@@ -3924,97 +3922,113 @@ export const SKILLS = [
   {
     "id": "skill_8lo3n1",
     "name": "溜打強化",
-    "mainCategory": "weapon",
+    "mainCategory": "armor",
     "subCategory": "utility",
     "maxLevel": 1,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackMult": 0.03
       }
     ]
   },
   {
     "id": "skill_ntj9eh",
     "name": "毒ダメージ強化",
-    "mainCategory": "weapon",
+    "mainCategory": "armor",
     "subCategory": "utility",
     "maxLevel": 1,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackMult": 0.2
       }
     ]
   },
   {
     "id": "skill_dbci18",
     "name": "ガード強化",
-    "mainCategory": "weapon",
+    "mainCategory": "armor",
     "subCategory": "utility",
     "maxLevel": 3,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackAdd": 90
       },
       {
-        "level": 2
+        "level": 2,
+        "attackAdd": 80
       },
       {
-        "level": 3
+        "level": 3,
+        "attackAdd": 70
       }
     ]
   },
   {
     "id": "skill_r3dwsk",
     "name": "砲弾装填",
-    "mainCategory": "weapon",
+    "mainCategory": "armor",
     "subCategory": "utility",
     "maxLevel": 2,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackMult": 0.1
       },
       {
-        "level": 2
+        "level": 2,
+        "attackAdd": 1,
+        "attackMult": 0.2
       }
     ]
   },
   {
     "id": "skill_27g21i",
     "name": "砥石使用高速化",
-    "mainCategory": "weapon",
+    "mainCategory": "armor",
     "subCategory": "utility",
     "maxLevel": 2,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackAdd": 1
       },
       {
-        "level": 2
+        "level": 2,
+        "attackAdd": 2
       }
     ]
   },
   {
     "id": "skill_4cs9xw",
     "name": "濡れ刃紋",
-    "mainCategory": "weapon",
+    "mainCategory": "armor",
     "subCategory": "utility",
     "maxLevel": 3,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackAdd": 7,
+        "affinity": 3
       },
       {
-        "level": 2
+        "level": 2,
+        "attackAdd": 14,
+        "affinity": 6
       },
       {
-        "level": 3
+        "level": 3,
+        "attackAdd": 21,
+        "affinity": 9
       }
     ]
   },
   {
     "id": "skill_t4g64d",
     "name": "白熾の奔流",
-    "mainCategory": "weapon",
+    "mainCategory": "armor",
     "subCategory": "utility",
     "maxLevel": 1,
     "effects": [
@@ -4026,7 +4040,7 @@ export const SKILLS = [
   {
     "id": "skill_os84gu",
     "name": "耐性変換【雷】",
-    "mainCategory": "weapon",
+    "mainCategory": "armor",
     "subCategory": "utility",
     "maxLevel": 1,
     "effects": [
@@ -4038,7 +4052,7 @@ export const SKILLS = [
   {
     "id": "skill_bbsnq2",
     "name": "刃鱗研装",
-    "mainCategory": "weapon",
+    "mainCategory": "armor",
     "subCategory": "utility",
     "maxLevel": 1,
     "effects": [
@@ -4050,7 +4064,7 @@ export const SKILLS = [
   {
     "id": "skill_lo14hm",
     "name": "刃鱗増装",
-    "mainCategory": "weapon",
+    "mainCategory": "armor",
     "subCategory": "utility",
     "maxLevel": 1,
     "effects": [
@@ -4062,7 +4076,7 @@ export const SKILLS = [
   {
     "id": "skill_tq3xtv",
     "name": "パワーストーン",
-    "mainCategory": "weapon",
+    "mainCategory": "armor",
     "subCategory": "utility",
     "maxLevel": 1,
     "effects": [
@@ -4074,7 +4088,7 @@ export const SKILLS = [
   {
     "id": "skill_kdmk4s",
     "name": "焼き砲モロコシ",
-    "mainCategory": "weapon",
+    "mainCategory": "armor",
     "subCategory": "utility",
     "maxLevel": 1,
     "effects": [
@@ -4086,7 +4100,7 @@ export const SKILLS = [
   {
     "id": "skill_8k1cyt",
     "name": "炎の料理人",
-    "mainCategory": "weapon",
+    "mainCategory": "armor",
     "subCategory": "utility",
     "maxLevel": 1,
     "effects": [
@@ -4098,7 +4112,7 @@ export const SKILLS = [
   {
     "id": "skill_vbzhp5",
     "name": "回避装填",
-    "mainCategory": "weapon",
+    "mainCategory": "armor",
     "subCategory": "utility",
     "maxLevel": 1,
     "effects": [
@@ -4110,7 +4124,7 @@ export const SKILLS = [
   {
     "id": "skill_0z3iok",
     "name": "暗黒",
-    "mainCategory": "weapon",
+    "mainCategory": "armor",
     "subCategory": "utility",
     "maxLevel": 1,
     "effects": [
@@ -4122,31 +4136,33 @@ export const SKILLS = [
   {
     "id": "skill_bj2xfz",
     "name": "シールドオプション",
-    "mainCategory": "weapon",
+    "mainCategory": "armor",
     "subCategory": "utility",
     "maxLevel": 1,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackAdd": 45
       }
     ]
   },
   {
     "id": "skill_tagxus",
     "name": "連携プログラム",
-    "mainCategory": "weapon",
+    "mainCategory": "armor",
     "subCategory": "utility",
     "maxLevel": 1,
     "effects": [
       {
-        "level": 1
+        "level": 1,
+        "attackAdd": 40
       }
     ]
   },
   {
     "id": "skill_9sybh3",
     "name": "にゃんにゃんぼう",
-    "mainCategory": "weapon",
+    "mainCategory": "armor",
     "subCategory": "utility",
     "maxLevel": 0,
     "effects": []
@@ -4204,6 +4220,605 @@ export const SKILLS = [
   {
     "id": "skill_p0c2wx",
     "name": "緩衝",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [
+      {
+        "level": 1
+      }
+    ]
+  },
+  {
+    "id": "skill_4jo23v",
+    "name": "隠密",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [
+      {
+        "level": 1
+      }
+    ]
+  },
+  {
+    "id": "skill_yhxdu7",
+    "name": "精霊の気まぐれ",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [
+      {
+        "level": 1,
+        "attackAdd": 25
+      }
+    ]
+  },
+  {
+    "id": "skill_9iyimp",
+    "name": "運搬の鉄人",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [
+      {
+        "level": 1
+      }
+    ]
+  },
+  {
+    "id": "skill_67n6fe",
+    "name": "ハニーハンター",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [
+      {
+        "level": 1,
+        "attackAdd": 1
+      }
+    ]
+  },
+  {
+    "id": "skill_uvrg8h",
+    "name": "採取達人",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [
+      {
+        "level": 1
+      }
+    ]
+  },
+  {
+    "id": "skill_c3ug7q",
+    "name": "剥ぎ取り鉄人",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [
+      {
+        "level": 1
+      }
+    ]
+  },
+  {
+    "id": "skill_6w1qiz",
+    "name": "釣り名人",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [
+      {
+        "level": 1
+      }
+    ]
+  },
+  {
+    "id": "skill_701wp8",
+    "name": "肉焼き名人",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [
+      {
+        "level": 1
+      }
+    ]
+  },
+  {
+    "id": "skill_b350p1",
+    "name": "探鉱者",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [
+      {
+        "level": 1
+      }
+    ]
+  },
+  {
+    "id": "skill_copjew",
+    "name": "幸運",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 3,
+    "effects": [
+      {
+        "level": 1
+      },
+      {
+        "level": 2
+      },
+      {
+        "level": 3
+      }
+    ]
+  },
+  {
+    "id": "skill_91iqad",
+    "name": "剥ぎ取り名人",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [
+      {
+        "level": 1,
+        "attackAdd": 1
+      }
+    ]
+  },
+  {
+    "id": "skill_scy747",
+    "name": "滑走強化",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [
+      {
+        "level": 1,
+        "affinity": 30
+      }
+    ]
+  },
+  {
+    "id": "skill_05msqo",
+    "name": "乗り名人",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [
+      {
+        "level": 1
+      }
+    ]
+  },
+  {
+    "id": "skill_jcphnc",
+    "name": "不屈",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [
+      {
+        "level": 1,
+        "attackMult": 0.1
+      }
+    ]
+  },
+  {
+    "id": "skill_4l8f23",
+    "name": "回復量ＵＰ",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 3,
+    "effects": [
+      {
+        "level": 1,
+        "attackMult": 0.1
+      },
+      {
+        "level": 2,
+        "attackMult": 0.2
+      },
+      {
+        "level": 3,
+        "attackMult": 0.3
+      }
+    ]
+  },
+  {
+    "id": "skill_ko13f0",
+    "name": "釣り達人",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [
+      {
+        "level": 1
+      }
+    ]
+  },
+  {
+    "id": "skill_cf5vew",
+    "name": "罠師",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [
+      {
+        "level": 1
+      }
+    ]
+  },
+  {
+    "id": "skill_7kkvu5",
+    "name": "泥まみれ耐性",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 2,
+    "effects": [
+      {
+        "level": 1
+      },
+      {
+        "level": 2
+      }
+    ]
+  },
+  {
+    "id": "skill_hvx1nb",
+    "name": "麻痺使い",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [
+      {
+        "level": 1,
+        "attackAdd": 25
+      }
+    ]
+  },
+  {
+    "id": "skill_b9gui6",
+    "name": "睡眠使い",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [
+      {
+        "level": 1,
+        "attackMult": 0.05
+      }
+    ]
+  },
+  {
+    "id": "skill_l1zwxk",
+    "name": "爆破使い",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [
+      {
+        "level": 1,
+        "attackAdd": 25,
+        "attackMult": 0.1
+      }
+    ]
+  },
+  {
+    "id": "skill_ty4j52",
+    "name": "キノコ使い",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [
+      {
+        "level": 1,
+        "attackAdd": 25
+      }
+    ]
+  },
+  {
+    "id": "skill_i1b5gr",
+    "name": "乗り使い",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [
+      {
+        "level": 1
+      }
+    ]
+  },
+  {
+    "id": "skill_pgsshl",
+    "name": "操竜使い",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [
+      {
+        "level": 1
+      }
+    ]
+  },
+  {
+    "id": "skill_fhnom6",
+    "name": "オトモ使い",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [
+      {
+        "level": 1,
+        "attackAdd": 90,
+        "attackMult": 0.4
+      }
+    ]
+  },
+  {
+    "id": "skill_t5ujeq",
+    "name": "不屈使い",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [
+      {
+        "level": 1,
+        "attackAdd": 30
+      }
+    ]
+  },
+  {
+    "id": "skill_7mqvq1",
+    "name": "連撃使い",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [
+      {
+        "level": 1,
+        "attackMult": 0.3
+      }
+    ]
+  },
+  {
+    "id": "skill_5hbisx",
+    "name": "災禍転福使い",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [
+      {
+        "level": 1,
+        "attackMult": 0.3
+      }
+    ]
+  },
+  {
+    "id": "skill_ztn137",
+    "name": "狂竜化使い",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [
+      {
+        "level": 1,
+        "attackAdd": 5,
+        "attackMult": 0.3
+      }
+    ]
+  },
+  {
+    "id": "skill_9ty43j",
+    "name": "地質学使い",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [
+      {
+        "level": 1,
+        "attackAdd": 1
+      }
+    ]
+  },
+  {
+    "id": "skill_jjtn8i",
+    "name": "幸運使い",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [
+      {
+        "level": 1,
+        "attackAdd": 30
+      }
+    ]
+  },
+  {
+    "id": "skill_3sflle",
+    "name": "集中使い",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [
+      {
+        "level": 1,
+        "attackAdd": 95
+      }
+    ]
+  },
+  {
+    "id": "skill_uk4v36",
+    "name": "強化持続使い",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [
+      {
+        "level": 1,
+        "attackMult": 0.3
+      }
+    ]
+  },
+  {
+    "id": "skill_ec3ui9",
+    "name": "砲術使い",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [{ "level": 1 }]
+  },
+  {
+    "id": "skill_4oenhl",
+    "name": "笛吹き使い",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [
+      {
+        "level": 1,
+        "attackAdd": 90,
+        "attackMult": 0.3
+      }
+    ]
+  },
+  {
+    "id": "skill_sysu76",
+    "name": "ガード使い",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [{ "level": 1 }]
+  },
+  {
+    "id": "skill_6wvk5v",
+    "name": "回避使い",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [
+      {
+        "level": 1,
+        "attackMult": 0.4
+      }
+    ]
+  },
+  {
+    "id": "skill_g4amjm",
+    "name": "匠使い",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [{ "level": 1 }]
+  },
+  {
+    "id": "skill_vvugd5",
+    "name": "研磨使い",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [{ "level": 1 }]
+  },
+  {
+    "id": "skill_r0z2oq",
+    "name": "体術使い",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [{ "level": 1 }]
+  },
+  {
+    "id": "skill_s6lfuh",
+    "name": "アイテム使い",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [{ "level": 1 }]
+  },
+  {
+    "id": "skill_hqzv4q",
+    "name": "剥ぎ取り術",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [
+      {
+        "level": 1,
+        "attackAdd": 25
+      }
+    ]
+  },
+  {
+    "id": "skill_8ocvho",
+    "name": "採集術",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [
+      {
+        "level": 1,
+        "attackAdd": 25
+      }
+    ]
+  },
+  {
+    "id": "skill_ghf29c",
+    "name": "解体術",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [
+      {
+        "level": 1,
+        "attackAdd": 25
+      }
+    ]
+  },
+  {
+    "id": "skill_191zib",
+    "name": "換金術",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [
+      {
+        "level": 1,
+        "attackAdd": 20
+      }
+    ]
+  },
+  {
+    "id": "skill_vuzi3u",
+    "name": "招き猫の幸運",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [
+      {
+        "level": 1,
+        "attackAdd": 25
+      }
+    ]
+  },
+  {
+    "id": "skill_qm6xhg",
+    "name": "報酬金保険",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 1,
+    "effects": [
+      {
+        "level": 1
+      }
+    ]
+  },
+  {
+    "id": "skill_s777gq",
+    "name": "ド根性",
     "mainCategory": "armor",
     "subCategory": "utility",
     "maxLevel": 1,

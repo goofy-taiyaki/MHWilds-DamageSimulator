@@ -1,4 +1,4 @@
-import { WEAPON_TYPES, SKILLS, EXCITATION_DATA, EXCITATION_TYPES, MONSTERS, MOTION_VALUES, ARMOR, DECORATIONS } from './data.js';
+import { WEAPON_TYPES, SKILLS, EXCITATION_DATA, EXCITATION_TYPES, MONSTERS, MOTION_VALUES, ARMOR, DECORATIONS } from '../data.js';
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -91,7 +91,16 @@ document.addEventListener('DOMContentLoaded', () => {
         group: 'グループスキル'
     };
 
+    const SUB_CATEGORY_NAMES = {
+        attack: '攻撃力強化',
+        affinity: '会心率',
+        element: '属性・状態異常',
+        ammo: '弾・矢強化',
+        utility: 'その他'
+    };
+
     const MAIN_CATEGORY_ORDER = ['weapon', 'armor', 'series', 'group'];
+    const SUB_CATEGORY_ORDER = ['attack', 'affinity', 'element', 'ammo', 'utility', null];
 
     MAIN_CATEGORY_ORDER.forEach(catKey => {
         const catSkills = SKILLS.filter(s => s.mainCategory === catKey);
@@ -99,87 +108,114 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const catName = MAIN_CATEGORY_NAMES[catKey];
 
-        // Sidebar Category (Collapsible)
+        // Sidebar Category (Collapsible) - DEFAULT CLOSED
         navSkHtml += `
-            <li style="margin-bottom: 0.5rem;">
-                <details class="nav-category-details" open>
-                    <summary style="cursor: pointer; padding: 0.3rem 0.5rem; color: var(--color-primary); font-weight: bold; user-select: none; border-radius: 4px; background: rgba(212, 175, 55, 0.05);">
+            <li style="margin-bottom: 0.3rem;">
+                <details class="nav-category-details">
+                    <summary style="cursor: pointer; padding: 0.35rem 0.5rem; color: var(--color-primary); font-weight: bold; user-select: none; border-radius: 4px; background: rgba(212, 175, 55, 0.05); font-size: 0.85rem;">
                         ${catName}
                     </summary>
-                    <ul class="db-nav-list" style="padding-left: 0.8rem; margin-top: 0.2rem; font-size: 0.8rem;">`;
+                    <ul class="db-nav-list" style="padding-left: 0.5rem; margin-top: 0.2rem;">`;
 
         // Main Content Category Header
         skHtml += `
-            <div id="cat-${catKey}" class="skill-category-group" style="margin-bottom: 2rem;">
-                <h3 style="color: var(--color-primary); border-bottom: 1px solid rgba(212, 175, 55, 0.3); padding-bottom: 0.5rem; margin-bottom: 1rem; font-size: 1.2rem;">
+            <div id="cat-${catKey}" class="skill-category-group" style="margin-bottom: 2.5rem;">
+                <h3 style="color: var(--color-primary); border-bottom: 2px solid rgba(212, 175, 55, 0.3); padding-bottom: 0.5rem; margin-bottom: 1.5rem; font-size: 1.3rem; text-transform: uppercase; letter-spacing: 0.05em;">
                     ${catName}
                 </h3>`;
 
-        catSkills.forEach(s => {
-            navSkHtml += `<li style="margin-bottom: 0.1rem;"><a href="#skill-${s.id}">${s.name}</a></li>`;
+        SUB_CATEGORY_ORDER.forEach(subKey => {
+            const subSkills = catSkills.filter(s => s.subCategory === subKey);
+            if (subSkills.length === 0) return;
 
-            const WEAPON_NAMES = {
-                'gs': '大剣', 'ls': '太刀', 'sns': '片手剣', 'db': '双剣',
-                'hammer': 'ハンマー', 'hh': '狩猟笛', 'lance': 'ランス', 'gl': 'ガンランス',
-                'sa': 'スラッシュアックス', 'cb': 'チャージアックス', 'ig': '操虫棍',
-                'bow': '弓', 'lbg': 'ライトボウガン', 'hbg': 'ヘビィボウガン'
-            };
+            const subName = SUB_CATEGORY_NAMES[subKey] || 'その他';
 
-            const formatEffect = (e) => {
-                let parts = [];
-                if (e.attackAdd !== undefined && e.attackAdd !== 0) parts.push(`攻撃力 +${e.attackAdd}`);
-                if (e.attackMult !== undefined && e.attackMult !== 0) parts.push(`物理乗算 x${(1 + e.attackMult).toFixed(2).replace(/\.?0+$/, '')}`);
-                if (e.affinity !== undefined && e.affinity !== 0) parts.push(`会心率 ${e.affinity > 0 ? '+' + e.affinity : e.affinity}%`);
-                if (e.elementAdd !== undefined && e.elementAdd !== 0) parts.push(`属性値 +${e.elementAdd}`);
-                if (e.elementMult !== undefined && e.elementMult !== 0) parts.push(`属性乗算 x${(1 + e.elementMult).toFixed(2).replace(/\.?0+$/, '')}`);
-                if (e.critMultAdd !== undefined && e.critMultAdd !== 0) parts.push(`超会心加算 +${e.critMultAdd}`);
-                if (e.elementCritMult !== undefined && e.elementCritMult !== 0) parts.push(`属性会心倍率 x${(1 + e.elementCritMult).toFixed(2).replace(/\.?0+$/, '')}`);
-                return parts.length > 0 ? parts.join(', ') : '記載なし';
-            };
+            // Sidebar Sub-category (Collapsible) - DEFAULT CLOSED
+            navSkHtml += `
+                <li style="margin-top: 0.2rem; margin-left: 0.3rem;">
+                    <details class="nav-subcategory-details">
+                        <summary style="cursor: pointer; padding: 0.2rem 0.4rem; color: var(--color-text-main); font-size: 0.8rem; user-select: none; border-left: 2px solid rgba(212, 175, 55, 0.3); font-weight: 500;">
+                            ${subName}
+                        </summary>
+                        <ul style="list-style: none; padding-left: 0.8rem; margin: 0.1rem 0 0.3rem 0;">`;
 
-            let effectsText = '';
-            if (s.weaponSpecific && s.weaponEffects) {
-                effectsText = `<table style="width:100%; border-collapse:collapse; text-align:left; font-size:0.8rem; margin-top:5px; border:1px solid rgba(255,255,255,0.05);">
-                    <thead style="background:rgba(212, 175, 55, 0.1);">
-                        <tr><th style="padding:6px 8px; width:120px;">武器種</th><th style="padding:6px 8px;">効果詳細 (各Lv)</th></tr>
-                    </thead><tbody>`;
-                for (const [wType, effects] of Object.entries(s.weaponEffects)) {
-                    const wName = WEAPON_NAMES[wType] || wType;
-                    let wLvs = effects.map(e => `<strong>Lv${e.level}:</strong> ${formatEffect(e)}`).join('<br>');
-                    effectsText += `<tr style="border-top:1px solid rgba(255,255,255,0.05);">
-                        <td style="padding:6px 8px; vertical-align:top; color:var(--color-primary);">${wName}</td>
-                        <td style="padding:6px 8px;">${wLvs}</td>
-                    </tr>`;
-                }
-                effectsText += `</tbody></table>`;
-            } else if (s.effects) {
-                effectsText = `<table style="width:100%; border-collapse:collapse; text-align:left; font-size:0.8rem; margin-top:5px; border:1px solid rgba(255,255,255,0.05);">
-                    <thead style="background:rgba(212, 175, 55, 0.1);">
-                        <tr><th style="padding:6px 8px; width:60px;">Lv</th><th style="padding:6px 8px;">効果</th></tr>
-                    </thead><tbody>`;
-                s.effects.forEach(e => {
-                    effectsText += `<tr style="border-top:1px solid rgba(255,255,255,0.05);">
-                        <td style="padding:6px 8px; color:var(--color-primary); font-weight:bold; white-space: nowrap;">Lv${e.level}${e.name ? ' ' + e.name : ''}</td>
-                        <td style="padding:6px 8px;">${formatEffect(e)}</td>
-                    </tr>`;
-                });
-                effectsText += `</tbody></table>`;
-            }
-
+            // Main Content Sub-category Header
             skHtml += `
-                <details id="skill-${s.id}" style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 4px; margin-bottom: 0.5rem;">
-                    <summary style="padding: 0.8rem; cursor: pointer; color: var(--color-primary); font-weight: bold; user-select: none;">
-                        ${s.name} <span style="font-size: 0.75rem; color: var(--color-text-muted); font-weight: normal; margin-left: 0.5rem;">(最大Lv${s.maxLevel})</span>
-                    </summary>
-                    <div style="padding: 0 0.8rem 0.8rem 0.8rem;">
-                        ${effectsText}
-                    </div>
-                </details>
-            `;
+                <div class="skill-subcategory-group" style="margin-bottom: 1.5rem; margin-left: 0.5rem;">
+                    <h4 style="color: rgba(255, 255, 255, 0.8); border-left: 3px solid var(--color-primary); padding-left: 0.8rem; margin: 1rem 0 0.8rem 0; font-size: 1rem;">
+                        ${subName}
+                    </h4>`;
+
+            subSkills.forEach(s => {
+                navSkHtml += `<li style="margin-bottom: 0.1rem;"><a href="#skill-${s.id}" style="font-size: 0.75rem; padding: 0.1rem 0.3rem;">${s.name}</a></li>`;
+
+                const WEAPON_NAMES = {
+                    'gs': '大剣', 'ls': '太刀', 'sns': '片手剣', 'db': '双剣',
+                    'hammer': 'ハンマー', 'hh': '狩猟笛', 'lance': 'ランス', 'gl': 'ガンランス',
+                    'sa': 'スラッシュアックス', 'cb': 'チャージアックス', 'ig': '操虫棍',
+                    'bow': '弓', 'lbg': 'ライトボウガン', 'hbg': 'ヘビィボウガン'
+                };
+
+                const formatEffect = (e) => {
+                    if (e.description) return e.description;
+                    let parts = [];
+                    if (e.attackAdd !== undefined && e.attackAdd !== 0) parts.push(`攻撃力 +${e.attackAdd}`);
+                    if (e.attackMult !== undefined && e.attackMult !== 0) parts.push(`物理乗算 x${(1 + e.attackMult).toFixed(2).replace(/\.?0+$/, '')}`);
+                    if (e.affinity !== undefined && e.affinity !== 0) parts.push(`会心率 ${e.affinity > 0 ? '+' + e.affinity : e.affinity}%`);
+                    if (e.elementAdd !== undefined && e.elementAdd !== 0) parts.push(`属性値 +${e.elementAdd}`);
+                    if (e.elementMult !== undefined && e.elementMult !== 0) parts.push(`属性乗算 x${(1 + e.elementMult).toFixed(2).replace(/\.?0+$/, '')}`);
+                    if (e.critMultAdd !== undefined && e.critMultAdd !== 0) parts.push(`超会心加算 +${e.critMultAdd}`);
+                    if (e.elementCritMult !== undefined && e.elementCritMult !== 0) parts.push(`属性会心倍率 x${(1 + e.elementCritMult).toFixed(2).replace(/\.?0+$/, '')}`);
+                    return parts.length > 0 ? parts.join(', ') : '記載なし';
+                };
+
+                let effectsText = '';
+                if (s.weaponSpecific && s.weaponEffects) {
+                    effectsText = `<table style="width:100%; border-collapse:collapse; text-align:left; font-size:0.8rem; margin-top:5px; border:1px solid rgba(255,255,255,0.05);">
+                        <thead style="background:rgba(212, 175, 55, 0.1);">
+                            <tr><th style="padding:6px 8px; width:120px;">武器種</th><th style="padding:6px 8px;">効果詳細 (各Lv)</th></tr>
+                        </thead><tbody>`;
+                    for (const [wType, effects] of Object.entries(s.weaponEffects)) {
+                        const wName = WEAPON_NAMES[wType] || wType;
+                        let wLvs = effects.map(e => `<strong>Lv${e.level}:</strong> ${formatEffect(e)}`).join('<br>');
+                        effectsText += `<tr style="border-top:1px solid rgba(255,255,255,0.05);">
+                            <td style="padding:6px 8px; vertical-align:top; color:var(--color-primary);">${wName}</td>
+                            <td style="padding:6px 8px;">${wLvs}</td>
+                        </tr>`;
+                    }
+                    effectsText += `</tbody></table>`;
+                } else if (s.effects) {
+                    effectsText = `<table style="width:100%; border-collapse:collapse; text-align:left; font-size:0.8rem; margin-top:5px; border:1px solid rgba(255,255,255,0.05);">
+                        <thead style="background:rgba(212, 175, 55, 0.1);">
+                            <tr><th style="padding:6px 8px; width:60px;">Lv</th><th style="padding:6px 8px;">効果</th></tr>
+                        </thead><tbody>`;
+                    s.effects.forEach(e => {
+                        effectsText += `<tr style="border-top:1px solid rgba(255,255,255,0.05);">
+                            <td style="padding:6px 8px; color:var(--color-primary); font-weight:bold; white-space: nowrap;">Lv${e.level}${e.name ? ' ' + e.name : ''}</td>
+                            <td style="padding:6px 8px;">${formatEffect(e)}</td>
+                        </tr>`;
+                    });
+                    effectsText += `</tbody></table>`;
+                }
+
+                skHtml += `
+                    <details id="skill-${s.id}" style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 4px; margin-bottom: 0.5rem; margin-left: 0.5rem;">
+                        <summary style="padding: 0.6rem 0.8rem; cursor: pointer; color: var(--color-primary); font-weight: bold; user-select: none; font-size: 0.9rem;">
+                            ${s.name} <span style="font-size: 0.7rem; color: var(--color-text-muted); font-weight: normal; margin-left: 0.5rem;">(最大Lv${s.maxLevel})</span>
+                        </summary>
+                        <div style="padding: 0 0.8rem 0.8rem 0.8rem;">
+                            ${effectsText}
+                        </div>
+                    </details>
+                `;
+            });
+
+            navSkHtml += `</ul></details></li>`;
+            skHtml += `</div>`; // end subcategory
         });
 
         navSkHtml += `</ul></details></li>`;
-        skHtml += `</div>`;
+        skHtml += `</div>`; // end main category
     });
 
     skDb.innerHTML = skHtml;
@@ -460,7 +496,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const decs = weaponDecs[group.id];
             if (decs.length === 0) return;
             decHtml += `
-                <details class="db-item-details" style="margin-bottom: 0.5rem; border: 1px solid rgba(212,175,55,0.2); border-radius: 4px;" open>
+                <details class="db-item-details" style="margin-bottom: 0.5rem; border: 1px solid rgba(212,175,55,0.2); border-radius: 4px;">
                     <summary style="padding: 0.6rem; cursor: pointer; background: rgba(212,175,55,0.05); font-weight: bold; color: var(--color-accent);">
                         ${group.name} (${decs.length})
                     </summary>
@@ -483,7 +519,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const decs = armorDecs[group.id];
             if (decs.length === 0) return;
             decHtml += `
-                <details class="db-item-details" style="margin-bottom: 0.5rem; border: 1px solid rgba(55,155,212,0.2); border-radius: 4px;" open>
+                <details class="db-item-details" style="margin-bottom: 0.5rem; border: 1px solid rgba(55,155,212,0.2); border-radius: 4px;">
                     <summary style="padding: 0.6rem; cursor: pointer; background: rgba(55,155,212,0.05); font-weight: bold; color: #4a90e2;">
                         ${group.name} (${decs.length})
                     </summary>

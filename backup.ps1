@@ -14,20 +14,36 @@ $dateStr = Get-Date -Format "yyyyMMdd_HHmm"
 $zipName = "mhwilds-site_$dateStr.zip"
 $destination = Join-Path $backupDir $zipName
 
-Write-Host "=== MHWilds-Site プロジェクトバックアップ ===" -ForegroundColor Cyan
+Write-Host "=== MHWilds-Site プロジェクト完全バックアップ ===" -ForegroundColor Cyan
 Write-Host "バックアップを作成中..."
 Write-Host "対象: $sourceDir"
 Write-Host "保存先: $destination"
 
-# .git フォルダを除外して圧縮（PowerShell 5.1/7対応）
-# 一時的に除外リストを作成
-$excludeList = @(".git", ".vscode", "node_modules")
-$itemsToZip = Get-ChildItem -Path "$sourceDir\*" -Exclude $excludeList
+# 除外リスト
+$excludePattern = "^(\.git|\.vscode|node_modules|\.gemini|_restore_temp|.*\.zip)$"
+
+# 作業用ディレクトリを作成
+$tempWorkDir = Join-Path $backupDir "temp_backup_work_$dateStr"
+New-Item -ItemType Directory -Path $tempWorkDir -Force | Out-Null
+
+# 必要なファイルをコピー
+Get-ChildItem -Path $sourceDir | ForEach-Object {
+    if ($_.Name -notmatch $excludePattern) {
+        Copy-Item -Path $_.FullName -Destination $tempWorkDir -Recurse -Force
+    }
+}
 
 # 圧縮実行
-Compress-Archive -Path $itemsToZip -DestinationPath $destination -Force
+Compress-Archive -Path "$tempWorkDir\*" -DestinationPath $destination -Force
+
+# 作業用ディレクトリを削除
+Remove-Item -Path $tempWorkDir -Recurse -Force
 
 Write-Host ""
-Write-Host "✅ バックアップが完了しました！" -ForegroundColor Green
-Write-Host "ファイル: $zipName" -ForegroundColor Yellow
-Write-Host "場所: $backupDir"
+if (Test-Path $destination) {
+    Write-Host "✅ バックアップが正常に完了しました！" -ForegroundColor Green
+    Write-Host "ファイル: $zipName" -ForegroundColor Yellow
+    Write-Host "サイズ: $([Math]::Round((Get-Item $destination).Length / 1MB, 2)) MB" -ForegroundColor Gray
+} else {
+    Write-Host "❌ バックアップの作成に失敗しました。" -ForegroundColor Red
+}

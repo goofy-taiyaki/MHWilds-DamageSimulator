@@ -1,4 +1,4 @@
-import { WEAPON_TYPES, WEAPONS, SKILLS, SHARPNESS, RESTORATION_PARTS, RESTORATION_BONUSES, EXCITATION_DATA, EXCITATION_TYPES, MONSTERS, ELEMENT_TYPES, MOTION_VALUES, BUFF_GROUPS } from './data.js';
+import { WEAPON_TYPES, WEAPONS, SKILLS, SHARPNESS, RESTORATION_PARTS, RESTORATION_BONUSES, EXCITATION_DATA, EXCITATION_TYPES, MONSTERS, ELEMENT_TYPES, MOTION_VALUES, BUFF_GROUPS } from '../data.js';
 import { MHWCalculator } from './calculator.js';
 import { findOptimalArtiaConfiguration as runOptimizer } from './modules/optimizer.js';
 import { BuildShare } from './modules/share.js';

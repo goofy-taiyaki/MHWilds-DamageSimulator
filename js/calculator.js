@@ -1,4 +1,4 @@
-import { SHARPNESS, BOWGUN_CORRECTIONS } from './data.js';
+import { SHARPNESS, BOWGUN_CORRECTIONS } from '../data.js';
 
 /**
  * Enhanced Calculator Logic supporting Restoration Bonuses and Monster Hitzones
@@ -232,6 +232,33 @@ export class MHWCalculator {
                         if (this.bowgunSettings.rapidFire) {
                             physicalMultiplier *= (1 + effect.attackMult);
                         }
+                    } else if (skillId === 'minds_eye') {
+                        // 心眼: 物理肉質が44以下の場合に物理乗算を適用
+                        const targetHz = this.hitzone[this.weaponCat] || 0;
+                        if (targetHz <= 44) {
+                            physicalMultiplier *= (1 + effect.attackMult);
+                        }
+                    } else if (skillId === 'skill_ex0i8v') {
+                        // 鈍器使い: Lv1/2は黄以下、Lv3は緑以下で発動
+                        const s = this.sharpness;
+                        let apply = false;
+                        if ((currentLevel === 1 || currentLevel === 2) && ['yellow', 'orange', 'red'].includes(s)) apply = true;
+                        else if (currentLevel === 3 && ['green', 'yellow', 'orange', 'red'].includes(s)) apply = true;
+
+                        if (apply) {
+                            physicalMultiplier *= (1 + effect.attackMult);
+                        }
+                    } else if (skillId === 'skill_fzddcu') {
+                        // 特殊射撃強化: ボウガン・弓の特定アクションのみ適用
+                        const specKeywords = ['竜熱', '圧着竜弾', '起爆竜弾', '竜の一矢', '竜の千々矢', '導ノ矢'];
+                        if (specKeywords.some(k => this.currentMotionName.includes(k))) {
+                            physicalMultiplier *= (1 + effect.attackMult);
+                        }
+                    } else if (skillId === 'skill_y6j609') {
+                        // 高速変形: スラッシュアックス・チャージアックスの変形アクションのみ適用
+                        if ((this.weaponCat === 'sa' || this.weaponCat === 'cb') && this.currentMotionName.includes('変形')) {
+                            physicalMultiplier *= (1 + effect.attackMult);
+                        }
                     } else {
                         physicalMultiplier *= (1 + effect.attackMult);
                     }
@@ -244,7 +271,16 @@ export class MHWCalculator {
                     (skillData.requiresElement === 'any_element' && this.elementType && this.elementType !== 'none');
                 if (canApplyElement) {
                     if (effect.elementAdd) elementAddBonus += effect.elementAdd;
-                    if (effect.elementMult) elementMultiplier *= (1 + effect.elementMult);
+                    if (effect.elementMult) {
+                        if (skillId === 'skill_2utnlo') { // チャージマスター
+                            const chargeKeywords = ['溜め', '溜', 'チャージ', '剛射', '剛連射', '急襲'];
+                            if (chargeKeywords.some(k => this.currentMotionName.includes(k))) {
+                                elementMultiplier *= (1 + effect.elementMult);
+                            }
+                        } else {
+                            elementMultiplier *= (1 + effect.elementMult);
+                        }
+                    }
                     if (effect.elementCritMult) elementCritMultiplier += effect.elementCritMult;
                 }
             }
