@@ -40,6 +40,9 @@
 
 <body>
     <header class="site-header">
+        <div
+            style="position: absolute; top: 10px; left: 20px; font-size: 0.65rem; color: var(--color-text-muted); pointer-events: none; z-index: 100;">
+            ver.1.01.002</div>
         <nav class="site-nav section-container">
             <a href="index.html" class="logo-link">
                 <img src="icon/title.png" alt="DAMAGE _SIMULATOR" class="site-logo">
@@ -69,8 +72,7 @@
 
                 <div class="myset-controls"
                     style="display:flex; flex-direction: column; gap:0.5rem; margin-bottom: 1rem; border-bottom: 1px dashed rgba(212,175,55,0.2); padding-bottom: 1rem;">
-                    <div
-                        style="font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 0.2rem;">
+                    <div style="font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 0.2rem;">
                         現在のマイセット: <span id="current-myset-display"
                             style="color: var(--color-primary); font-weight: bold;">(未保存)</span>
                     </div>
@@ -126,7 +128,8 @@
                     <!-- 1段目: 攻撃力, 会心率, 属性値 -->
                     <div
                         style="display: flex; justify-content: space-around; text-align: center; gap: 0.2rem; margin-bottom: 0.8rem; position: relative; z-index: 2;">
-                        <div style="font-size: 0.8rem; color: var(--color-text-muted);">攻撃力<br><span id="display-attack" class="tabular-nums"
+                        <div style="font-size: 0.8rem; color: var(--color-text-muted);">攻撃力<br><span id="display-attack"
+                                class="tabular-nums"
                                 style="color: white; font-weight: bold; font-size: 1.6rem;">0</span></div>
                         <div style="font-size: 0.8rem; color: var(--color-text-muted);">会心率<br><span
                                 id="display-affinity" class="tabular-nums"
@@ -138,7 +141,8 @@
                     </div>
 
                     <!-- 2段目: 武器種, 武器属性 (横並び) -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-top: 0.8rem; border-top: 1px solid rgba(255,215,0,0.1); padding-top: 0.8rem;">
+                    <div
+                        style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-top: 0.8rem; border-top: 1px solid rgba(255,215,0,0.1); padding-top: 0.8rem;">
                         <div class="input-group" style="margin-bottom: 0;">
                             <label style="font-size: 0.7rem;">武器種</label>
                             <select id="weapon-type-select" style="font-size: 0.8rem;"></select>
@@ -208,8 +212,7 @@
                         </div>
 
                         <!-- 双剣特有補正 -->
-                        <div class="input-group" id="db-settings-container"
-                            style="display: none; margin-top: 0.2rem;">
+                        <div class="input-group" id="db-settings-container" style="display: none; margin-top: 0.2rem;">
                             <label
                                 style="font-size: 0.7rem; color: #ffcc00; display: block; margin-bottom: 0.3rem;">双剣特有補正</label>
                             <div
@@ -222,8 +225,7 @@
                         </div>
 
                         <!-- 太刀特有補正 -->
-                        <div class="input-group" id="ls-settings-container"
-                            style="display: none; margin-top: 0.2rem;">
+                        <div class="input-group" id="ls-settings-container" style="display: none; margin-top: 0.2rem;">
                             <label
                                 style="font-size: 0.7rem; color: #ffcc00; display: block; margin-bottom: 0.3rem;">太刀特有補正</label>
                             <div
@@ -240,8 +242,7 @@
                         </div>
 
                         <!-- スラッシュアックス特有補正 -->
-                        <div class="input-group" id="sa-settings-container"
-                            style="display: none; margin-top: 0.2rem;">
+                        <div class="input-group" id="sa-settings-container" style="display: none; margin-top: 0.2rem;">
                             <label
                                 style="font-size: 0.7rem; color: #ffcc00; display: block; margin-bottom: 0.3rem;">スラッシュアックス特有補正</label>
                             <div
@@ -257,8 +258,7 @@
                         </div>
 
                         <!-- 操虫棍特有補正 -->
-                        <div class="input-group" id="ig-settings-container"
-                            style="display: none; margin-top: 0.2rem;">
+                        <div class="input-group" id="ig-settings-container" style="display: none; margin-top: 0.2rem;">
                             <label
                                 style="font-size: 0.7rem; color: #ffcc00; display: block; margin-bottom: 0.3rem;">操虫棍特有補正</label>
                             <div
@@ -298,8 +298,11 @@
                 </div>
 
                 <!-- 詳細設定を常に表示 -->
-                <div class="artia-static-panel" style="background: rgba(0, 0, 0, 0.15); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 6px; margin-bottom: 1rem; overflow: hidden;">
-                    <div style="padding: 0.6rem 0.8rem; color: var(--color-primary); font-weight: bold; font-size: 0.85rem; background: rgba(212, 175, 55, 0.05); border-bottom: 1px solid rgba(212, 175, 55, 0.2);">詳細設定（加算・復元）</div>
+                <div class="artia-static-panel"
+                    style="background: rgba(0, 0, 0, 0.15); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 6px; margin-bottom: 1rem; overflow: hidden;">
+                    <div
+                        style="padding: 0.6rem 0.8rem; color: var(--color-primary); font-weight: bold; font-size: 0.85rem; background: rgba(212, 175, 55, 0.05); border-bottom: 1px solid rgba(212, 175, 55, 0.2);">
+                        詳細設定（加算・復元）</div>
                     <div class="details-content">
                         <div class="input-group" style="margin-bottom: 0;">
                             <label>激化タイプ</label>
@@ -400,18 +403,19 @@
                     <div id="active-skills-list"
                         style="display: flex; flex-wrap: wrap; gap: 0.4rem; font-size: 0.75rem; min-height: 20px;">
                     </div>
-                    <div style="text-align: right; margin-top: 0.4rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.4rem;">
-                        <button id="btn-clear-skills" 
+                    <div
+                        style="text-align: right; margin-top: 0.4rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.4rem;">
+                        <button id="btn-clear-skills"
                             style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: var(--color-text-muted); font-size: 0.65rem; padding: 0.2rem 0.8rem; border-radius: 4px; cursor: pointer; transition: all 0.2s; outline: none;"
                             onmouseover="this.style.background='rgba(255, 0, 0, 0.15)'; this.style.borderColor='rgba(255, 0, 0, 0.3)'; this.style.color='#ff9999';"
-                            onmouseout="this.style.background='rgba(255, 255, 255, 0.05)'; this.style.borderColor='rgba(255, 255, 255, 0.1)'; this.style.color='var(--color-text-muted)';"
-                        >
+                            onmouseout="this.style.background='rgba(255, 255, 255, 0.05)'; this.style.borderColor='rgba(255, 255, 255, 0.1)'; this.style.color='var(--color-text-muted)';">
                             全スキルをクリア
                         </button>
                     </div>
                 </div>
-                
-                <div class="skill-search-container" style="margin-bottom: 1rem; position: sticky; top: 0; z-index: 100; background: rgba(0,0,0,0.85); padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+
+                <div class="skill-search-container"
+                    style="margin-bottom: 1rem; position: sticky; top: 0; z-index: 100; background: rgba(0,0,0,0.85); padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
                     <div style="display: flex; align-items: center; gap: 0.4rem;">
                         <input type="text" id="skill-search-input" placeholder="スキル名称で検索..."
                             style="flex: 1; padding: 0.6rem; border: 1px solid rgba(212,175,55,0.3); background: rgba(255,255,255,0.05); color: white; border-radius: 4px; font-size: 0.9rem; outline: none;">
@@ -497,8 +501,9 @@
                 <div class="input-group"
                     style="margin-top: 1rem; padding: 0.8rem; background: rgba(50, 205, 50, 0.1); border: 1px solid rgba(50, 205, 50, 0.3); border-radius: 8px;">
                     <label
-                        style="color: #32cd32; font-weight: bold; margin-bottom: 0.4rem; display: block; font-size: 0.8rem;">アーティア構成 最適化</label>
-                    
+                        style="color: #32cd32; font-weight: bold; margin-bottom: 0.4rem; display: block; font-size: 0.8rem;">アーティア構成
+                        最適化</label>
+
                     <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
                         <button id="btn-calculate-optimal" class="btn-primary"
                             style="flex: 1; padding: 0.4rem; background: #32cd32; color: #000; font-weight: bold; font-size: 0.8rem; white-space: nowrap;">最適解を計算</button>
@@ -509,26 +514,37 @@
                     <div id="opt-calculating"
                         style="display: none; font-size: 0.7rem; color: #ffcc00; text-align: center; margin-top: 0.3rem;">
                         計算中...</div>
-                    
+
                     <div id="optimal-result-panel"
                         style="display: none; margin-top: 0.8rem; font-size: 0.8rem; background: rgba(0,0,0,0.4); padding: 1rem; border-radius: 8px; border: 1px solid rgba(50, 205, 50, 0.3);">
-                        <div style="text-align: center; margin-bottom: 0.8rem; padding-bottom: 0.6rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                        <div
+                            style="text-align: center; margin-bottom: 0.8rem; padding-bottom: 0.6rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
                             <div style="font-size: 0.7rem; color: #32cd32; margin-bottom: 0.2rem;">最大期待値</div>
-                            <div id="opt-expected-damage" class="tabular-nums" style="color: #ffcc00; font-weight: bold; font-size: 1.8rem; text-shadow: 0 0 10px rgba(255,204,0,0.3);">0</div>
+                            <div id="opt-expected-damage" class="tabular-nums"
+                                style="color: #ffcc00; font-weight: bold; font-size: 1.8rem; text-shadow: 0 0 10px rgba(255,204,0,0.3);">
+                                0</div>
                         </div>
-                        
+
                         <div style="display: flex; flex-direction: column; gap: 0.6rem;">
                             <div>
-                                <div style="color: var(--color-primary); font-size: 0.7rem; font-weight: bold; margin-bottom: 0.2rem;">激化タイプ</div>
+                                <div
+                                    style="color: var(--color-primary); font-size: 0.7rem; font-weight: bold; margin-bottom: 0.2rem;">
+                                    激化タイプ</div>
                                 <div id="opt-excitation" style="font-size: 0.75rem; margin-left: 0.4rem;"></div>
                             </div>
                             <div>
-                                <div style="color: var(--color-primary); font-size: 0.7rem; font-weight: bold; margin-bottom: 0.2rem;">復元パーツ</div>
-                                <div id="opt-parts" style="font-size: 0.75rem; margin-left: 0.4rem; line-height: 1.3;"></div>
+                                <div
+                                    style="color: var(--color-primary); font-size: 0.7rem; font-weight: bold; margin-bottom: 0.2rem;">
+                                    復元パーツ</div>
+                                <div id="opt-parts" style="font-size: 0.75rem; margin-left: 0.4rem; line-height: 1.3;">
+                                </div>
                             </div>
                             <div>
-                                <div style="color: var(--color-primary); font-size: 0.7rem; font-weight: bold; margin-bottom: 0.2rem;">復元ボーナス</div>
-                                <div id="opt-bonuses" style="font-size: 0.75rem; margin-left: 0.4rem; line-height: 1.3;"></div>
+                                <div
+                                    style="color: var(--color-primary); font-size: 0.7rem; font-weight: bold; margin-bottom: 0.2rem;">
+                                    復元ボーナス</div>
+                                <div id="opt-bonuses"
+                                    style="font-size: 0.75rem; margin-left: 0.4rem; line-height: 1.3;"></div>
                             </div>
                         </div>
                     </div>
@@ -538,8 +554,11 @@
                 <div class="input-group"
                     style="margin-top: 1rem; padding: 0.8rem; background: rgba(0, 102, 204, 0.1); border: 1px solid rgba(0, 102, 204, 0.3); border-radius: 8px;">
                     <label
-                        style="color: #3399ff; font-weight: bold; margin-bottom: 0.4rem; display: block; font-size: 0.8rem;">防具セット検索 (ASST)</label>
-                    <p style="font-size: 0.7rem; color: var(--color-text-muted); margin-bottom: 0.6rem; line-height: 1.3;">現在のスキル構成を満たす防具の組み合わせを探します。</p>
+                        style="color: #3399ff; font-weight: bold; margin-bottom: 0.4rem; display: block; font-size: 0.8rem;">防具セット検索
+                        (ASST)</label>
+                    <p
+                        style="font-size: 0.7rem; color: var(--color-text-muted); margin-bottom: 0.6rem; line-height: 1.3;">
+                        現在のスキル構成を満たす防具の組み合わせを探します。</p>
                     <button id="btn-search-armor" class="btn-primary"
                         style="width: 100%; padding: 0.5rem; background: #0066cc; color: #fff; font-weight: bold; font-size: 0.85rem;">
                         この構成で実現可能か検索

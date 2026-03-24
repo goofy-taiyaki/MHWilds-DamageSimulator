@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Equipment Set Viewer | MHWilds Simulation</title>
+    <style>
+        :root {
+            --bg-color: #0c111d;
+            --panel-bg: #141a26;
+            --accent-color: #ffcc00;
+            --text-color: #eee;
+            --text-muted: #aaa;
+            --border-color: #2a3448;
+            --highlight-bg: #1e2636;
+            --skill-lv-color: #ffcc00;
+            --weapon-color: #66ccff;
+            --series-color: #ff9900;
+            --group-color: #00cc88;
+        }
+
+        body {
+            font-family: 'Times New Roman', "MS Mincho", serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .set-container {
+            width: 1040px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            padding: 30px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 12px;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            color: var(--accent-color);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .stats-summary {
+            font-size: 1rem;
+            font-variant-numeric: tabular-nums;
+            color: #ccc;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 460px 1fr;
+            gap: 40px;
+        }
+
+        /* 左側: 装備リスト */
+        .equipment-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .equip-item {
+            position: relative;
+            padding-left: 15px;
+            border-left: 3px solid transparent;
+        }
+
+        .equip-label {
+            position: absolute;
+            left: -25px;
+            top: 4px;
+            color: var(--weapon-color);
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        .equip-name {
+            font-size: 1.15rem;
+            font-weight: bold;
+            margin-bottom: 6px;
+            color: #fff;
+        }
+
+        .equip-sub {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .slots-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .slot-box {
+            background: #000;
+            padding: 1px 6px;
+            border: 1px solid #555;
+            border-radius: 3px;
+            color: var(--accent-color);
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .deco-name {
+            color: #b0c4de;
+            font-size: 0.75rem;
+            margin-right: 8px;
+            border-bottom: 1px solid rgba(176, 196, 222, 0.3);
+        }
+
+        .native-skills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            font-size: 0.75rem;
+        }
+
+        .skill-tag { color: #ccc; }
+        .series-tag { color: var(--series-color); }
+        .group-tag { color: var(--group-color); }
+
+        /* 右側: スキル合計 */
+        .skills-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .skills-table th {
+            text-align: center;
+            border-bottom: 2px solid var(--border-color);
+            padding: 10px 5px;
+            color: var(--weapon-color);
+            font-weight: normal;
+        }
+
+        .skills-table td {
+            padding: 8px 5px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .skills-table .skill-name-col {
+            text-align: left;
+            font-weight: bold;
+            color: #fff;
+            padding-left: 10px;
+        }
+
+        .skills-table .total-col {
+            color: var(--skill-lv-color);
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .val-none { color: #333; }
+
+    </style>
+</head>
+<body>
+    <div class="set-container">
+        <div class="header">
+            <h1>SET #SIM_VERIFY</h1>
+            <div class="stats-summary">防御力: 562 &nbsp; 耐性: 15 / -4 / 3 / 2 / 12</div>
+        </div>
+
+        <div class="main-content">
+            <div class="equipment-list" id="equip-list"></div>
+            <div class="totals-panel">
+                <table class="skills-table">
+                    <thead>
+                        <tr>
+                            <th class="skill-name-col">スキル合計</th>
+                            <th>武</th><th>頭</th><th>胴</th><th>腕</th><th>腰</th><th>脚</th><th>石</th>
+                            <th style="color:var(--skill-lv-color)">計</th>
+                        </tr>
+                    </thead>
+                    <tbody id="skills-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { ARMOR } from './js/data/armor.js';
+        import { DECORATIONS } from './js/data/decorations.js';
+        import { SKILLS } from './js/data/skills.js';
+
+        const SKILL_NAME_TO_ID = Object.fromEntries(SKILLS.map(s => [s.name, s.id]));
+        const SKILL_BY_ID = Object.fromEntries(SKILLS.map(s => [s.id, s]));
+
+        const setConfig = {
+            parts: [
+                { label: "武", name: "黒蝕竜武器", slots: [3, 2, 3], decos: ["超心珠Ⅲ【３】", "超心珠Ⅱ【２】", "達人珠Ⅲ【３】"], ss: "黒蝕竜の力", gs: "ヌシの魂" },
+                { label: "頭", name: "クイーンピアスα", slots: [3, 1, 1], decos: ["挑戦珠【3】", "早食珠【1】", "早食珠【1】"] },
+                { label: "胴", name: "エグゾルスメイルγ", slots: [3, 3, 0], decos: ["反攻珠【３】", "刺撃珠【3】"] },
+                { label: "腕", name: "護火竜アームβ", slots: [3, 2, 1], decos: ["挑戦珠【3】", "逆襲珠【２】", "早食珠【1】"] },
+                { label: "腰", name: "護火竜コイルβ", slots: [3, 3, 1], decos: ["挑戦珠【3】", "挑戦珠【3】", "抗狂珠【1】"] },
+                { label: "脚", name: "トゥナムルグリーヴγ", slots: [3, 1, 1], decos: ["全開珠【3】", "抗狂珠【1】", "耐龍珠【１】"] },
+                { label: "石", name: "栄世の護石RERA 8", slots: [1, 1, 1], decos: ["達人珠【１】", "耐龍珠【１】", "耐龍珠【１】"], skills: { "達人芸": 1, "属性変換": 1 } }
+            ]
+        };
+
+        // スキルの順序定義 (カテゴリ＋内部順序)
+        const PREFERRED_ORDER = [
+            "攻撃", "超会心", "見切り", "挑戦者", "弱点特効", "力の解放", "連撃", "逆襲", "巧撃", "鎖刃刺撃", 
+            "早食い", "納刀術", "広域化", "無我の境地", "風圧耐性", "龍耐性", "達人芸", "属性変換"
+        ];
+
+
+        function render() {
+            const skillMatrix = {}; 
+            let equipHtml = "";
+            
+            setConfig.parts.forEach((p, pIdx) => {
+                const weaponNameDisplay = (p.label === "武") ? ( (p.ss || p.gs) ? "巨戟アーティア" : "その他" ) : p.name;
+                const armorData = ARMOR.find(a => a.n === p.name);
+                const localSkills = [];
+                
+                const addPtsToMatrix = (sid, n) => {
+                    if (!sid) return;
+                    if (!skillMatrix[sid]) skillMatrix[sid] = [0,0,0,0,0,0,0,0];
+                    skillMatrix[sid][pIdx] += n;
+                    skillMatrix[sid][7] += n;
+                };
+
+                if (armorData) {
+                    if (armorData.sk) armorData.sk.forEach(s => { const sid = SKILL_NAME_TO_ID[s.n]; addPtsToMatrix(sid, s.l); localSkills.push({n: s.n, l: s.l, type:'sk'}); });
+                    if (armorData.ss) { const sid = SKILL_NAME_TO_ID[armorData.ss]; addPtsToMatrix(sid, 1); localSkills.push({n: armorData.ss, type:'ss'}); }
+                    if (armorData.gs) { const sid = SKILL_NAME_TO_ID[armorData.gs]; addPtsToMatrix(sid, 1); localSkills.push({n: armorData.gs, type:'gs'}); }
+                }
+                if (p.ss) { const sid = SKILL_NAME_TO_ID[p.ss]; addPtsToMatrix(sid, 1); localSkills.push({n: p.ss, type:'ss'}); }
+                if (p.gs) { const sid = SKILL_NAME_TO_ID[p.gs]; addPtsToMatrix(sid, 1); localSkills.push({n: p.gs, type:'gs'}); }
+                if (p.skills) Object.entries(p.skills).forEach(([name, l]) => { const sid = SKILL_NAME_TO_ID[name]; addPtsToMatrix(sid, l); localSkills.push({n: name, l, type:'sk'}); });
+
+                const decoLabels = [];
+                p.decos.forEach(dname => {
+                    const deco = DECORATIONS.find(d => d.n === dname);
+                    if (deco) {
+                        deco.sk.forEach(s => { addPtsToMatrix(SKILL_NAME_TO_ID[s.n], s.l); });
+                        decoLabels.push(`<span class="deco-name">${dname}</span>`);
+                    }
+                });
+
+                equipHtml += `
+                <div class="equip-item">
+                    <div class="equip-label">${p.label}</div>
+                    <div class="equip-name">${weaponNameDisplay}</div>
+                    <div class="equip-sub">防: ${armorData?.d || '--'} 耐: ${armorData?.r?.join('/') || '--/--/--/--/--'}</div>
+                    <div class="native-skills">
+                        ${localSkills.map(s => {
+                            let prefix = s.type === 'ss' ? '<span class="series-tag">[S] ' : (s.type === 'gs' ? '<span class="group-tag">[G] ' : '<span class="skill-tag">');
+                            return `${prefix}${s.n}${s.l ? ' Lv'+s.l : ''}</span>`;
+                        }).join(' ')}
+                    </div>
+                    <div class="slots-row">
+                        ${p.slots.filter(s => s > 0).map(s => `<span class="slot-box">[${s}]</span>`).join('')}
+                        ${decoLabels.join(' ')}
+                    </div>
+                </div>`;
+            });
+
+            document.getElementById('equip-list').innerHTML = equipHtml;
+
+            // 表示するスキルのフィルタリングと重層ソート
+            const idsToShow = Object.keys(skillMatrix).filter(sid => {
+                const s = SKILL_BY_ID[sid];
+                if (s.mainCategory === 'series') return skillMatrix[sid][7] >= 2; 
+                if (s.mainCategory === 'group') return skillMatrix[sid][7] >= 3;  
+                return true;
+            }).sort((a,b) => {
+                const sA = SKILL_BY_ID[a], sB = SKILL_BY_ID[b];
+                const rowA = skillMatrix[a], rowB = skillMatrix[b];
+                
+                // 1. カテゴリ (武器 w, 防具 a, 補助 r/s, 特殊 ss/gs)
+                const catOrder = { 'weapon': 0, 'armor': 1, 'resistance': 2, 'support': 3, 'series': 4, 'group': 5 };
+                const catA = catOrder[sA.mainCategory || 'support'];
+                const catB = catOrder[sB.mainCategory || 'support'];
+                if (catA !== catB) return catA - catB;
+
+                // 2. レベル順 (大きい順)
+                const lvlA = Math.min(rowA[7], sA.maxLevel || 10);
+                const lvlB = Math.min(rowB[7], sB.maxLevel || 10);
+                if (lvlA !== lvlB) return lvlB - lvlA;
+
+                // 3. 優先スキル順 (インデックス順)
+                const idxA = PREFERRED_ORDER.indexOf(sA.name);
+                const idxB = PREFERRED_ORDER.indexOf(sB.name);
+                if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+                if (idxA !== -1) return -1;
+                if (idxB !== -1) return 1;
+
+                return 0;
+            });
+
+
+            let bodyHtml = "";
+            idsToShow.forEach(sid => {
+                const s = SKILL_BY_ID[sid];
+                const row = skillMatrix[sid];
+                let nameDisp = s.name;
+                let totalLvl = `Lv${Math.min(row[7], s.maxLevel)}`;
+
+                if (s.mainCategory === 'series') {
+                    const pts = row[7];
+                    let lvl = (pts >= 4) ? 2 : (pts >= 2 ? 1 : 0);
+                    if (lvl === 0) return; // 非表示
+                    const eff = s.effects.find(e => e.level === lvl); 
+                    nameDisp = eff ? eff.name : s.name;
+                    totalLvl = `Lv${lvl}`;
+                } else if (s.mainCategory === 'group') {
+
+                    if (row[7] < 3) return; // 3点未満は非表示
+                    nameDisp = s.effects[0].name; // グループ名は出さない
+                    totalLvl = "Lv1";
+                }
+
+                bodyHtml += `
+                <tr>
+                    <td class="skill-name-col">${nameDisp}</td>
+                    ${row.slice(0, 7).map(v => `<td class="${v===0?'val-none':''}">${v||'-'}</td>`).join('')}
+                    <td class="total-col">${totalLvl}</td>
+                </tr>`;
+            });
+            document.getElementById('skills-body').innerHTML = bodyHtml;
+        }
+
+        render();
+    </script>
+</body>
+</html>

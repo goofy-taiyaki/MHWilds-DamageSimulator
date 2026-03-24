@@ -226,12 +226,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 subSkills.forEach(skill => {
                     const row = document.createElement('div');
                     row.className = 'skill-selector-row';
+                    const effectName = (skill.effects && skill.effects[0]) ? skill.effects[0].name : null;
+                    let displayName = (skill.mainCategory === 'series' || skill.mainCategory === 'group') && effectName ? effectName : skill.name;
+                    // シリーズスキルのリスト表示用ラベルからはローマ数字(Ⅰ, Ⅱ...)を削除
+                    if (skill.mainCategory === 'series' || skill.mainCategory === 'group') {
+                        displayName = displayName.replace(/[ⅠⅡⅢⅣⅤ]$/, '').trim();
+                    }
                     row.innerHTML = `
-                        <div class="skill-name" title="${skill.name}">${skill.name}</div>
+                        <div class="skill-name" title="${skill.name}">${displayName}</div>
                         <select id="skill-${skill.id}" data-skill-id="${skill.id}">
                             ${Array.from({ length: skill.maxLevel + 1 }, (_, i) => {
-                                const levelName = (i > 0 && skill.effects && skill.effects[i-1] && skill.effects[i-1].name) ? ` (${skill.effects[i-1].name})` : '';
-                                return `<option value="${i}">${i === 0 ? '---' : 'Lv.' + i + levelName}</option>`;
+                                if (i === 0) return `<option value="0">---</option>`;
+                                const effect = (skill.effects && skill.effects[i-1]) ? skill.effects[i-1] : null;
+                                let label = `Lv.${i}`;
+                                if (skill.mainCategory === 'series' || skill.mainCategory === 'group') {
+                                    // シリーズ・グループスキルは効果名のみを表示（黒蝕一体Ⅰなど）
+                                    label = effect && effect.name ? effect.name : `${skill.name} Lv.${i}`;
+                                } else {
+                                    // 通常スキルは Lv.X (効果名) の形式
+                                    const levelName = effect && effect.name ? ` (${effect.name})` : '';
+                                    label = `Lv.${i}${levelName}`;
+                                }
+                                return `<option value="${i}">${label}</option>`;
                             }).join('')}
                         </select>
                     `;
@@ -677,10 +693,20 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 activeSKillData.forEach(skill => {
                     const badge = document.createElement('span');
-                    badge.style.cssText = 'background: rgba(212, 175, 55, 0.2); color: #fff; padding: 3px 8px; border-radius: 4px; border: 1px solid rgba(212, 175, 55, 0.3); display: inline-block; word-break: keep-all; font-weight: 500;';
+                    badge.style.cssText = 'background: rgba(212, 175, 55, 0.2); color: #fff; padding: 3px 8px; border-radius: 4px; border: 1px solid rgba(212, 175, 55, 0.3); display: inline-block; word-break: keep-all; font-weight: 500; font-size: 0.8rem;';
                     const effect = skill.effects ? skill.effects[skill.currentLevel - 1] : null;
-                    const levelName = effect && effect.name ? `【${effect.name}】` : '';
-                    badge.textContent = `${skill.name}${levelName} Lv${skill.currentLevel}`;
+                    
+                    let displayName = "";
+                    if (skill.mainCategory === 'series' || skill.mainCategory === 'group') {
+                        // シリーズ・グループスキルは効果名のみ表示（黒蝕一体Ⅰなど）
+                        displayName = effect ? effect.name : skill.name;
+                    } else {
+                        // 通常スキルは 名前【効果名】 LvX
+                        const levelName = effect && effect.name ? `【${effect.name}】` : '';
+                        displayName = `${skill.name}${levelName} Lv${skill.currentLevel}`;
+                    }
+                    
+                    badge.textContent = displayName;
                     activeSkillsList.appendChild(badge);
                 });
             }

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,26 +9,42 @@
     <link rel="stylesheet" href="css/style.css">
     <style>
         :root {
-            --color-bg: #0a0a0c;
-            --color-surface: #141418;
-            --color-border: #2a2a30;
-            --color-primary: #3399ff;
-            --color-secondary: #224466;
-            --color-accent: #ffcc00;
-            --color-text: #e0e0e0;
-            --color-text-muted: #888890;
+            --bg-color: #0c111d;
+            --panel-bg: #141a26;
+            --accent-color: #ffcc00;
+            --text-color: #eee;
+            --text-muted: #aaa;
+            --border-color: #2a3448;
+            --highlight-bg: #1e2636;
+            --skill-lv-color: #ffcc00;
+            --weapon-color: #66ccff;
+            --color-series: #ff9900;
+            --color-group: #00cc88;
             --font-main: 'Outfit', sans-serif;
-            --font-serif: 'Noto Serif JP', serif;
+            --font-serif: 'Times New Roman', "MS Mincho", serif;
+
+            /* Legacy vars for compatibility if any */
+            --color-primary: #3399ff;
+            --color-accent: #ffcc00;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: var(--font-serif);
+        }
+
         body {
-            background-color: var(--color-bg);
-            color: var(--color-text);
+            background-color: var(--bg-color);
+            color: var(--text-color);
             font-family: var(--font-main);
             line-height: 1.6;
             -webkit-font-smoothing: antialiased;
         }
+
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -84,43 +101,51 @@
         .results-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 2rem;
+            gap: 3rem;
         }
 
         .result-card {
-            background: var(--color-surface);
-            border-radius: 12px;
-            border: 1px solid var(--color-border);
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
             overflow: hidden;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .result-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            border-color: var(--color-primary);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            max-width: 1040px;
+            margin: 0 auto;
         }
 
         .result-header {
-            padding: 1rem 1.5rem;
-            background: rgba(51, 153, 255, 0.1);
-            border-bottom: 1px solid var(--color-border);
+            padding: 12px 30px;
+            border-bottom: 2px solid var(--border-color);
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-end;
+            background: transparent;
+        }
+
+        .set-id-tag {
+            margin: 0;
+            font-size: 1.8rem;
+            color: var(--accent-color);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            font-family: var(--font-serif);
         }
 
         .defense-info {
-            font-size: 0.8rem;
-            color: var(--color-text-muted);
+            font-size: 1rem;
+            font-variant-numeric: tabular-nums;
+            color: #ccc;
+            font-family: var(--font-serif);
         }
 
         .result-body {
-            padding: 1.5rem;
+            padding: 30px;
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
+            grid-template-columns: 460px 1fr;
+            gap: 40px;
         }
+
 
         @media (max-width: 768px) {
             .result-body {
@@ -128,264 +153,145 @@
             }
         }
 
-        .armor-list {
-            list-style: none;
+        .equipment-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
-        .armor-item {
-            margin-bottom: 1rem;
+        .equip-item {
+            position: relative;
+            padding-left: 15px;
+            border-left: 3px solid transparent;
+        }
+
+        .equip-label {
+            position: absolute;
+            left: -25px;
+            top: 4px;
+            color: var(--weapon-color);
             font-size: 0.85rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            padding-bottom: 0.8rem;
-        }
-
-        .armor-item:last-child {
-            border-bottom: none;
-        }
-
-        .armor-main {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 4px;
-        }
-
-        .armor-part {
-            color: var(--color-primary);
-            font-weight: 600;
-            width: 40px;
-            flex-shrink: 0;
-        }
-
-        .armor-name {
-            flex: 1;
-            color: #fff;
             font-weight: bold;
         }
 
-        .armor-stats {
-            display: flex;
-            gap: 12px;
-            font-size: 0.75rem;
-            color: var(--color-text-muted);
-            margin-bottom: 4px;
-            padding-left: 40px;
-        }
-
-        .stat-val {
+        .equip-name {
+            font-size: 1.15rem;
+            font-weight: bold;
+            margin-bottom: 6px;
+            color: #fff;
             font-family: var(--font-serif);
-            font-weight: bold;
-            color: #fff; /* 全て白に変更 */
-            font-variant-numeric: tabular-nums;
         }
 
-        /* 武器装飾品ピッカー */
-        .weapon-deco-picker {
-            padding: 4px 8px;
-            background: #111;
-            border: 1px solid #444;
-            color: #fff;
+        .equip-sub {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-family: var(--font-serif);
+        }
+
+        .native-skills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
             font-size: 0.75rem;
-            border-radius: 4px;
-            cursor: pointer;
-            min-height: 28px;
+            margin-bottom: 8px;
+            font-family: var(--font-serif);
+        }
+
+        .piece-skill-label { color: #ccc; }
+        .special-ss { color: var(--color-series); }
+        .special-gs { color: var(--color-group); }
+
+        .slots-row {
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 4px;
         }
-        .weapon-deco-picker:hover {
-            border-color: var(--color-accent);
-            background: #1a1a1a;
+
+        .slot-box {
+            background: #000;
+            padding: 1px 6px;
+            border: 1px solid #555;
+            border-radius: 3px;
+            color: var(--accent-color);
+            font-size: 0.8rem;
+            font-weight: bold;
         }
-        
-        /* ピッカー用モーダル */
-        #deco-picker-modal {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 320px;
-            max-height: 80vh;
-            background: #111;
-            border: 1px solid var(--color-accent);
-            z-index: 9999;
-            display: none;
-            flex-direction: column;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        #deco-picker-header {
-            padding: 10px;
-            background: #1a1a1a;
-            border-bottom: 1px solid #333;
+
+        .decos-inline {
             display: flex;
-            flex-direction: column;
+            flex-wrap: wrap;
             gap: 8px;
         }
-        #deco-picker-search {
-            width: 100%;
-            padding: 6px 10px;
-            background: #000;
-            color: #fff;
-            border: 1px solid #444;
-            font-size: 0.8rem;
-            outline: none;
-        }
-        #deco-picker-list {
-            overflow-y: auto;
-            flex: 1;
-        }
-        .deco-pick-item {
-            padding: 8px 12px;
-            border-bottom: 1px solid #222;
-            cursor: pointer;
-            font-size: 0.8rem;
-            color: #ccc;
-        }
-        .deco-pick-item:hover {
-            background: #222;
-            color: #fff;
-        }
-        .deco-pick-item.none {
-            color: #777;
-            font-style: italic;
-        }
-        #deco-picker-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.7);
-            z-index: 9998;
-            display: none;
-        }
 
-        /* 耐性フィルター行 */
-        .res-filter-row {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            background: #111;
-            padding: 4px 8px;
-            border-radius: 4px;
-            border: 1px solid #333;
-        }
-        .res-filter-row span {
-            font-size: 0.65rem;
-            flex: 1;
-        }
-        .res-filter-row input {
-            width: 40px;
-            height: 20px;
-            background: #000;
-            border: 1px solid #444;
-            color: #fff;
+        .deco-label {
+            color: #b0c4de;
             font-size: 0.75rem;
-            text-align: center;
-        }
-        .res-filter-remove {
-            color: #ff4d4d;
-            cursor: pointer;
-            font-size: 0.8rem;
-            font-weight: bold;
-            padding: 0 4px;
-        }
-
-        .skill-summary {
-            overflow-x: auto;
+            border-bottom: 1px solid rgba(176, 196, 222, 0.3);
         }
 
         .skill-table {
+
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.85rem;
-            color: var(--color-text);
-            font-variant-numeric: tabular-nums;
+            font-size: 0.9rem;
+            font-family: var(--font-serif);
         }
 
         .skill-table th {
             text-align: center;
-            padding: 4px 2px;
-            border-bottom: 2px solid var(--color-border);
-            color: var(--color-primary);
-            font-weight: 600;
-            white-space: nowrap;
+            border-bottom: 2px solid var(--border-color);
+            padding: 10px 5px;
+            color: var(--weapon-color);
+            font-weight: normal;
         }
 
         .skill-table td {
-            text-align: center;
-            padding: 6px 2px;
+            padding: 8px 5px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .skill-table tr:hover td {
-            background: rgba(255, 255, 255, 0.02);
-        }
-
-        .skill-table td:first-child {
-            text-align: left;
-            color: #fff;
-            font-weight: bold;
-            min-width: 80px;
-            max-width: 120px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .skill-table .total-cell {
-            color: var(--color-accent);
-            font-weight: bold;
             text-align: center;
-            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
         }
 
-        .skill-table .val-cell {
-            width: 30px;
+        .skill-table .skill-name-cell {
+            text-align: left;
+            font-weight: bold;
+            color: #fff;
+            padding-left: 10px;
         }
 
-        .skill-table .empty-cell {
-            color: var(--color-text-muted);
-            opacity: 0.2;
+        .total-header, .total-cell {
+            color: var(--skill-lv-color);
+            font-weight: bold;
+            font-size: 1rem;
         }
 
-        .piece-skills {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-            padding-left: 40px;
+        .val-cell {
+            color: #eee;
         }
 
-        .piece-skill-label {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: var(--color-text);
-            padding: 0px 6px;
-            border-radius: 4px;
-            font-size: 0.7rem;
+        .empty-cell {
+            color: #333;
         }
 
-        .special-skill-label {
-            color: var(--color-accent);
-            font-size: 0.7rem;
-            margin-right: 4px;
+        .stat-val {
+            font-weight: bold;
+            color: #fff;
+            font-variant-numeric: tabular-nums;
         }
 
-        .decoration-list {
-            font-size: 0.75rem;
-            color: #3399ff;
-            margin-top: 4px;
-            padding-left: 40px;
-        }
 
         .target-skill-badge {
-            background: rgba(51, 153, 255, 0.15); 
-            border: 1px solid rgba(51, 153, 255, 0.3); 
-            padding: 2px 8px; 
-            border-radius: 4px; 
-            font-size: 0.8rem; 
-            color: #fff; 
-            margin-right: 0.5rem; 
-            display: inline-block; 
+            background: rgba(51, 153, 255, 0.15);
+            border: 1px solid rgba(51, 153, 255, 0.3);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            color: #fff;
+            margin-right: 0.5rem;
+            display: inline-block;
             margin-bottom: 0.3rem;
             font-variant-numeric: tabular-nums;
         }
@@ -424,8 +330,13 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         .deco-label {
@@ -556,9 +467,6 @@
 
         .skill-search-container {
             margin-bottom: 1rem;
-            position: sticky;
-            top: 0;
-            z-index: 10;
             background: var(--color-surface);
             padding: 0.5rem 0;
         }
@@ -593,10 +501,118 @@
             align-items: center;
             gap: 4px;
         }
+
+        @media (max-width: 1000px) {
+            .settings-grid {
+                grid-template-columns: 1fr !important;
+                gap: 1.5rem !important;
+            }
+        }
+
+        /* 武器装飾品ピッカー追加スタイル */
+        #deco-picker-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+        }
+        #deco-picker-modal {
+            display: none;
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%; max-width: 500px;
+            max-height: 80vh;
+            background: var(--panel-bg);
+            border: 1px solid var(--accent-color);
+            border-radius: 8px;
+            flex-direction: column;
+            z-index: 1001;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+        }
+        #deco-picker-header {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        #deco-picker-search {
+            width: 100%;
+            margin-top: 10px;
+            padding: 8px;
+            background: #000;
+            border: 1px solid #444;
+            color: #fff;
+            border-radius: 4px;
+        }
+        #deco-picker-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 5px;
+        }
+        .deco-pick-item {
+            padding: 10px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .deco-pick-item:hover {
+            background: rgba(255, 204, 0, 0.1);
+            border-color: var(--accent-color);
+        }
+        .deco-pick-item.none {
+            color: #ff6666;
+            text-align: center;
+            border-style: dashed;
+        }
+
+        .weapon-deco-picker {
+            padding: 6px 10px;
+            background: #000;
+            border: 1px solid #444;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            color: #ccc;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .weapon-deco-picker:hover {
+            border-color: var(--accent-color);
+            color: #fff;
+        }
+        .weapon-deco-picker::after {
+            content: '▼';
+            font-size: 0.6rem;
+            opacity: 0.5;
+        }
+
+        .slots-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-top: 6px;
+        }
+        .slots-stack .slots-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
     </style>
 </head>
+
 <body>
     <header class="site-header">
+        <div
+            style="position: absolute; top: 10px; left: 20px; font-size: 0.65rem; color: var(--color-text-muted); pointer-events: none; z-index: 100;">
+            ver.1.01.002</div>
         <nav class="site-nav container">
             <a href="index.html" class="logo-link">
                 <img src="icon/title.png" alt="ASST" class="site-logo">
@@ -613,27 +629,50 @@
 
     <div class="container">
         <div class="search-status" style="flex-direction: column; align-items: stretch; gap: 1rem;">
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 0.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--color-border);">
+            <div class="settings-grid"
+                style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 0.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--color-border);">
                 <!-- Weapon Settings -->
                 <div class="input-group">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
                         <label style="font-size: 0.75rem; color: var(--color-primary); font-weight: bold;">武器設定</label>
                     </div>
                     <div style="display: flex; flex-direction: column; gap: 0.4rem;">
                         <div style="display: flex; gap: 0.4rem; align-items: center;">
                             <label style="font-size: 0.65rem; color: var(--color-text-muted); width: 45px;">シリーズ</label>
-                            <select id="weapon-ss" style="flex: 1; height: 28px; background: #000; color: #fff; border: 1px solid #444; font-size: 0.7rem;"><option value="">自動選択</option></select>
+                            <select id="weapon-ss"
+                                style="flex: 1; height: 28px; background: #000; color: #fff; border: 1px solid #444; font-size: 0.7rem;">
+                                <option value="">自動選択</option>
+                            </select>
                         </div>
                         <div style="display: flex; gap: 0.4rem; align-items: center;">
                             <label style="font-size: 0.65rem; color: var(--color-text-muted); width: 45px;">グループ</label>
-                            <select id="weapon-gs" style="flex: 1; height: 28px; background: #000; color: #fff; border: 1px solid #444; font-size: 0.7rem;"><option value="">自動選択</option></select>
+                            <select id="weapon-gs"
+                                style="flex: 1; height: 28px; background: #000; color: #fff; border: 1px solid #444; font-size: 0.7rem;">
+                                <option value="">自動選択</option>
+                            </select>
                         </div>
                         <div style="margin-top: 4px; border-top: 1px dashed #333; padding-top: 8px;">
-                            <label style="font-size: 0.7rem; color: var(--color-accent); font-weight: bold; display: block; margin-bottom: 4px;">武器装飾品 [3] [3] [3]</label>
-                            <div style="display: flex; flex-direction: column; gap: 4px;">
-                                <div class="weapon-deco-picker" id="wdeco-1" data-slot="1">未選択</div>
-                                <div class="weapon-deco-picker" id="wdeco-2" data-slot="2">未選択</div>
-                                <div class="weapon-deco-picker" id="wdeco-3" data-slot="3">未選択</div>
+                            <label style="font-size: 0.7rem; color: var(--color-accent); font-weight: bold; display: block; margin-bottom: 4px;">武器装飾品 (スロットサイズ設定)</label>
+                            <div style="display: flex; flex-direction: column; gap: 6px;">
+                                <div style="display: flex; gap: 4px; align-items: center;">
+                                    <select id="wslot-1" class="wslot-size-select" style="width: 45px; height: 24px; font-size: 0.65rem;">
+                                        <option value="3">[3]</option><option value="2">[2]</option><option value="1">[1]</option><option value="0">なし</option>
+                                    </select>
+                                    <div class="weapon-deco-picker" id="wdeco-1" style="flex: 1;">未選択</div>
+                                </div>
+                                <div style="display: flex; gap: 4px; align-items: center;">
+                                    <select id="wslot-2" class="wslot-size-select" style="width: 45px; height: 24px; font-size: 0.65rem;">
+                                        <option value="3">[3]</option><option value="2">[2]</option><option value="1">[1]</option><option value="0">なし</option>
+                                    </select>
+                                    <div class="weapon-deco-picker" id="wdeco-2" style="flex: 1;">未選択</div>
+                                </div>
+                                <div style="display: flex; gap: 4px; align-items: center;">
+                                    <select id="wslot-3" class="wslot-size-select" style="width: 45px; height: 24px; font-size: 0.65rem;">
+                                        <option value="3">[3]</option><option value="2">[2]</option><option value="1">[1]</option><option value="0">なし</option>
+                                    </select>
+                                    <div class="weapon-deco-picker" id="wdeco-3" style="flex: 1;">未選択</div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -641,38 +680,62 @@
 
                 <!-- Talisman Settings -->
                 <div class="input-group">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
                         <label style="font-size: 0.75rem; color: var(--color-primary); font-weight: bold;">お守り設定</label>
                         <div style="display: flex; align-items: center; gap: 4px;">
                             <input type="checkbox" id="talisman-auto" checked>
-                            <label for="talisman-auto" style="font-size: 0.7rem; color: var(--color-accent); cursor: pointer;">自動選択</label>
+                            <label for="talisman-auto"
+                                style="font-size: 0.7rem; color: var(--color-accent); cursor: pointer;">自動選択</label>
                         </div>
                     </div>
-                    <div id="talisman-selector-ui" style="display: flex; flex-direction: column; gap: 0.4rem; opacity: 0.5; pointer-events: none;">
+                    <div id="talisman-selector-ui"
+                        style="display: flex; flex-direction: column; gap: 0.4rem; opacity: 0.5; pointer-events: none;">
                         <div style="display: flex; gap: 0.4rem;">
-                            <select id="talisman-rare" style="flex: 1; height: 28px; background: #000; color: #fff; border: 1px solid #444; font-size: 0.7rem;">
+                            <select id="talisman-rare"
+                                style="flex: 1; height: 28px; background: #000; color: #fff; border: 1px solid #444; font-size: 0.7rem;">
                                 <option value="any">全レア度</option>
                                 <option value="5">RARE 5</option>
                                 <option value="6">RARE 6</option>
                                 <option value="7">RARE 7</option>
                                 <option value="8">RARE 8</option>
                             </select>
-                            <select id="talisman-slot-select" style="flex: 1; height: 28px; background: #000; color: #fff; border: 1px solid #444; font-size: 0.7rem;">
+                            <select id="talisman-slot-select"
+                                style="flex: 1; height: 28px; background: #000; color: #fff; border: 1px solid #444; font-size: 0.7rem;">
                                 <option value="any">スロット指定</option>
                             </select>
                         </div>
-                        <select id="talisman-skill-1" style="width: 100%; height: 28px; background: #000; color: #fff; border: 1px solid #444; font-size: 0.75rem;"><option value="any">第1スキル：指定なし</option></select>
-                        <select id="talisman-skill-2" style="width: 100%; height: 28px; background: #000; color: #fff; border: 1px solid #444; font-size: 0.75rem;"><option value="any">第2スキル：指定なし</option></select>
-                        <select id="talisman-skill-3" style="width: 100%; height: 28px; background: #000; color: #fff; border: 1px solid #444; font-size: 0.75rem;"><option value="any">第3スキル：指定なし</option></select>
+                        <select id="talisman-skill-1"
+                            style="width: 100%; height: 28px; background: #000; color: #fff; border: 1px solid #444; font-size: 0.75rem;">
+                            <option value="any">第1スキル：指定なし</option>
+                        </select>
+                        <select id="talisman-skill-2"
+                            style="width: 100%; height: 28px; background: #000; color: #fff; border: 1px solid #444; font-size: 0.75rem;">
+                            <option value="any">第2スキル：指定なし</option>
+                        </select>
+                        <select id="talisman-skill-3"
+                            style="width: 100%; height: 28px; background: #000; color: #fff; border: 1px solid #444; font-size: 0.75rem;">
+                            <option value="any">第3スキル：指定なし</option>
+                        </select>
+                    </div>
+                    <div style="margin-top: 0.5rem;">
+                        <button id="btn-talisman-fav" class="btn"
+                            style="width: 100%; height: 32px; font-size: 0.75rem; border: 1px solid rgba(255, 215, 0, 0.4); color: #ffcc00; display: flex; align-items: center; justify-content: center; gap: 6px; background: rgba(255, 215, 0, 0.05); transition: all 0.2s;">
+                            <span>★</span> お気に入りから検索
+                        </button>
                     </div>
                 </div>
 
                 <!-- Combined Filters & Sort -->
                 <div class="input-group">
-                    <label style="font-size: 0.75rem; color: var(--color-primary); font-weight: bold; margin-bottom: 0.5rem; display: block;">詳細フィルター & ソート</label>
+                    <label
+                        style="font-size: 0.75rem; color: var(--color-primary); font-weight: bold; margin-bottom: 0.5rem; display: block;">詳細フィルター
+                        & ソート</label>
                     <div style="margin-bottom: 0.8rem;">
-                        <label style="font-size: 0.65rem; color: var(--color-accent); display: block; margin-bottom: 4px;">ソート条件</label>
-                        <select id="search-sort-type" style="width: 100%; height: 28px; background: #222; color: #fff; border: 1px solid #444; font-size: 0.75rem; border-radius: 4px;">
+                        <label
+                            style="font-size: 0.65rem; color: var(--color-accent); display: block; margin-bottom: 4px;">ソート条件</label>
+                        <select id="search-sort-type"
+                            style="width: 100%; height: 28px; background: #222; color: #fff; border: 1px solid #444; font-size: 0.75rem; border-radius: 4px;">
                             <option value="def">防御力順 (降順)</option>
                             <option value="res0">火耐性順 (降順)</option>
                             <option value="res1">水耐性順 (降順)</option>
@@ -683,11 +746,14 @@
                     </div>
 
                     <div id="res-filter-controls">
-                        <label style="font-size: 0.65rem; color: var(--color-accent); display: block; margin-bottom: 4px;">必要な属性耐性値</label>
-                        <div id="active-res-filters" style="display: flex; flex-direction: column; gap: 4px; margin-bottom: 6px;">
+                        <label
+                            style="font-size: 0.65rem; color: var(--color-accent); display: block; margin-bottom: 4px;">必要な属性耐性値</label>
+                        <div id="active-res-filters"
+                            style="display: flex; flex-direction: column; gap: 4px; margin-bottom: 6px;">
                             <!-- Dynamic filter rows -->
                         </div>
-                        <select id="add-res-filter" style="width: 100%; height: 24px; background: #111; color: #aaa; border: 1px solid #333; font-size: 0.65rem; cursor: pointer;">
+                        <select id="add-res-filter"
+                            style="width: 100%; height: 32px; background: #111; color: #aaa; border: 1px solid #333; font-size: 0.75rem; cursor: pointer; padding: 0 8px; vertical-align: middle;">
                             <option value="">＋ フィルターを追加...</option>
                             <option value="0">火耐性</option>
                             <option value="1">水耐性</option>
@@ -698,7 +764,8 @@
                     </div>
                 </div>
                 <div style="display: flex; align-items: flex-end;">
-                    <button id="btn-re-search" class="btn" style="width: 100%; height: 60px; border: 1px solid var(--color-accent); color: var(--color-accent); background: transparent;">設定を反映して再検索</button>
+                    <button id="btn-re-search" class="btn"
+                        style="width: 100%; height: 60px; border: 1px solid var(--color-accent); color: var(--color-accent); background: transparent;">設定を反映して再検索</button>
                 </div>
             </div>
 
@@ -709,11 +776,13 @@
                         <div id="progress-bar"></div>
                     </div>
                 </div>
-                <div id="result-count" style="margin-left: 2rem; font-weight: bold; font-size: 1.2rem; color: var(--color-primary);">
+                <div id="result-count"
+                    style="margin-left: 2rem; font-weight: bold; font-size: 1.2rem; color: var(--color-primary);">
                     0 sets
                 </div>
             </div>
-            <div id="target-summary" style="margin-top: 1rem; border-top: 1px dotted rgba(255,255,255,0.1); padding-top: 0.8rem; display: flex; flex-wrap: wrap;">
+            <div id="target-summary"
+                style="margin-top: 1rem; border-top: 1px dotted rgba(255,255,255,0.1); padding-top: 0.8rem; display: flex; flex-wrap: wrap;">
                 <!-- スキル一覧がここに表示されます -->
             </div>
         </div>
@@ -721,11 +790,14 @@
         <!-- Skill Selection Panel -->
         <section class="skills-panel">
             <h2 class="panel-title">目標スキル設定</h2>
-            
-            <div id="active-skills-container" style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--color-border);">
-                <div style="font-size: 0.85rem; font-weight: bold; color: var(--color-primary); margin-bottom: 0.5rem; display: flex; justify-content: space-between;">
+
+            <div id="active-skills-container"
+                style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--color-border);">
+                <div
+                    style="font-size: 0.85rem; font-weight: bold; color: var(--color-primary); margin-bottom: 0.5rem; display: flex; justify-content: space-between;">
                     <span>選択中のスキル</span>
-                    <button id="btn-clear-skills" style="background: transparent; border: 1px solid rgba(255,0,0,0.3); color: #ff6666; font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; cursor: pointer;">クリア</button>
+                    <button id="btn-clear-skills"
+                        style="background: transparent; border: 1px solid rgba(255,0,0,0.3); color: #ff6666; font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; cursor: pointer;">クリア</button>
                 </div>
                 <div id="active-skills-list"></div>
             </div>
@@ -764,4 +836,5 @@
 
     <script type="module" src="js/asst.js"></script>
 </body>
+
 </html>

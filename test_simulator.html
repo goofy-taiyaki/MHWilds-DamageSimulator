@@ -1,0 +1,125 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Equipment Set Verification | MHWilds Simulation</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body { font-family: 'MS Mincho', serif; background: #0a0a0c; color: #e0e0e0; padding: 2rem; }
+        .card { background: #141418; border: 1px solid #2a2a30; border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h1, h2 { color: #3399ff; border-bottom: 1px solid #3399ff33; padding-bottom: 0.5rem; margin-bottom: 1rem; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+        .skill-item { display: flex; justify-content: space-between; padding: 4px 8px; border-bottom: 1px solid #ffffff11; font-size: 0.9rem; }
+        .skill-item.ok { color: #32cd32; }
+        .skill-item.miss { color: #ff6666; font-weight: bold; }
+        .armor-part { margin-bottom: 1rem; padding-left: 1rem; border-left: 3px solid #3399ff; }
+        .slot-badge { background: #1a1a1a; border: 1px solid #444; padding: 1px 6px; border-radius: 4px; font-size: 0.8rem; margin-right: 4px; color: #ffcc00; }
+        .ver-badge { font-size: 0.7rem; color: #888; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th, td { text-align: left; padding: 8px; border-bottom: 1px solid #333; }
+        th { color: #3399ff; font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>検証用テストページ (ver.1.01.001β)</h1>
+        <p>ユーザー指定の装備構成におけるスキル合計値の検証結果を表示します。</p>
+    </div>
+
+    <div class="grid">
+        <div class="card">
+            <h2>構成詳細 (実機ベース)</h2>
+            <div id="set-details"></div>
+        </div>
+        <div class="card">
+            <h2>スキル合計判定</h2>
+            <div id="skill-results"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { ARMOR } from './js/data/armor.js';
+        import { SKILLS } from './js/data/skills.js';
+        import { DECORATIONS } from './js/data/decorations.js';
+
+        // 期待されるスキル構成
+        const GOALS = {
+            '超会心': 5, '見切り': 4, '達人芸': 1, '挑戦者': 5, '逆襲': 3,
+            '龍耐性': 3, '納刀術': 3, '早食い': 3, '無我の境地': 2, '巧撃': 1,
+            '弱点特効': 1, '属性変換': 1, '力の解放': 1, '連撃': 1, '鎖刃刺撃': 1,
+            '風圧耐性': 1, '火竜の力': 1, '黒蝕竜の力': 1, 'ヌシの魂': 1
+        };
+
+        // 実機ベースの装備定義 (DBの不備を補正)
+        const MY_SET = {
+            head: { name: 'クイーンピアスα', slots: [3, 1, 1], skills: { '連撃': 1 }, ss: '黒蝕竜の力', gs: '栄光の誉れ' },
+            chest: { name: 'エグゾルスメイルγ', slots: [3, 3, 0], skills: { '逆襲': 2 }, ss: '獄焔蛸の反逆', gs: 'ヌシの魂' },
+            arms: { name: '護火竜アームβ', slots: [3, 2, 1], skills: { '弱点特効': 1 }, ss: '火竜の力', gs: '護竜の守り' },
+            waist: { name: '護火竜コイルβ', slots: [3, 3, 1], skills: { '風圧耐性': 1 }, ss: '火竜の力', gs: '護竜の守り' },
+            legs: { name: 'トゥナムルグリーヴγ', slots: [3, 1, 1], skills: { '納刀術': 3, '挑戦者': 1 }, ss: '波衣竜の守護', gs: 'ヌシの魂' },
+            talisman: { name: '栄世の護石RERA', slots: [1, 1, 1], skills: { '達人芸': 1, '属性変換': 1 }, type: 'W' },
+            weapon: { name: '武器', slots: [3, 3, 3], ss: '黒蝕竜の力', gs: 'ヌシの魂' }
+        };
+
+        const MANUAL_DECOS = [
+            { sk: '挑戦者', p: 1, loc: 'head[3]' },
+            { sk: '早食い', p: 1, loc: 'head[1]' },
+            { sk: '早食い', p: 1, loc: 'head[1]' },
+            { sk: '巧撃', p: 1, loc: 'chest[3]' },   // 反攻珠
+            { sk: '鎖刃刺撃', p: 1, loc: 'chest[3]' }, // 刺撃[3]
+            { sk: '挑戦者', p: 1, loc: 'arms[3]' },
+            { sk: '逆襲', p: 1, loc: 'arms[2]' },   // 反攻珠[2]
+            { sk: '早食い', p: 1, loc: 'arms[1]' },
+            { sk: '挑戦者', p: 1, loc: 'waist[3]' },
+            { sk: '挑戦者', p: 1, loc: 'waist[3]' },
+            { sk: '無我の境地', p: 1, loc: 'waist[1]' },
+            { sk: '力の解放', p: 1, loc: 'legs[3]' },
+            { sk: '無我の境地', p: 1, loc: 'legs[1]' },
+            { sk: '龍耐性', p: 1, loc: 'legs[1]' },
+            { sk: '見切り', p: 1, loc: 'talisman[1]' },
+            { sk: '龍耐性', p: 1, loc: 'talisman[1]' },
+            { sk: '龍耐性', p: 1, loc: 'talisman[1]' },
+            // 武器の空きスロット [3][3][3] を使用
+            { sk: '超会心', p: 3, loc: 'weapon[3]' }, // 超心珠III
+            { sk: '超会心', p: 2, loc: 'weapon[3]' }, // 超心珠II
+            { sk: '見切り', p: 3, loc: 'weapon[3]' }  // 達人珠III
+        ];
+
+        function calculate() {
+            const currentPoints = {};
+            const add = (name, l) => { if(name) currentPoints[name] = (currentPoints[name]||0) + l; };
+
+            Object.values(MY_SET).forEach(part => {
+                if(part.skills) Object.entries(part.skills).forEach(([n, l]) => add(n, l));
+                if(part.ss) add(part.ss, 1);
+                if(part.gs) add(part.gs, 1);
+            });
+
+            MANUAL_DECOS.forEach(d => add(d.sk, d.p));
+
+            // 表示
+            const setUI = document.getElementById('set-details');
+            Object.entries(MY_SET).forEach(([key, part]) => {
+                const div = document.createElement('div');
+                div.className = 'armor-part';
+                div.innerHTML = `<strong>${key.toUpperCase()}: ${part.name}</strong><br>` +
+                                (part.slots ? part.slots.map(s => `<span class="slot-badge">[${s}]</span>`).join('') : '');
+                setUI.appendChild(div);
+            });
+
+            const resultsUI = document.getElementById('skill-results');
+            Object.keys(GOALS).sort().forEach(name => {
+                const cur = currentPoints[name] || 0;
+                const goal = GOALS[name];
+                const item = document.createElement('div');
+                item.className = `skill-item ${cur >= goal ? 'ok' : 'miss'}`;
+                item.innerHTML = `<span>${name}</span> <span>${cur} / ${goal} ${cur >= goal ? '✓' : '✗'}</span>`;
+                resultsUI.appendChild(item);
+            });
+        }
+
+        window.onload = calculate;
+    </script>
+</body>
+</html>

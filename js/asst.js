@@ -8,6 +8,11 @@ const SKILL_NAME_TO_ID = Object.fromEntries(SKILLS.map(s => [s.name, s.id]));
 const SKILL_BY_ID = Object.fromEntries(SKILLS.map((s, idx) => [s.id, { ...s, originalIndex: idx }]));
 const SKILL_BY_NAME = Object.fromEntries(SKILLS.map((s, idx) => [s.name, { ...s, originalIndex: idx }]));
 
+const PREFERRED_ORDER = [
+    "攻撃", "超会心", "見切り", "挑戦者", "弱点特効", "力の解放", "連撃", "逆襲", "巧撃", "鎖刃刺撃", 
+    "早食い", "納刀術", "広域化", "無我の境地", "風圧耐性", "龍耐性", "達人芸", "属性変換"
+];
+
 document.addEventListener('DOMContentLoaded', () => {
     let weaponDecos = [null, null, null];
     let activeResFilters = new Map(); // idx -> value
@@ -58,11 +63,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const decoList = document.getElementById('deco-picker-list');
 
     const openPicker = (slotIdx) => {
+        const slotSize = parseInt(document.getElementById(`wslot-${slotIdx}`).value);
+        if (slotSize === 0) return; // スロットなし
+
         currentPickingSlot = slotIdx;
         modal.style.display = 'flex';
         overlay.style.display = 'block';
         searchInput.value = '';
-        renderPickerList('');
+        renderPickerList('', slotSize);
+        
+        // ヘッダーのテキストを更新して現在のスロットサイズを表示
+        document.querySelector('#deco-picker-header div').textContent = `装飾品を選択 (スロット[${slotSize}]以下)`;
     };
 
     const closePicker = () => {
@@ -70,11 +81,14 @@ document.addEventListener('DOMContentLoaded', () => {
         overlay.style.display = 'none';
     };
 
-    const renderPickerList = (query) => {
+    const renderPickerList = (query, limitLvl) => {
+        if (limitLvl === undefined) {
+             limitLvl = parseInt(document.getElementById(`wslot-${currentPickingSlot}`).value);
+        }
         decoList.innerHTML = '<div class="deco-pick-item none" data-did="">未選択 (クリア)</div>';
         const filtered = DECORATIONS.filter(d => {
-            if (d.t !== 'w') return false; 
-            if (d.sl > 3) return false;
+            if (d.t !== 'w') return false;
+            if (d.sl > limitLvl) return false;
             const matchQuery = (d.n.includes(query) || (d.sk && d.sk.some(s => s.n.includes(query))));
             return !query || matchQuery;
         });
@@ -84,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
             el.textContent = `${d.n} [${d.sl}]`;
             el.dataset.did = d.sk && d.sk[0] ? d.sk[0].n : d.n;
             el.addEventListener('click', () => {
-                weaponDecos[currentPickingSlot-1] = d;
+                weaponDecos[currentPickingSlot - 1] = d;
                 document.getElementById(`wdeco-${currentPickingSlot}`).textContent = d.n;
                 closePicker();
             });
@@ -93,28 +107,46 @@ document.addEventListener('DOMContentLoaded', () => {
         const noneBtn = decoList.querySelector('.none');
         if (noneBtn) {
             noneBtn.addEventListener('click', () => {
-                weaponDecos[currentPickingSlot-1] = null;
+                weaponDecos[currentPickingSlot - 1] = null;
                 document.getElementById(`wdeco-${currentPickingSlot}`).textContent = '未選択';
                 closePicker();
             });
         }
     };
 
-    [1,2,3].forEach(i => {
+    [1, 2, 3].forEach(i => {
         const el = document.getElementById(`wdeco-${i}`);
-        if(el) el.addEventListener('click', () => openPicker(i));
+        if (el) el.addEventListener('click', () => openPicker(i));
     });
 
     document.getElementById('deco-picker-close')?.addEventListener('click', closePicker);
     overlay?.addEventListener('click', closePicker);
     searchInput?.addEventListener('input', (e) => renderPickerList(e.target.value));
 
+    // スロットサイズ変更時に、サイズオーバーした装飾品をクリアする
+    document.querySelectorAll('.wslot-size-select').forEach(sel => {
+        sel.addEventListener('change', (e) => {
+            const idx = parseInt(e.target.id.replace('wslot-', ''));
+            const newSize = parseInt(e.target.value);
+            const currentDeco = weaponDecos[idx - 1];
+            if (currentDeco && currentDeco.sl > newSize) {
+                weaponDecos[idx - 1] = null;
+                document.getElementById(`wdeco-${idx}`).textContent = '未選択';
+            } else if (newSize === 0) {
+                weaponDecos[idx - 1] = null;
+                document.getElementById(`wdeco-${idx}`).textContent = 'なし';
+            } else if (document.getElementById(`wdeco-${idx}`).textContent === 'なし') {
+                document.getElementById(`wdeco-${idx}`).textContent = '未選択';
+            }
+        });
+    });
+
     const weaponSsSelect = document.getElementById('weapon-ss');
     const weaponGsSelect = document.getElementById('weapon-gs');
 
     const searchParams = new URLSearchParams(window.location.search);
     const targetSkills = {};
-    
+
     searchParams.forEach((value, key) => {
         const lvl = parseInt(value, 10);
         if (isNaN(lvl) || lvl <= 0) return;
@@ -130,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.skills && (Date.now() - data.timestamp < 15000)) {
                     Object.assign(targetSkills, data.skills);
                 }
-            } catch (e) {}
+            } catch (e) { }
         }
     }
 
@@ -156,7 +188,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!s) return;
             const badge = document.createElement('span');
             badge.className = 'target-skill-badge';
-            badge.textContent = `${s.name} Lv${targetSkills[sid]}`;
+            
+            let label = "";
+            if (s.mainCategory === 'series' || s.mainCategory === 'group') {
+                const effect = (s.effects && s.effects[targetSkills[sid]-1]) ? s.effects[targetSkills[sid]-1] : null;
+                label = effect ? effect.name : s.name;
+            } else {
+                label = `${s.name} Lv${targetSkills[sid]}`;
+            }
+            badge.textContent = label;
             targetSummaryEl.appendChild(badge);
         });
     };
@@ -199,11 +239,36 @@ document.addEventListener('DOMContentLoaded', () => {
                     row.className = 'skill-selector-row';
                     if (targetSkills[skill.id]) row.classList.add('selected');
 
+                    const effectName = (skill.effects && skill.effects[0]) ? skill.effects[0].name : null;
+                    let displayName = (skill.mainCategory === 'series' || skill.mainCategory === 'group') && effectName ? effectName : skill.name;
+                    
+                    // 検索用キーワードの集約 (シリーズ名、表示名、各レベルの正式名称)
+                    const searchKeys = [skill.name.toLowerCase()];
+                    if (effectName) searchKeys.push(effectName.toLowerCase());
+                    if (skill.effects) {
+                        skill.effects.forEach(e => { if (e.name) searchKeys.push(e.name.toLowerCase()); });
+                    }
+                    
+                    // リスト表示用ラベルからはローマ数字を削除（ユーザー指定の表示ルール）
+                    if (skill.mainCategory === 'series' || skill.mainCategory === 'group') {
+                        displayName = displayName.replace(/[ⅠⅡⅢⅣⅤ]$/, '').trim();
+                    }
+                    
+                    row.dataset.search = searchKeys.join('|');
+
                     row.innerHTML = `
-                        <div class="skill-name" title="${skill.name}">${skill.name}</div>
+                        <div class="skill-name" title="${skill.name}">${displayName}</div>
                         <select id="skill-${skill.id}" data-skill-id="${skill.id}">
                             ${Array.from({ length: skill.maxLevel + 1 }, (_, i) => {
-                                return `<option value="${i}">${i === 0 ? '---' : 'Lv.' + i}</option>`;
+                                if (i === 0) return `<option value="0">---</option>`;
+                                const effect = (skill.effects && skill.effects[i-1]) ? skill.effects[i-1] : null;
+                                let label = `Lv.${i}`;
+                                if (skill.mainCategory === 'series' || skill.mainCategory === 'group') {
+                                    label = effect && effect.name ? effect.name : `${skill.name} Lv.${i}`;
+                                } else {
+                                    label = `Lv.${i}`;
+                                }
+                                return `<option value="${i}">${label}</option>`;
                             }).join('')}
                         </select>
                     `;
@@ -228,7 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
         updateActiveSkillsUI();
-        
+
         // OCRの初期化
         initOCR(SKILLS, cachedSkillSelects, () => {
             // OCR適用後の後処理: targetSkillsを同期し、UIを更新する
@@ -252,33 +317,122 @@ document.addEventListener('DOMContentLoaded', () => {
     const updateActiveSkillsUI = () => {
         if (!activeSkillsList) return;
         activeSkillsList.innerHTML = '';
-        Object.keys(targetSkills).sort((a,b) => (SKILL_BY_ID[a]?.originalIndex || 0) - (SKILL_BY_ID[b]?.originalIndex || 0)).forEach(sid => {
+        Object.keys(targetSkills).sort((a, b) => (SKILL_BY_ID[a]?.originalIndex || 0) - (SKILL_BY_ID[b]?.originalIndex || 0)).forEach(sid => {
             const skill = SKILL_BY_ID[sid];
             if (!skill) return;
             const badge = document.createElement('div');
             badge.className = 'active-skill-badge';
-            badge.innerHTML = `<span>${skill.name} Lv${targetSkills[sid]}</span>`;
+            
+            let label = "";
+            if (skill.mainCategory === 'series' || skill.mainCategory === 'group') {
+                const effect = (skill.effects && skill.effects[targetSkills[sid]-1]) ? skill.effects[targetSkills[sid]-1] : null;
+                label = effect ? effect.name : skill.name;
+            } else {
+                label = `${skill.name} Lv${targetSkills[sid]}`;
+            }
+            
+            badge.innerHTML = `<span>${label}</span>`;
             activeSkillsList.appendChild(badge);
         });
     };
 
     const applySkillFilter = (term) => {
-        const rows = skillsSelectionList.querySelectorAll('.skill-selector-row');
-        const titles = skillsSelectionList.querySelectorAll('.skill-category-title, .skill-subcategory-title');
-        if (term === '') {
-            rows.forEach(r => r.style.display = 'grid');
-            titles.forEach(t => t.style.display = 'block');
+        if (!skillsSelectionList) return;
+        const rawQuery = (term || '').toLowerCase().trim();
+        
+        if (rawQuery === '') {
+            const allRows = skillsSelectionList.querySelectorAll('.skill-selector-row');
+            const allTitles = skillsSelectionList.querySelectorAll('.skill-category-title, .skill-subcategory-title');
+            allRows.forEach(r => r.style.display = 'grid');
+            allTitles.forEach(t => t.style.display = 'block');
             return;
         }
+
+        // 検索ワードからレベル表記 (Lv1, 1, Ⅰ等) を除去した「純粋な名前」も生成
+        let skillNameQuery = rawQuery;
+        const lvMatch = rawQuery.match(/(?:lv|lv\.?|)[ \.]*([1-9]|[ⅠⅡⅢⅣⅤ]|I{1,3}|IV|V)$/i);
+        if (lvMatch) {
+            skillNameQuery = rawQuery.slice(0, rawQuery.lastIndexOf(lvMatch[0])).trim();
+        }
+        if (!skillNameQuery && rawQuery) skillNameQuery = rawQuery;
+
+        const rows = skillsSelectionList.querySelectorAll('.skill-selector-row');
+        const titles = skillsSelectionList.querySelectorAll('.skill-category-title, .skill-subcategory-title');
+        
         titles.forEach(t => t.style.display = 'none');
         rows.forEach(row => {
-            const skillName = row.querySelector('.skill-name').textContent.toLowerCase();
-            row.style.display = skillName.includes(term) ? 'grid' : 'none';
+            const searchData = row.dataset.search || '';
+            
+            // 判定：入力文字列そのものが含まれるか、あるいはレベルを除去した名前が含まれるか
+            const isMatch = searchData.includes(rawQuery) || searchData.includes(skillNameQuery);
+            row.style.display = isMatch ? 'grid' : 'none';
         });
     };
 
     if (skillSearchInput) {
         skillSearchInput.addEventListener('input', (e) => applySkillFilter(e.target.value.toLowerCase().trim()));
+        
+        // Enterキーでスキルを自動選択
+        skillSearchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const term = e.target.value.toLowerCase().trim();
+                if (!term) return;
+
+                let level = 1;
+                let cleanTerm = term;
+
+                // レベル表記 (Lv1, 1, Ⅰ, I) の抽出
+                const lvMatch = term.match(/(?:lv|lv\.?|)[ \.]*([1-9]|[ⅠⅡⅢⅣⅤ]|I{1,3}|IV|V)$/i);
+                if (lvMatch) {
+                    const rawLvl = lvMatch[1];
+                    cleanTerm = term.slice(0, term.lastIndexOf(lvMatch[0])).trim();
+                    
+                    // アラビア数字、Unicodeローマ数字、アルファベットローマ数字を変換
+                    if (/[1-9]/.test(rawLvl)) {
+                        level = parseInt(rawLvl, 10);
+                    } else if (/[ⅠⅡⅢⅣⅤ]/.test(rawLvl)) {
+                        const romanMap = { 'ⅰ': 1, 'ⅱ': 2, 'ⅲ': 3, 'ⅳ': 4, 'ⅴ': 5 };
+                        level = romanMap[rawLvl.toLowerCase()] || 1;
+                    } else {
+                        const romanMap = { 'i': 1, 'ii': 2, 'iii': 3, 'iv': 4, 'v': 5 };
+                        level = romanMap[rawLvl.toLowerCase()] || 1;
+                    }
+                }
+
+                // 表示されている候補の中からマッチするものを探す
+                const visibleRows = Array.from(skillsSelectionList.querySelectorAll('.skill-selector-row'))
+                    .filter(r => r.style.display !== 'none');
+
+                if (visibleRows.length > 0) {
+                    // 1. 表示名(発動スキル名)またはシリーズ名との完全一致を最優先
+                    let targetRow = visibleRows.find(r => {
+                        const name = r.querySelector('.skill-name').textContent.toLowerCase();
+                        const orig = r.querySelector('.skill-name').title.toLowerCase();
+                        return name === cleanTerm || orig === cleanTerm;
+                    });
+
+                    // 2. 完全一致がなければ、最初の表示行（前方一致に近いもの）を選択
+                    if (!targetRow) {
+                        targetRow = visibleRows[0];
+                    }
+
+                    if (targetRow) {
+                        const select = targetRow.querySelector('select');
+                        const maxLvl = select.options.length - 1;
+                        const finalLevel = Math.min(level, maxLvl);
+                        
+                        // レベルが指定されていない、かつグループスキルの場合は強制的にLv1とする
+                        // (selectのvalueを変更してchangeイベントを発火)
+                        select.value = finalLevel;
+                        select.dispatchEvent(new Event('change'));
+
+                        // 選択後はリセット
+                        e.target.value = '';
+                        applySkillFilter('');
+                    }
+                }
+            }
+        });
     }
 
     if (btnClearSkills) {
@@ -407,7 +561,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function populateTalismanSelect(selectEl, groupIds, label, excludeNames = []) {
         const currentVal = selectEl.value;
         selectEl.innerHTML = `<option value="any">${label}：指定なし</option>`;
-        Array.from(groupIds).sort((a,b)=>a-b).forEach(gid => {
+        Array.from(groupIds).sort((a, b) => a - b).forEach(gid => {
             const skills = (TALISMAN_GROUPS[gid] || []).filter(s => !excludeNames.includes(s.name));
             if (skills.length > 0) {
                 const groupHeader = document.createElement('option');
@@ -428,6 +582,48 @@ document.addEventListener('DOMContentLoaded', () => {
         tRareSelect.onchange = () => updateTalismanDropdowns(-1);
         tSkillSelects.forEach((s, i) => { if (s) s.onchange = () => updateTalismanDropdowns(i); });
         updateTalismanDropdowns(-1);
+
+        const btnFav = document.getElementById('btn-talisman-fav');
+        const talismanAutoCheckbox = document.getElementById('talisman-auto');
+        const talismanSelectorUI = document.getElementById('talisman-selector-ui');
+
+        const updateTalismanUIVisibility = () => {
+            if (talismanAutoCheckbox && talismanAutoCheckbox.checked) {
+                talismanSelectorUI.style.opacity = '0.5';
+                talismanSelectorUI.style.pointerEvents = 'none';
+            } else {
+                talismanSelectorUI.style.opacity = '1';
+                talismanSelectorUI.style.pointerEvents = 'auto';
+            }
+        };
+
+        if (btnFav) {
+            btnFav.onclick = () => {
+                const isActive = btnFav.classList.toggle('active');
+                if (isActive) {
+                    btnFav.style.background = 'rgba(255, 215, 0, 0.2)';
+                    btnFav.style.borderColor = '#ffcc00';
+                    if (talismanAutoCheckbox && talismanAutoCheckbox.checked) {
+                        talismanAutoCheckbox.checked = false;
+                        updateTalismanUIVisibility();
+                    }
+                } else {
+                    btnFav.style.background = 'rgba(255, 215, 0, 0.05)';
+                    btnFav.style.borderColor = 'rgba(255, 215, 0, 0.4)';
+                }
+            };
+        }
+
+        if (talismanAutoCheckbox) {
+            talismanAutoCheckbox.onchange = () => {
+                if (talismanAutoCheckbox.checked) {
+                    btnFav.classList.remove('active');
+                    btnFav.style.background = 'rgba(255, 215, 0, 0.05)';
+                    btnFav.style.borderColor = 'rgba(255, 215, 0, 0.4)';
+                }
+                updateTalismanUIVisibility();
+            };
+        }
     }
 
     const startSearch = () => {
@@ -453,9 +649,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        const wSlotsFull = [];
+        [1, 2, 3].forEach(i => {
+            const size = parseInt(document.getElementById(`wslot-${i}`).value);
+            if (size > 0) wSlotsFull.push(size);
+        });
+
         const wSlotsRemaining = [];
-        weaponDecos.forEach(d => {
-            if (!d) wSlotsRemaining.push(3); 
+        [1, 2, 3].forEach(i => {
+            const size = parseInt(document.getElementById(`wslot-${i}`).value);
+            if (size > 0 && !weaponDecos[i-1]) {
+                wSlotsRemaining.push(size);
+            }
         });
 
         const isAutoTalisman = talismanAutoCheckbox && talismanAutoCheckbox.checked;
@@ -472,28 +677,32 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const tSlotVal = (tSlotSelect && tSlotSelect.value) || 'any';
             if (tSlotVal !== 'any') {
-                const isWeaponSlot = tSlotVal.startsWith('W');
+                const isW = tSlotVal.startsWith('W');
                 const cleaned = tSlotVal.replace('W', '');
-                for (let char of cleaned) {
+                for (let i = 0; i < cleaned.length; i++) {
+                    const char = cleaned[i];
                     let lvl = 0;
                     if (char === '①') lvl = 1;
                     else if (char === '②') lvl = 2;
                     else if (char === '③') lvl = 3;
                     else if (char === '④') lvl = 4;
-                    if (lvl > 0) talismanSlots.push({ lvl, type: isWeaponSlot ? 'w' : 'a' });
+                    if (lvl > 0) {
+                        // 護石がW開始（RARE8）の場合、最初の1個目だけが武器枠(w)。残りは防具枠(a)。
+                        talismanSlots.push({ lvl, type: (isW && i === 0) ? 'w' : 'a' });
+                    }
                 }
             }
         }
 
-        performSearch(targetSkills, wSlotsRemaining, wSkills, talismanData, talismanSlots, isAutoTalisman, [...weaponDecos]);
+        performSearch(targetSkills, wSlotsRemaining, wSkills, talismanData, talismanSlots, isAutoTalisman, [...weaponDecos], wSlotsFull);
     };
 
     if (btnReSearch) btnReSearch.onclick = startSearch;
-    
+
     // 初回検索
     setTimeout(startSearch, 200);
 
-    async function performSearch(target, wSlots, wSkills, tDataFixed, tSlotsFixed, autoTalisman, manualWDecos) {
+    async function performSearch(target, wSlots, wSkills, tDataFixed, tSlotsFixed, autoTalisman, manualWDecos, fullWSlots) {
         statusText.innerHTML = '<span class="loader"></span>初期化中...';
         const targetPoints = {};
 
@@ -502,7 +711,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (skill) {
                 let pts = target[id];
                 if (skill.mainCategory === 'series') pts = target[id] * 2;
-                else if (skill.mainCategory === 'group') pts = 3; 
+                else if (skill.mainCategory === 'group') pts = 3; // 修正：3点そろって発動するため3点要求とする
                 targetPoints[id] = pts;
             }
         }
@@ -510,14 +719,14 @@ document.addEventListener('DOMContentLoaded', () => {
         await new Promise(r => setTimeout(r, 50));
         statusText.innerHTML = '<span class="loader"></span>防具データを整理中...';
 
-        const armorLabels = ['頭','胴','腕','腰','脚','護石'];
+        const armorLabels = ['頭', '胴', '腕', '腰', '脚', '護石'];
         const armorParts = { head: [], chest: [], arms: [], waist: [], legs: [], talisman: [] };
         ARMOR.forEach(a => {
             if (!armorParts[a.p]) return;
             const rel = {};
-            if (a.sk) a.sk.forEach(s => { 
+            if (a.sk) a.sk.forEach(s => {
                 const sid = SKILL_NAME_TO_ID[s.n];
-                if (sid && targetPoints[sid]) rel[sid] = (rel[sid] || 0) + s.l; 
+                if (sid && targetPoints[sid]) rel[sid] = (rel[sid] || 0) + s.l;
             });
             if (a.ss) {
                 const sid = SKILL_NAME_TO_ID[a.ss];
@@ -527,15 +736,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 const sid = SKILL_NAME_TO_ID[a.gs];
                 if (sid && targetPoints[sid]) rel[sid] = Math.max(rel[sid] || 0, 1);
             }
-            armorParts[a.p].push({ 
-                ...a, 
-                name: a.n, 
-                set: a.s, 
-                slots: a.sl || [0,0,0], 
-                sl: a.sl || [0,0,0], 
-                skills: rel, 
-                defense: a.d, 
-                p: a.p 
+            armorParts[a.p].push({
+                ...a,
+                name: a.n,
+                set: a.s,
+                slots: a.sl || [0, 0, 0],
+                sl: a.sl || [0, 0, 0],
+                skills: rel,
+                defense: a.d,
+                p: a.p
             });
         });
 
@@ -545,101 +754,157 @@ document.addEventListener('DOMContentLoaded', () => {
             const evaluated = list.map(item => {
                 let sScore = 0;
                 tIds.forEach(id => sScore += (item.skills[id] || 0));
-                const slotScore = (item.slots || []).reduce((sum, s) => sum + ((s.lvl || s) > 0 ? 1 : 0), 0);
-                const slotDetail = (item.slots || []).map(s => s.lvl || s || 0).sort((a,b)=>b-a);
+                const slotScore = (item.slots || []).reduce((sum, s) => sum + (s.lvl || s || 0), 0);
+                const slotDetail = (item.slots || []).map(s => s.lvl || s || 0).sort((a, b) => b - a);
                 return { item, sScore, slotScore, slotDetail, def: item.defense || 0 };
             });
 
             const survivors = [];
             evaluated.sort((a, b) => b.sScore - a.sScore || b.slotScore - a.slotScore || b.def - a.def);
+            const targetDebugNames = ['クイーンピアスα', 'エグゾルスメイルγ', '護火竜アームβ', '護火竜コイルβ', 'トゥナムルグリーヴγ'];
+
             for (let i = 0; i < evaluated.length; i++) {
                 const a = evaluated[i];
                 let isInferior = false;
                 for (let j = 0; j < survivors.length; j++) {
                     const b = survivors[j];
                     if (b.sScore >= a.sScore && b.slotScore >= a.slotScore && b.def >= a.def) {
-                        const skillsOk = tIds.every(id => (b.item.skills[id]||0) >= (a.item.skills[id]||0));
-                        const slotsOk = b.slotDetail.every((lvl, idx) => lvl >= (a.slotDetail[idx]||0));
+                        const skillsOk = tIds.every(id => (b.item.skills[id] || 0) >= (a.item.skills[id] || 0));
+                        const slotsOk = b.slotDetail.every((lvl, idx) => lvl >= (a.slotDetail[idx] || 0));
                         if (skillsOk && slotsOk) { isInferior = true; break; }
                     }
                 }
-                if (!isInferior) survivors.push(a);
+                if (!isInferior) {
+                    survivors.push(a);
+                } else {
+                    if (targetDebugNames.includes(a.item.name)) {
+                        console.log(`[DEBUG] Pruned Component: ${a.item.name} is inferior to another item.`);
+                    }
+                }
             }
             const hasSkill = survivors.filter(s => s.sScore > 0);
             const noSkill = survivors.filter(s => s.sScore === 0);
+
+            targetDebugNames.forEach(name => {
+                if (list.find(x => x.name === name) && !survivors.find(x => x.item.name === name)) {
+                    console.log(`[DEBUG] ${name} NOT in survivors! sScore=${evaluated.find(e => e.item.name === name)?.sScore}`);
+                }
+            });
+
             noSkill.sort((a, b) => b.slotScore - a.slotScore || b.def - a.def);
-            return [...hasSkill.map(s => s.item), ...noSkill.slice(0, 5).map(s => s.item)];
+            return [...hasSkill.map(s => s.item), ...noSkill.slice(0, 15).map(s => s.item)];
         };
 
         statusText.innerHTML = '<span class="loader"></span>護石パターンを生成中...';
-        const relevantTalismans = [];
-        const tRareVal = tRareSelect.value;
-        const tSlotValFilter = tSlotSelect.value;
-        const filterS1 = tSkillSelects[0].value;
-        const filterS2 = tSkillSelects[1].value;
-        const filterS3 = tSkillSelects[2].value;
+        let relevantTalismans = [];
+        const isFavMode = document.getElementById('btn-talisman-fav')?.classList.contains('active');
 
-        TALISMAN_COMBINATIONS.forEach(comb => {
-            if (!autoTalisman && tRareVal !== 'any' && comb.rare != tRareVal) return;
-            const patternSlots = TALISMAN_SLOTS[`RARE${comb.rare}`] || [];
-            patternSlots.forEach(slotStr => {
-                if (!autoTalisman && tSlotValFilter !== 'any' && slotStr !== tSlotValFilter) return;
+        if (isFavMode) {
+            const favData = JSON.parse(localStorage.getItem('mhwilds_fav_talismans') || '[]');
+            favData.forEach(f => {
+                const relSkills = {};
+                (f.skills || []).forEach(s => {
+                    const found = SKILL_BY_NAME[s.name];
+                    const sid = found ? found.id : null;
+                    if (sid && targetPoints[sid]) relSkills[sid] = (relSkills[sid] || 0) + parseInt(s.level, 10);
+                });
+
                 let tSlots = [];
-                const isW = slotStr.startsWith('W');
-                const cleaned = slotStr.replace('W', '');
-                for(let char of cleaned) {
-                    if(char === '①') tSlots.push(1);
-                    else if(char === '②') tSlots.push(2);
-                    else if(char === '③') tSlots.push(3);
-                    else if(char === '④') tSlots.push(4);
-                }
-                const choices = [comb.s1, comb.s2, comb.s3].filter(g => g !== null);
-                const groupOptions = choices.map((gid, idx) => {
-                    const filter = [filterS1, filterS2, filterS3][idx];
-                    let skills = TALISMAN_GROUPS[gid] || [];
-                    if (!autoTalisman && filter !== 'any' && filter !== undefined) {
-                        const [fName, fLvl] = filter.split('|');
-                        const match = skills.find(s => s.name === fName && s.level == fLvl);
-                        return match ? [match] : [];
+                if (f.slot && f.slot !== '-') {
+                    const isW = f.slot.startsWith('W');
+                    const cleaned = f.slot.replace('W', '');
+                    for (let i = 0; i < cleaned.length; i++) {
+                        const char = cleaned[i];
+                        let lvl = 0;
+                        if (char === '①') lvl = 1; else if (char === '②') lvl = 2; else if (char === '③') lvl = 3; else if (char === '④') lvl = 4;
+                        if (lvl > 0) tSlots.push({ lvl, type: (isW && i === 0) ? 'w' : 'a' });
                     }
-                    let relevant = skills.filter(s => { 
-                        const found = SKILL_BY_NAME[s.name];
-                        const sid = found ? found.id : null;
-                        return sid && targetPoints[sid]; 
-                    });
-                    if (relevant.length === 0) return [{ name: "None", level: 0 }];
-                    return relevant;
-                });
-                if (groupOptions.some(opts => opts.length === 0)) return;
-
-                const combos = [[]];
-                groupOptions.forEach(opts => {
-                    const next = [];
-                    combos.forEach(c => { 
-                        opts.forEach(o => { 
-                            if (o.name !== "None" && c.some(existing => existing.name === o.name)) return;
-                            next.push([...c, o]); 
-                        }); 
-                    });
-                    combos.splice(0, combos.length, ...next);
-                });
-
-                combos.forEach(combo => {
-                    const tSkills = {};
-                    combo.forEach(s => {
-                        if (s.name !== "None") {
-                            const found = SKILL_BY_NAME[s.name];
-                            if (found) tSkills[found.id] = (tSkills[found.id] || 0) + s.level;
-                        }
-                    });
-                    relevantTalismans.push({ name: `RARE${comb.rare}護石 (${slotStr})`, skills: tSkills, slots: tSlots.map(lvl=>({lvl, type:isW?'w':'a'})), defense: 0, p: 'talisman' });
+                }
+                relevantTalismans.push({
+                    name: `お気に入り護石 (R${f.rare})`,
+                    skills: relSkills,
+                    slots: tSlots,
+                    defense: 0,
+                    p: 'talisman'
                 });
             });
-        });
+        } else {
+            const tRareVal = tRareSelect.value;
+            const tSlotValFilter = tSlotSelect.value;
+            const filterS1 = tSkillSelects[0].value;
+            const filterS2 = tSkillSelects[1].value;
+            const filterS3 = tSkillSelects[2].value;
+
+            TALISMAN_COMBINATIONS.forEach(comb => {
+                if (!autoTalisman && tRareVal !== 'any' && comb.rare != tRareVal) return;
+                const patternSlots = TALISMAN_SLOTS[`RARE${comb.rare}`] || [];
+                patternSlots.forEach(slotStr => {
+                    if (!autoTalisman && tSlotValFilter !== 'any' && slotStr !== tSlotValFilter) return;
+                    let tSlots = [];
+                    const isW = slotStr.startsWith('W');
+                    const cleaned = slotStr.replace('W', '');
+                    for (let char of cleaned) {
+                        if (char === '①') tSlots.push(1);
+                        else if (char === '②') tSlots.push(2);
+                        else if (char === '③') tSlots.push(3);
+                        else if (char === '④') tSlots.push(4);
+                    }
+                    const choices = [comb.s1, comb.s2, comb.s3].filter(g => g !== null);
+                    const groupOptions = choices.map((gid, idx) => {
+                        const filter = [filterS1, filterS2, filterS3][idx];
+                        let skills = TALISMAN_GROUPS[gid] || [];
+                        if (!autoTalisman && filter !== 'any' && filter !== undefined) {
+                            const [fName, fLvl] = filter.split('|');
+                            const match = skills.find(s => s.name === fName && s.level == fLvl);
+                            return match ? [match] : [];
+                        }
+                        let relevant = skills.filter(s => {
+                            const found = SKILL_BY_NAME[s.name];
+                            const sid = found ? found.id : null;
+                            return sid && targetPoints[sid];
+                        });
+                        if (relevant.length === 0) return [{ name: "None", level: 0 }];
+                        return relevant;
+                    });
+                    if (groupOptions.some(opts => opts.length === 0)) return;
+
+                    const combos = [[]];
+                    groupOptions.forEach(opts => {
+                        const next = [];
+                        combos.forEach(c => {
+                            opts.forEach(o => {
+                                if (o.name !== "None" && c.some(existing => existing.name === o.name)) return;
+                                next.push([...c, o]);
+                            });
+                        });
+                        combos.splice(0, combos.length, ...next);
+                    });
+                    combos.forEach(combo => {
+                        const tSkills = {};
+                        combo.forEach(s => {
+                            if (s.name !== "None") {
+                                const found = SKILL_BY_NAME[s.name];
+                                if (found) tSkills[found.id] = (tSkills[found.id] || 0) + s.level;
+                            }
+                        });
+                        const isW = slotStr.startsWith('W');
+                        const cleaned = slotStr.replace('W', '');
+                        const tSlots = [];
+                        for (let i = 0; i < cleaned.length; i++) {
+                            const char = cleaned[i];
+                            let lvl = 0;
+                            if (char === '①') lvl = 1; else if (char === '②') lvl = 2; else if (char === '③') lvl = 3; else if (char === '④') lvl = 4;
+                            if (lvl > 0) tSlots.push({ lvl, type: (isW && i === 0) ? 'w' : 'a' });
+                        }
+                        relevantTalismans.push({ name: `RARE${comb.rare}護石 (${slotStr})`, skills: tSkills, slots: tSlots, defense: 0, p: 'talisman' });
+                    });
+                });
+            });
+        }
 
         statusText.innerHTML = '<span class="loader"></span>装備データを絞り込み中...';
         await new Promise(r => setTimeout(r, 50));
-        
+
         try {
             const headList = prune(armorParts.head, targetPoints);
             const chestList = prune(armorParts.chest, targetPoints);
@@ -656,16 +921,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 const partMax = {};
                 let partMaxSlots = 0;
                 parts[i].forEach(p => {
-                    Object.keys(targetPoints).forEach(sid => { if ((p.skills[sid]||0) > (partMax[sid]||0)) partMax[sid] = p.skills[sid]; });
-                    const slotTotal = (p.slots || []).reduce((sum, s) => sum + ((s.lvl || s) > 0 ? 1 : 0), 0);
+                    Object.keys(targetPoints).forEach(sid => { if ((p.skills[sid] || 0) > (partMax[sid] || 0)) partMax[sid] = p.skills[sid]; });
+                    const slotTotal = (p.slots || []).reduce((sum, s) => sum + (s.lvl || s || 0), 0);
                     if (slotTotal > partMaxSlots) partMaxSlots = slotTotal;
                 });
-                Object.keys(targetPoints).forEach(sid => { maxRemainSkills[i][sid] = (partMax[sid]||0) + (i < 5 ? maxRemainSkills[i+1][sid] : 0); });
-                maxRemainSlots[i] = partMaxSlots + (i < 5 ? maxRemainSlots[i+1] : 0);
+                Object.keys(targetPoints).forEach(sid => { maxRemainSkills[i][sid] = (partMax[sid] || 0) + (i < 5 ? maxRemainSkills[i + 1][sid] : 0); });
+                maxRemainSlots[i] = partMaxSlots + (i < 5 ? maxRemainSlots[i + 1] : 0);
             }
 
             const decoBySkill = {};
-            const canBeDeco = {}; 
+            const canBeDeco = {};
             DECORATIONS.forEach(d => {
                 d.sk.forEach(s => {
                     const skId = SKILL_NAME_TO_ID[s.n];
@@ -676,12 +941,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
             });
-            for (const sid in decoBySkill) decoBySkill[sid].sort((a, b) => b.pts/b.lvl - a.pts/a.lvl || b.pts - a.pts);
+            for (const sid in decoBySkill) decoBySkill[sid].sort((a, b) => b.pts / b.lvl - a.pts / a.lvl || b.pts - a.pts);
 
             let resultsCount = 0;
             const stack = [{ part: 0, currentSkills: { ...wSkills }, currentItems: [] }];
-            let baseWeaponPotential = wSlots.length;
-            
+            let baseWeaponPotential = wSlots.reduce((a, b) => a + (b.lvl || b || 0), 0);
+
             let currentSearchTimeout = null;
             function solveChunkDFS() {
                 try {
@@ -703,8 +968,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             for (let i = currentPartItems.length - 1; i >= 0; i--) {
                                 const item = currentPartItems[i];
                                 let possible = true;
-                                const itemSlotsVal = (item.slots || []).reduce((sum, s) => sum + ((s.lvl || s) > 0 ? 1 : 0), 0);
-                                const remSlotsVal = (pIdx < 5 ? maxRemainSlots[pIdx+1] : 0);
+                                const itemSlotsVal = (item.slots || []).reduce((sum, s) => sum + (s.lvl || s || 0), 0);
+                                const remSlotsVal = (pIdx < 5 ? maxRemainSlots[pIdx + 1] : 0);
                                 const totalPotentialSlotsVal = itemSlotsVal + remSlotsVal + baseWeaponPotential;
 
                                 for (const sid in targetPoints) {
@@ -714,7 +979,13 @@ document.addEventListener('DOMContentLoaded', () => {
                                     const isAutoCat = (SKILL_BY_ID[sid].mainCategory === 'series' && wSkills.auto_ss) || (SKILL_BY_ID[sid].mainCategory === 'group' && wSkills.auto_gs);
                                     const wPot = isAutoCat ? 1 : 0;
                                     const potential = canBeDeco[sid] ? (remMax + totalPotentialSlotsVal + wPot) : (remMax + wPot);
-                                    if (cur + fixedW + potential < targetPoints[sid]) { possible = false; break; }
+                                    if (cur + fixedW + potential < targetPoints[sid]) {
+                                        const targetDebugNames = ['クイーンピアスα', 'エグゾルスメイルγ', '護火竜アームβ', '護火竜コイルβ', 'トゥナムルグリーヴγ'];
+                                        if (node.currentItems.every(it => targetDebugNames.includes(it.name)) && targetDebugNames.includes(item.name)) {
+                                            console.log(`[DEBUG] Pruned Branch in DFS! Skill: ${SKILL_BY_ID[sid].name}, Needed: ${targetPoints[sid]}, Current: ${cur + fixedW}, Potential: ${potential}`);
+                                        }
+                                        possible = false; break;
+                                    }
                                 }
 
                                 if (possible) {
@@ -740,13 +1011,13 @@ document.addEventListener('DOMContentLoaded', () => {
             function check(h, c, a, w, l, t, tPoints, wS, wSkills, deccos) {
                 const pts = {};
                 for (const sid in tPoints) {
-                    pts[sid] = (h.skills[sid]||0) + (c.skills[sid]||0) + (a.skills[sid]||0) + (w.skills[sid]||0) + (l.skills[sid]||0) + (t.skills[sid]||0);
+                    pts[sid] = (h.skills[sid] || 0) + (c.skills[sid] || 0) + (a.skills[sid] || 0) + (w.skills[sid] || 0) + (l.skills[sid] || 0) + (t.skills[sid] || 0);
                     if (wSkills[sid]) pts[sid] += wSkills[sid];
                 }
 
                 const missing = {};
                 for (const sid in tPoints) {
-                    const diff = tPoints[sid] - (pts[sid]||0);
+                    const diff = tPoints[sid] - (pts[sid] || 0);
                     if (diff > 0) missing[sid] = diff;
                 }
 
@@ -812,18 +1083,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             function calculateFinalStats(h, c, a, w, l, t, assignment, ws, wSk, aSS, aGS) {
-                let def = (h.d||0) + (c.d||0) + (a.d||0) + (w.d||0) + (l.d||0);
+                let def = (h.d || 0) + (c.d || 0) + (a.d || 0) + (w.d || 0) + (l.d || 0);
                 let res = [0, 0, 0, 0, 0];
                 [h, c, a, w, l].forEach(p => { if (p.r) p.r.forEach((v, i) => res[i] += v); });
                 const pts = {};
-                const addP = (sid, n) => { if (sid) pts[sid] = (pts[sid]||0) + n; };
+                const addP = (sid, n) => { if (sid) pts[sid] = (pts[sid] || 0) + n; };
                 [h, c, a, w, l].forEach(item => {
                     if (item.sk) item.sk.forEach(s => addP(SKILL_NAME_TO_ID[s.n], s.l));
                     if (item.ss) { const sid = SKILL_NAME_TO_ID[item.ss]; if (sid) addP(sid, 1); }
                     if (item.gs) { const sid = SKILL_NAME_TO_ID[item.gs]; if (sid) addP(sid, 1); }
                 });
                 Object.entries(t.skills).forEach(([sid, n]) => addP(sid, n));
-                Object.entries(wSk).forEach(([sid, n]) => { if (sid !== 'auto_ss' && sid!=='auto_gs') addP(sid, n); });
+                Object.entries(wSk).forEach(([sid, n]) => { if (sid !== 'auto_ss' && sid !== 'auto_gs') addP(sid, n); });
                 if (aSS) addP(aSS, 1);
                 if (aGS) addP(aGS, 1);
                 assignment.forEach(d => { if (d.deco.sk) d.deco.sk.forEach(s => addP(SKILL_NAME_TO_ID[s.n], s.l)); });
@@ -868,7 +1139,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 const uniqueResults = [];
-                groups.forEach(vs => { vs.sort((a,b) => (a.t.rare || 5) - (b.t.rare || 5)); uniqueResults.push(vs[0]); });
+                groups.forEach(vs => { vs.sort((a, b) => (a.t.rare || 5) - (b.t.rare || 5)); uniqueResults.push(vs[0]); });
 
                 if (sortType === 'def') uniqueResults.sort((a, b) => b.stats.def - a.stats.def);
                 else if (sortType.startsWith('res')) {
@@ -878,7 +1149,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 resultsContainer.innerHTML = '';
                 uniqueResults.slice(0, 100).forEach((r, idx) => {
-                    renderResult(r.h, r.c, r.a, r.w, r.l, r.t, wSlots, wSkills, r.assignment.decos, idx + 1, target, armorLabels, r.assignment.autoSS, r.assignment.autoGS, r.stats, manualWDecos);
+                    renderResult(r.h, r.c, r.a, r.w, r.l, r.t, wSlots, wSkills, r.assignment.decos, idx + 1, target, armorLabels, r.assignment.autoSS, r.assignment.autoGS, r.stats, manualWDecos, fullWSlots);
                 });
 
                 resultCountEl.textContent = `${uniqueResults.length} sets`;
@@ -892,160 +1163,223 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function renderResult(h, c, a, w, l, t, wSlots, wSkills, assignment, idx, target, labels, autoSS, autoGS, stats, manualWDecos) {
+    function renderResult(h, c, a, w, l, t, wSlots, wSkills, assignment, idx, target, labels, autoSS, autoGS, stats, manualWDecos, fullWSlots) {
         const card = document.createElement('div');
-        card.className = 'result-card';
+        card.className = 'result-card' + (idx === 1 ? ' best-match' : '');
         const armorItems = [h, c, a, w, l];
-        const getPieceDecos = (pid) => {
-            let html = '';
-            if (pid === 'weapon') {
-                manualWDecos.forEach(d => { if (d) html += `<span class="deco-label">${d.n}</span> `; });
-            }
-            html += assignment.filter(d => d.piece === pid).map(d => `<span class="deco-label">${d.deco.name}</span>`).join(' ');
-            return html;
-        };
-        const formatRes = (r) => r ? `${r[0]} / ${r[1]} / ${r[2]} / ${r[3]} / ${r[4]}` : '0 / 0 / 0 / 0 / 0';
-        const getResHtml = (r) => r.map((v) => `<span class="stat-val">${v}</span>`).join(' / ');
+        
+        const weaponNameDisplay = (autoSS || autoGS || h.ss || h.gs) ? "巨戟アーティア" : "その他";
 
-        const getFullPieceSkills = (item) => {
-            let html = '';
-            if (item.sk) {
-                item.sk.forEach(s => {
-                    if (s.n === item.ss || s.n === item.gs) return;
-                    html += `<span class="piece-skill-label">${s.n} Lv${s.l}</span> `;
-                });
-            }
-            if (item.ss) html += `<span class="special-skill-label">[S] ${item.ss}</span> `;
-            if (item.gs) html += `<span class="special-skill-label">[G] ${item.gs}</span> `;
-            return html;
+        const getWeaponSlotsHtml = () => {
+            let html = [];
+            let autoIdx = 0;
+            fullWSlots.forEach((size, i) => {
+                const manual = manualWDecos[i];
+                if (manual) {
+                    html.push(`<div class="slots-row"><span class="slot-box">[${size}]</span> <span class="deco-label">${manual.n}</span></div>`);
+                } else {
+                    const assigned = assignment.find(d => d.piece === 'weapon' && d.usedInIdx === undefined);
+                    if (assigned) {
+                        assigned.usedInIdx = i; // Mark as used
+                        html.push(`<div class="slots-row"><span class="slot-box">[${size}]</span> <span class="deco-label">${assigned.deco.name}</span></div>`);
+                    } else {
+                        html.push(`<div class="slots-row"><span class="slot-box">[${size}]</span></div>`);
+                    }
+                }
+            });
+            // Clear markers for next render if any
+            assignment.forEach(d => delete d.usedInIdx);
+            return html.join('');
         };
 
-        const getWeaponSkillsHtml = (ws, aSS, aGS) => {
-            let html = '';
-            let ss = null, gs = null;
-            Object.entries(ws).forEach(([sid, pts]) => {
+        const getDecoLabels = (pid) => {
+            let labelsHtml = [];
+            assignment.filter(d => d.piece === pid).forEach(d => labelsHtml.push(`<span class="deco-label">${d.deco.name}</span>`));
+            return labelsHtml.join(' ');
+        };
+
+        const getPieceSkillsHtml = (item) => {
+            const tags = [];
+            if (item.sk) item.sk.forEach(s => tags.push(`<span class="piece-skill-label">${s.n} Lv${s.l}</span>`));
+            if (item.ss) tags.push(`<span class="piece-skill-label special-ss">[S] ${item.ss}</span>`);
+            if (item.gs) tags.push(`<span class="piece-skill-label special-gs">[G] ${item.gs}</span>`);
+            return tags.join(' ');
+        };
+
+        const getWeaponSkillsHtml = () => {
+            const tags = [];
+            if (autoSS) tags.push(`<span class="piece-skill-label special-ss">[S] ${SKILL_BY_ID[autoSS].name}</span>`);
+            if (autoGS) tags.push(`<span class="piece-skill-label special-gs">[G] ${SKILL_BY_ID[autoGS].name}</span>`);
+            Object.entries(wSkills).forEach(([sid, pts]) => {
                 if (sid === 'auto_ss' || sid === 'auto_gs') return;
                 const s = SKILL_BY_ID[sid];
-                if (!s) return;
-                if (s.mainCategory === 'series') ss = s.name;
-                else if (s.mainCategory === 'group') gs = s.name;
-                else html += `<span class="piece-skill-label">${s.name} Lv${pts}</span> `;
+                if (s && sid !== autoSS && sid !== autoGS) {
+                    if (s.mainCategory === 'series') tags.push(`<span class="piece-skill-label special-ss">[S] ${s.name}</span>`);
+                    else if (s.mainCategory === 'group') tags.push(`<span class="piece-skill-label special-gs">[G] ${s.name}</span>`);
+                    else tags.push(`<span class="piece-skill-label">${s.name} Lv${pts}</span>`);
+                }
             });
-            if (aSS) { const s = SKILL_BY_ID[aSS]; if (s) ss = s.name; }
-            if (aGS) { const s = SKILL_BY_ID[aGS]; if (s) gs = s.name; }
-            if (ss) html += `<span class="special-skill-label">[S] ${ss}</span> `;
-            if (gs) html += `<span class="special-skill-label">[G] ${gs}</span> `;
-            return html;
+            return tags.join(' ');
         };
 
+        // 計算用マトリックス
         const matrix = {};
         const getM = (sid) => matrix[sid] || (matrix[sid] = { weapon: 0, 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, talisman: 0, total: 0 });
 
-        const wSkillsCombined = { ...wSkills };
-        if (autoSS) wSkillsCombined[autoSS] = (wSkillsCombined[autoSS] || 0) + 1;
-        if (autoGS) wSkillsCombined[autoGS] = (wSkillsCombined[autoGS] || 0) + 1;
-        Object.entries(wSkillsCombined).forEach(([sid, pts]) => {
+        Object.entries(wSkills).forEach(([sid, pts]) => {
             if (sid === 'auto_ss' || sid === 'auto_gs') return;
             getM(sid).weapon += pts; getM(sid).total += pts;
         });
-        assignment.filter(a => a.piece === 'weapon').forEach(d => {
-            if (d.deco.sk) d.deco.sk.forEach(s => { const sid = SKILL_NAME_TO_ID[s.n]; if (sid) { getM(sid).weapon += s.l; getM(sid).total += s.l; } });
+        if (autoSS) { getM(autoSS).weapon += 1; getM(autoSS).total += 1; }
+        if (autoGS) { getM(autoGS).weapon += 1; getM(autoGS).total += 1; }
+        
+        assignment.forEach(a => {
+            if (a.deco.sk) a.deco.sk.forEach(s => {
+                const sid = SKILL_NAME_TO_ID[s.n];
+                if (sid) {
+                    if (a.piece === 'weapon') getM(sid).weapon += s.l;
+                    else if (a.piece === 'talisman') getM(sid).talisman += s.l;
+                    else getM(sid)[a.piece] += s.l;
+                    getM(sid).total += s.l;
+                }
+            });
         });
+
         armorItems.forEach((item, idx) => {
             if (item.sk) item.sk.forEach(s => { const sid = SKILL_NAME_TO_ID[s.n]; if (sid) { getM(sid)[idx] += s.l; getM(sid).total += s.l; } });
             if (item.ss) { const sid = SKILL_NAME_TO_ID[item.ss]; if (sid) { getM(sid)[idx] += 1; getM(sid).total += 1; } }
             if (item.gs) { const sid = SKILL_NAME_TO_ID[item.gs]; if (sid) { getM(sid)[idx] += 1; getM(sid).total += 1; } }
-            assignment.filter(a => a.piece === idx).forEach(d => {
-                if (d.deco.sk) d.deco.sk.forEach(s => { const sid = SKILL_NAME_TO_ID[s.n]; if (sid) { getM(sid)[idx] += s.l; getM(sid).total += s.l; } });
-            });
-        });
-        Object.entries(t.skills).forEach(([sid, pts]) => { getM(sid).talisman += pts; getM(sid).total += pts; });
-        assignment.filter(a => a.piece === 'talisman').forEach(d => {
-            if (d.deco.sk) d.deco.sk.forEach(s => { const sid = SKILL_NAME_TO_ID[s.n]; if (sid) { getM(sid).talisman += s.l; getM(sid).total += s.l; } });
         });
 
-        const activatedRows = [];
-        for (const sid in matrix) {
-            const m = matrix[sid]; const skill = SKILL_BY_ID[sid]; if (!skill) continue;
-            let actualLvl = 0; let lvlText = ''; let displayName = skill.name;
-            if (skill.mainCategory === 'series' || skill.mainCategory === 'group') {
-                const required = (skill.mainCategory === 'series' ? 2 : 3);
-                actualLvl = Math.floor(m.total / required);
-                if (actualLvl > 0) {
-                    actualLvl = Math.min(actualLvl, skill.maxLevel || 1);
-                    const effect = skill.effects && skill.effects.find(e => e.level === actualLvl);
-                    if (effect && effect.name) displayName = effect.name; else lvlText = `Lv${actualLvl}`;
+        Object.entries(t.skills).forEach(([sid, pts]) => { getM(sid).talisman += pts; getM(sid).total += pts; });
+
+        // 表示用スキルの抽出
+        const activatedRows = Object.keys(matrix).filter(sid => {
+            const s = SKILL_BY_ID[sid];
+            if (s.mainCategory === 'series') return matrix[sid].total >= 2;
+            if (s.mainCategory === 'group') return matrix[sid].total >= 3; // 3点以上でリストに出す
+            return matrix[sid].total > 0;
+        }).map(sid => {
+            const s = SKILL_BY_ID[sid];
+            const m = matrix[sid];
+            let name = s.name;
+            let lvl = Math.min(m.total, s.maxLevel || 10);
+            let lvlText = `Lv${lvl}`;
+
+            if (s.mainCategory === 'series') {
+                const slvl = (m.total >= 4) ? 2 : (m.total >= 2 ? 1 : 0);
+                const effect = s.effects.find(e => e.level === slvl);
+                name = effect ? effect.name : s.name;
+                lvlText = `Lv${slvl}`;
+                lvl = slvl;
+            } else if (s.mainCategory === 'group') {
+                if (m.total >= 3) {
+                    name = s.effects[0].name;
+                    lvlText = "Lv1";
+                } else {
+                    name = s.name + " (未発動)";
+                    lvlText = "-";
                 }
-            } else {
-                actualLvl = Math.min(m.total, skill.maxLevel || 99);
-                if (actualLvl > 0) lvlText = `Lv${actualLvl}`;
+                lvl = (m.total >= 3) ? 1 : 0;
             }
-            if (actualLvl > 0) activatedRows.push({ id: sid, name: displayName, lvlText, lvl: actualLvl, mainCategory: skill.mainCategory || 'armor', originalIndex: skill.originalIndex, m });
-        }
-        const categoryPriority = { 'weapon': 1, 'armor': 2, 'series': 3, 'group': 4 };
-        activatedRows.sort((a,b) => (categoryPriority[a.mainCategory]||99) - (categoryPriority[b.mainCategory]||99) || (b.lvl - a.lvl) || (a.originalIndex - b.originalIndex));
+            return { id: sid, name, lvl, lvlText, cat: s.mainCategory || 'support', m };
+        }).sort((a,b) => {
+            const sA = SKILL_BY_ID[a.id];
+            const sB = SKILL_BY_ID[b.id];
+            
+            // 1. カテゴリ優先度 (weapon:1, armor:2, series:3, group:4)
+            const catPoints = { 'weapon': 1, 'armor': 2, 'series': 3, 'group': 4, 'support': 2, 'resistance': 2 };
+            const pA = catPoints[a.cat] || 2;
+            const pB = catPoints[b.cat] || 2;
+            if (pA !== pB) return pA - pB;
+            
+            // 2. レベル優先度 (降順)
+            if (a.lvl !== b.lvl) return b.lvl - a.lvl;
+            
+            // 3. 内部定義順 (昇順)
+            return (sA.originalIndex || 0) - (sB.originalIndex || 0);
+        });
 
         const renderVal = (v) => v > 0 ? v : '<span class="empty-cell">-</span>';
-        const skillSummaryHtml = `
-            <table class="skill-table">
-                <thead><tr><th>スキル合計</th><th>武</th><th>頭</th><th>胴</th><th>腕</th><th>腰</th><th>脚</th><th>石</th><th>計</th></tr></thead>
-                <tbody>
-                    ${activatedRows.map(r => `
-                        <tr>
-                            <td>${r.name}</td>
-                            <td class="val-cell">${renderVal(r.m.weapon)}</td>
-                            <td class="val-cell">${renderVal(r.m[0])}</td>
-                            <td class="val-cell">${renderVal(r.m[1])}</td>
-                            <td class="val-cell">${renderVal(r.m[2])}</td>
-                            <td class="val-cell">${renderVal(r.m[3])}</td>
-                            <td class="val-cell">${renderVal(r.m[4])}</td>
-                            <td class="val-cell">${renderVal(r.m.talisman)}</td>
-                            <td class="total-cell">${r.lvlText || r.lvl}</td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-        `;
 
         card.innerHTML = `
             <div class="result-header">
-                <div style="font-family: var(--font-serif); font-weight: bold; color: var(--color-accent);">SET #${idx}</div>
+                <h1 class="set-id-tag">SET #${idx}</h1>
                 <div class="defense-info">
-                    防御力: <span class="stat-val">${stats.def}</span>
-                    <span style="font-size:0.75rem; color:var(--color-text-muted); margin-left:12px; margin-right:4px;">耐:</span>
-                    <span class="stat-val" style="font-size:0.85rem;">${getResHtml(stats.res)}</span>
+                    防御力: <span class="stat-val">${stats.def}</span> &nbsp; 耐性: <span class="stat-val">${stats.res[0]} / ${stats.res[1]} / ${stats.res[2]} / ${stats.res[3]} / ${stats.res[4]}</span>
                 </div>
             </div>
             <div class="result-body">
-                <div class="armor-list">
-                    <div class="armor-item">
-                        <div class="armor-main"><span class="armor-part">武器</span><span class="armor-name">武器固有性能</span></div>
-                        <div class="piece-skills">${getWeaponSkillsHtml(wSkills, autoSS, autoGS)}</div>
-                        <div class="decoration-list">${wSlots.map(s => `[${s}]`).join(' ')} ${getPieceDecos('weapon')}</div>
+                <div class="equipment-list">
+                    <!-- 武器 -->
+                    <div class="equip-item">
+                        <div class="equip-label">武</div>
+                        <div class="equip-name">${weaponNameDisplay}</div>
+                        <div class="equip-sub">防: -- &nbsp; 耐: --/--/--/--/--</div>
+                        <div class="native-skills">${getWeaponSkillsHtml()}</div>
+                        <div class="slots-stack">
+                            ${getWeaponSlotsHtml()}
+                        </div>
                     </div>
+                    <!-- 防具各部 -->
                     ${armorItems.map((item, i) => `
-                        <div class="armor-item">
-                            <div class="armor-main"><span class="armor-part">${labels[i]}</span><span class="armor-name">${item.n}</span></div>
-                            <div class="armor-stats">
-                                <span>防: <span class="stat-val">${item.d}</span></span>
-                                <span>耐: <span class="stat-val">${formatRes(item.r)}</span></span>
-                                <span>床: <span class="stat-val">${item.sl.map(s => `[${s}]`).filter(s=>s!=="[0]").join('') || '-'}</span></span>
+                        <div class="equip-item">
+                            <div class="equip-label">${labels[i]}</div>
+                            <div class="equip-name">${item.n}</div>
+                            <div class="equip-sub">防: <span class="stat-val">${item.d}</span> &nbsp; 耐: <span class="stat-val">${item.r ? item.r.join('/') : '-'}</span></div>
+                            <div class="native-skills">${getPieceSkillsHtml(item)}</div>
+                            <div class="slots-row">
+                                ${item.sl ? item.sl.filter(s => s > 0).map(s => `<span class="slot-box">[${s}]</span>`).join('') : ''}
+                                <span class="decos-inline">${getDecoLabels(i)}</span>
                             </div>
-                            <div class="piece-skills">${getFullPieceSkills(item)}</div>
-                            <div class="decoration-list">${getPieceDecos(i)}</div>
                         </div>
                     `).join('')}
-                    <div class="armor-item">
-                        <div class="armor-main"><span class="armor-part">護石</span><span class="armor-name">${t.name}</span></div>
-                        <div class="piece-skills">${Object.entries(t.skills).map(([sid, pts]) => `<span class="piece-skill-label">${SKILL_BY_ID[sid]?.name || sid} +${pts}</span>`).join(' ')}</div>
-                        <div class="decoration-list">${t.slots.map(s => `[${s.lvl}]`).join('')} ${getPieceDecos('talisman')}</div>
+                    <!-- 護石 -->
+                    <div class="equip-item">
+                        <div class="equip-label">石</div>
+                        <div class="equip-name">${t.name}</div>
+                        <div class="equip-sub">防: 0</div>
+                        <div class="native-skills">
+                            ${Object.entries(t.skills).map(([sid, pts]) => `<span class="piece-skill-label">${SKILL_BY_ID[sid]?.name || sid} +${pts}</span>`).join(' ')}
+                        </div>
+                        <div class="slots-row">
+                            ${t.slots.map(s => `<span class="slot-box">[${s.lvl}]</span>`).join('')}
+                            <span class="decos-inline">${getDecoLabels('talisman')}</span>
+                        </div>
                     </div>
                 </div>
-                <div class="skill-summary">
-                    ${skillSummaryHtml}
+                <!-- 右側：スキル合計テーブル -->
+                <div class="totals-panel">
+                    <table class="skill-table">
+                        <thead>
+                            <tr>
+                                <th class="skill-name-cell">スキル合計</th>
+                                <th>武</th><th>頭</th><th>胴</th><th>腕</th><th>腰</th><th>脚</th><th>石</th>
+                                <th class="total-header">計</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${activatedRows.map(r => `
+                                <tr>
+                                    <td class="skill-name-cell">${r.name}</td>
+                                    <td class="val-cell">${renderVal(r.m.weapon)}</td>
+                                    <td class="val-cell">${renderVal(r.m[0])}</td>
+                                    <td class="val-cell">${renderVal(r.m[1])}</td>
+                                    <td class="val-cell">${renderVal(r.m[2])}</td>
+                                    <td class="val-cell">${renderVal(r.m[3])}</td>
+                                    <td class="val-cell">${renderVal(r.m[4])}</td>
+                                    <td class="val-cell">${renderVal(r.m.talisman)}</td>
+                                    <td class="total-cell">${r.lvlText}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         `;
+
         resultsContainer.appendChild(card);
     }
+
+
 });

@@ -24,11 +24,11 @@ function parseSkillsFromText(text, skills) {
         .sort((a, b) => b.name.length - a.name.length);
 
     for (const skill of sortedSkills) {
-        const esc = skill.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const escName = skill.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-        // スキル名 + ローマ数字(省略可) + Lv + 数字
+        // 1. スキル名 + Lv 表記のチェック (例: 攻撃 Lv4)
         const lvPat = new RegExp(
-            esc + '[\\s　]*[Ⅰ-Ⅹⅰ-ⅹ]?[\\s　]*[Ll][Vv][.．]?[\\s　]*([1-9][0-9]?)', 'g'
+            escName + '[\\s　]*[Ⅰ-Ⅹⅰ-ⅹ]?[\\s　]*[Ll][Vv][.．]?[\\s　]*([1-9][0-9]?)', 'g'
         );
         const m = [...normalized.matchAll(lvPat)];
         if (m.length > 0) {
@@ -37,8 +37,23 @@ function parseSkillsFromText(text, skills) {
             continue;
         }
 
-        // Lv なし・maxLevel=1 → スキル名があれば Lv1
-        if (skill.maxLevel === 1 && normalized.includes(skill.name) && !results[skill.id]) {
+        // 2. 発動スキル名でのチェック (シリーズ/グループスキル用、例: 灼熱化Ⅰ, 根性【果敢】)
+        if (skill.effects) {
+            // 文字数の長い方からチェックして誤判定を防ぐ
+            const sortedEffects = [...skill.effects].sort((a, b) => (b.name ? b.name.length : 0) - (a.name ? a.name.length : 0));
+            for (const effect of sortedEffects) {
+                if (effect.name && normalized.includes(effect.name)) {
+                    if (!results[skill.id]) {
+                        results[skill.id] = effect.level;
+                        break; 
+                    }
+                }
+            }
+            if (results[skill.id]) continue;
+        }
+
+        // 3. スキル名単体でのチェック (maxLevel=1 の場合や、Lv 表記がない場合)
+        if (normalized.includes(skill.name) && !results[skill.id]) {
             results[skill.id] = 1;
         }
     }
