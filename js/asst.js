@@ -178,12 +178,52 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnClearSkills = document.getElementById('btn-clear-skills');
     const cachedSkillSelects = {};
 
+    const updateWeaponSkillSelects = () => {
+        if (weaponSsSelect) {
+            const currentVal = weaponSsSelect.value;
+            weaponSsSelect.innerHTML = '<option value="">武器固有：自動選択</option>';
+            SKILLS.filter(s => s.mainCategory === 'series').forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.id;
+                opt.textContent = (targetSkills[s.id] ? '★ ' : '') + s.name;
+                weaponSsSelect.appendChild(opt);
+            });
+            weaponSsSelect.value = currentVal;
+        }
+        if (weaponGsSelect) {
+            const currentVal = weaponGsSelect.value;
+            weaponGsSelect.innerHTML = '<option value="">武器固有：自動選択</option>';
+            SKILLS.filter(s => s.mainCategory === 'group').forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.id;
+                opt.textContent = (targetSkills[s.id] ? '★ ' : '') + s.name;
+                weaponGsSelect.appendChild(opt);
+            });
+            weaponGsSelect.value = currentVal;
+        }
+    };
+
     //初期表示のスキル構成バッジ更新関数
     const updateTargetSummary = () => {
         const targetSummaryEl = document.getElementById('target-summary');
         if (!targetSummaryEl) return;
         targetSummaryEl.innerHTML = '';
-        Object.keys(targetSkills).forEach(sid => {
+        
+        // 仕様に基づくソート: メインカテゴリ > レベル > 内部順序
+        const sortedIds = Object.keys(targetSkills).sort((a, b) => {
+            const sA = SKILL_BY_ID[a], sB = SKILL_BY_ID[b];
+            const lA = targetSkills[a], lB = targetSkills[b];
+            
+            const catPoints = { 'weapon': 1, 'armor': 2, 'series': 3, 'group': 4 };
+            const pA = catPoints[sA.mainCategory] || 2;
+            const pB = catPoints[sB.mainCategory] || 2;
+            if (pA !== pB) return pA - pB;
+            
+            if (lA !== lB) return lB - lA;
+            return (sA.originalIndex || 0) - (sB.originalIndex || 0);
+        });
+
+        sortedIds.forEach(sid => {
             const s = SKILL_BY_ID[sid];
             if (!s) return;
             const badge = document.createElement('span');
@@ -199,6 +239,9 @@ document.addEventListener('DOMContentLoaded', () => {
             badge.textContent = label;
             targetSummaryEl.appendChild(badge);
         });
+
+        // 武器設定の☆マークも更新
+        updateWeaponSkillSelects();
     };
 
     // 初期化実行
@@ -221,16 +264,17 @@ document.addEventListener('DOMContentLoaded', () => {
             mainHeader.textContent = MAIN_CATEGORY_NAMES[mainCat];
             skillsSelectionList.appendChild(mainHeader);
 
-            const subCategories = ['attack', 'affinity', 'element', 'ammo', 'utility', null];
-            subCategories.forEach(subCat => {
+            const SUB_CATEGORY_NAMES = { attack: '攻撃力強化', affinity: '会心率', element: '属性・状態異常', ammo: '弾・矢強化', utility: 'その他' };
+            const SUB_CATEGORY_ORDER = ['attack', 'affinity', 'element', 'ammo', 'utility', null];
+
+            SUB_CATEGORY_ORDER.forEach(subCat => {
                 const subSkills = catSkills.filter(s => s.subCategory === subCat);
                 if (subSkills.length === 0) return;
 
                 if (subCat !== null) {
                     const subHeader = document.createElement('div');
                     subHeader.className = 'skill-subcategory-title';
-                    const catNames = { attack: '攻撃力強化', affinity: '会心率', element: '属性・状態異常', ammo: '弾・矢強化', utility: 'その他' };
-                    subHeader.textContent = catNames[subCat] || '';
+                    subHeader.textContent = SUB_CATEGORY_NAMES[subCat] || '';
                     skillsSelectionList.appendChild(subHeader);
                 }
 
@@ -242,14 +286,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     const effectName = (skill.effects && skill.effects[0]) ? skill.effects[0].name : null;
                     let displayName = (skill.mainCategory === 'series' || skill.mainCategory === 'group') && effectName ? effectName : skill.name;
                     
-                    // 検索用キーワードの集約 (シリーズ名、表示名、各レベルの正式名称)
+                    // 検索用キーワード
                     const searchKeys = [skill.name.toLowerCase()];
                     if (effectName) searchKeys.push(effectName.toLowerCase());
                     if (skill.effects) {
                         skill.effects.forEach(e => { if (e.name) searchKeys.push(e.name.toLowerCase()); });
                     }
                     
-                    // リスト表示用ラベルからはローマ数字を削除（ユーザー指定の表示ルール）
                     if (skill.mainCategory === 'series' || skill.mainCategory === 'group') {
                         displayName = displayName.replace(/[ⅠⅡⅢⅣⅤ]$/, '').trim();
                     }
@@ -317,7 +360,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const updateActiveSkillsUI = () => {
         if (!activeSkillsList) return;
         activeSkillsList.innerHTML = '';
-        Object.keys(targetSkills).sort((a, b) => (SKILL_BY_ID[a]?.originalIndex || 0) - (SKILL_BY_ID[b]?.originalIndex || 0)).forEach(sid => {
+        
+        // 仕様に基づくソート: メインカテゴリ > レベル > 内部順序
+        const sortedIds = Object.keys(targetSkills).sort((a, b) => {
+            const sA = SKILL_BY_ID[a], sB = SKILL_BY_ID[b];
+            const lA = targetSkills[a], lB = targetSkills[b];
+            
+            const catPoints = { 'weapon': 1, 'armor': 2, 'series': 3, 'group': 4 };
+            const pA = catPoints[sA.mainCategory] || 2;
+            const pB = catPoints[sB.mainCategory] || 2;
+            if (pA !== pB) return pA - pB;
+            
+            if (lA !== lB) return lB - lA;
+            return (sA.originalIndex || 0) - (sB.originalIndex || 0);
+        });
+
+        sortedIds.forEach(sid => {
             const skill = SKILL_BY_ID[sid];
             if (!skill) return;
             const badge = document.createElement('div');
@@ -450,27 +508,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     initSkillSelectionUI();
-
-    if (weaponSsSelect) {
-        weaponSsSelect.innerHTML = '<option value="">武器固有：自動選択</option>';
-        SKILLS.filter(s => s.mainCategory === 'series').forEach(s => {
-            const opt = document.createElement('option');
-            opt.value = s.id;
-            opt.textContent = (targetSkills[s.id] ? '★ ' : '') + s.name;
-            weaponSsSelect.appendChild(opt);
-        });
-        weaponSsSelect.value = ""; // デフォルト自動選択
-    }
-    if (weaponGsSelect) {
-        weaponGsSelect.innerHTML = '<option value="">武器固有：自動選択</option>';
-        SKILLS.filter(s => s.mainCategory === 'group').forEach(s => {
-            const opt = document.createElement('option');
-            opt.value = s.id;
-            opt.textContent = (targetSkills[s.id] ? '★ ' : '') + s.name;
-            weaponGsSelect.appendChild(opt);
-        });
-        weaponGsSelect.value = ""; // デフォルト自動選択
-    }
 
     // Talisman UI Setup
     const tRareSelect = document.getElementById('talisman-rare');
@@ -944,6 +981,10 @@ document.addEventListener('DOMContentLoaded', () => {
             for (const sid in decoBySkill) decoBySkill[sid].sort((a, b) => b.pts / b.lvl - a.pts / a.lvl || b.pts - a.pts);
 
             let resultsCount = 0;
+            let uniqueSetCount = 0;
+            const uniqueSetCountedKeys = new Set();
+            let isInterrupted = false;
+
             const stack = [{ part: 0, currentSkills: { ...wSkills }, currentItems: [] }];
             let baseWeaponPotential = wSlots.reduce((a, b) => a + (b.lvl || b || 0), 0);
 
@@ -957,12 +998,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         if (pIdx === 6) {
                             const [h, c, a, w, l, t] = node.currentItems;
+                            const key = `${h.id}-${c.id}-${a.id}-${w.id}-${l.id}`;
                             const assignment = check(h, c, a, w, l, t, targetPoints, wSlots, wSkills, decoBySkill);
                             if (assignment) {
-                                resultsCount++;
                                 allResults.push({ h, c, a, w, l, t, assignment });
+                                if (uniqueSetCountedKeys && !uniqueSetCountedKeys.has(key)) {
+                                    uniqueSetCountedKeys.add(key);
+                                    uniqueSetCount++;
+                                }
                             }
-                            if (resultsCount >= 2000) { break; }
+                            if (uniqueSetCount >= 30) {
+                                isInterrupted = true;
+                                break;
+                            }
                         } else {
                             const currentPartItems = parts[pIdx];
                             for (let i = currentPartItems.length - 1; i >= 0; i--) {
@@ -1001,7 +1049,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             return;
                         }
                     }
-                    finish(allResults);
+                    if (isInterrupted) {
+                        statusText.innerHTML = '<span style="color:var(--accent-color); font-weight:bold;">⚠ 検索結果が30件を超えたため中断しました。条件をさらに絞り込んでください。</span>';
+                    }
+                    finish(allResults, isInterrupted);
                 } catch (e) {
                     console.error("solveChunkDFS Error:", e);
                     statusText.innerHTML = `<span style="color:red">検索中のエラー(DFS): ${e.message}</span>`;
@@ -1115,7 +1166,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return { def, res };
             }
 
-            function finish(results) {
+            function finish(results, interrupted = false) {
                 progressBar.style.width = '100%';
                 const sortType = document.getElementById('search-sort-type').value;
 
@@ -1153,7 +1204,89 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 resultCountEl.textContent = `${uniqueResults.length} sets`;
-                statusText.textContent = `検索完了! ${uniqueResults.length}種類の装備構成が見つかりました。${results.length > uniqueResults.length ? ` (全${results.length}パターンから集約表示)` : ''}`;
+                if (!interrupted) {
+                    statusText.textContent = `検索完了! ${uniqueResults.length}種類の装備構成が見つかりました。${results.length > uniqueResults.length ? ` (全${results.length}パターンから集約表示)` : ''}`;
+                }
+
+                // 「追加可能なスキル」の解析 (上位30件対象)
+                const addableSkillsSet = new Map(); // skillId -> count
+                uniqueResults.slice(0, 30).forEach(r => {
+                    const hS = r.h.slots.map(s => ({ lvl: s.lvl || s, type: 'a' }));
+                    const cS = r.c.slots.map(s => ({ lvl: s.lvl || s, type: 'a' }));
+                    const aS = r.a.slots.map(s => ({ lvl: s.lvl || s, type: 'a' }));
+                    const wS_part = r.w.slots.map(s => ({ lvl: s.lvl || s, type: 'a' }));
+                    const lS = r.l.slots.map(s => ({ lvl: s.lvl || s, type: 'a' }));
+                    const tS = r.t.slots.map(s => ({ lvl: s.lvl || s, type: s.type || 'a' }));
+                    const wSlotFixed = wSlots.map(s => ({ lvl: s, type: 'w' }));
+                    
+                    const totalSlots = [...hS, ...cS, ...aS, ...wS_part, ...lS, ...tS, ...wSlotFixed].filter(s => s.lvl > 0);
+                    // 使ったスロットを除く
+                    r.assignment.decos.forEach(d => {
+                        const idx = totalSlots.findIndex(ts => ts.lvl >= d.deco.lvl && ts.type === d.deco.type);
+                        if (idx !== -1) totalSlots.splice(idx, 1);
+                    });
+                    
+                    // 空きスロットがある場合のみ解析
+                    if (totalSlots.length > 0) {
+                        SKILLS.forEach(s => {
+                            if (s.mainCategory !== 'weapon' && s.mainCategory !== 'armor') return;
+                            const currentLv = targetSkills[s.id] || 0;
+                            if (currentLv >= s.maxLevel) return;
+                            
+                            // このスキルを上げられるか装飾品でチェック
+                            const usableDecos = (decoBySkill[s.id] || []).filter(d => totalSlots.some(ts => ts.lvl >= d.lvl && ts.type === d.type));
+                            if (usableDecos.length > 0) {
+                                addableSkillsSet.set(s.id, (addableSkillsSet.get(s.id) || 0) + 1);
+                            }
+                        });
+                    }
+                });
+
+                if (addableSkillsSet.size > 0) {
+                    const topAddable = Array.from(addableSkillsSet.entries())
+                        .map(([sid, count]) => ({ id: sid, count, name: SKILL_BY_ID[sid].name }))
+                        .sort((a, b) => b.count - a.count)
+                        .slice(0, 10);
+
+                    const summaryEl = document.getElementById('target-summary');
+                    if (summaryEl) {
+                        const addableArea = document.createElement('div');
+                        addableArea.style.marginTop = '1rem';
+                        addableArea.style.width = '100%';
+                        addableArea.style.padding = '0.8rem';
+                        addableArea.style.background = 'rgba(255, 204, 0, 0.05)';
+                        addableArea.style.border = '1px dashed rgba(255, 204, 0, 0.3)';
+                        addableArea.style.borderRadius = '4px';
+                        
+                        let html = `<div style="font-size: 0.8rem; color: var(--accent-color); margin-bottom: 0.5rem; font-weight: bold;">
+                                        <span style="font-size:1rem">💡</span> 抽出された構成にさらに追加可能なスキル（目安）:
+                                     </div><div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">`;
+                        
+                        topAddable.forEach(x => {
+                            html += `<button class="btn add-suggest-btn" data-sid="${x.id}" style="font-size: 0.7rem; padding: 2px 8px; background: rgba(255,255,255,0.05); border: 1px solid #444; color: #eee; cursor:pointer;" title="${x.count}個の構成で追加可能">＋ ${x.name}</button>`;
+                        });
+                        html += `</div>`;
+                        addableArea.innerHTML = html;
+                        summaryEl.appendChild(addableArea);
+                        
+                        // ボタンクリックでスキルを選択
+                        addableArea.querySelectorAll('.add-suggest-btn').forEach(btn => {
+                            btn.onclick = () => {
+                                const sid = btn.dataset.sid;
+                                const select = cachedSkillSelects[sid];
+                                if (select) {
+                                    const current = parseInt(select.value);
+                                    if (current < select.options.length - 1) {
+                                        select.value = current + 1;
+                                        select.dispatchEvent(new Event('change'));
+                                        // 自動で再検索される
+                                        startSearch();
+                                    }
+                                }
+                            };
+                        });
+                    }
+                }
             }
 
             solveChunkDFS();

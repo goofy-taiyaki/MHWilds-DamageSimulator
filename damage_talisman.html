@@ -259,7 +259,8 @@
             background-image: url('icon/talisman_skill_bg.png');
             background-size: 100% 100%;
             background-repeat: no-repeat;
-            padding: 0.5rem 1rem 0.6rem 0.4rem; /* Adjusted for left shift */
+            padding: 0.5rem 1rem 0.6rem 0.4rem;
+            /* Adjusted for left shift */
             margin-bottom: 1px;
             align-items: flex-start;
             position: relative;
@@ -268,13 +269,15 @@
         }
 
         .tc-skill-icon-frame {
-            width: 42px; /* Slightly more compact */
+            width: 42px;
+            /* Slightly more compact */
             height: 42px;
             display: flex;
             justify-content: center;
             align-items: center;
             position: relative;
-            margin-right: 0.5rem; /* Reduced for left shift */
+            margin-right: 0.5rem;
+            /* Reduced for left shift */
             flex-shrink: 0;
             background: rgba(20, 20, 15, 0.9);
             clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
@@ -428,7 +431,8 @@
             color: #aaa;
             width: 28px;
             height: 28px;
-            border-radius: 4px; /* More square-ish to match theme */
+            border-radius: 4px;
+            /* More square-ish to match theme */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -463,20 +467,20 @@
 
 <body>
     <div class="container">
-    <header class="site-header">
-        <nav class="site-nav container">
-            <a href="index.html" class="logo-link">
-                <img src="icon/title.png" alt="DAMAGE _SIMULATOR" class="site-logo">
-            </a>
-            <div class="nav-links">
-                <a href="index.html" class="nav-link">ダメージ計算</a>
-                <a href="asst.html" class="nav-link">ASST</a>
-                <a href="damage_talisman.html" class="nav-link active">お守り検索</a>
-                <a href="talisman.html" class="nav-link">お守りリスト</a>
-                <a href="database.html" class="nav-link">データベース</a>
-            </div>
-        </nav>
-    </header>
+        <header class="site-header">
+            <nav class="site-nav container">
+                <a href="index.html" class="logo-link">
+                    <img src="icon/title.png" alt="DAMAGE _SIMULATOR" class="site-logo">
+                </a>
+                <div class="nav-links">
+                    <a href="index.html" class="nav-link">ダメージ計算</a>
+                    <a href="asst.html" class="nav-link">ASST</a>
+                    <a href="damage_talisman.html" class="nav-link active">お守り検索</a>
+                    <a href="talisman.html" class="nav-link">お守りリスト</a>
+                    <a href="database.html" class="nav-link">データベース</a>
+                </div>
+            </nav>
+        </header>
 
         <!-- Favorites Section -->
         <section class="glass-card" style="padding: 0; margin-bottom: 2rem;">
@@ -494,6 +498,14 @@
             <details class="premium-filter" open>
                 <summary>絞り込み条件を詳細設定</summary>
                 <div class="filter-body">
+                    <div
+                        style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; background: rgba(212, 175, 55, 0.1); padding: 0.6rem 1rem; border-radius: 4px; border: 1px solid rgba(212, 175, 55, 0.2);">
+                        <input type="checkbox" id="fav-only-toggle" style="width: 18px; height: 18px; cursor: pointer;">
+                        <label for="fav-only-toggle"
+                            style="font-weight: bold; color: var(--color-primary); cursor: pointer; display: flex; align-items: center; gap: 0.3rem;">
+                            <span style="font-size: 1.1rem;">★</span> お気に入りのみ表示
+                        </label>
+                    </div>
                     <div class="search-controls">
                         <!-- Controls remain as is -->
                         <div class="input-group">
@@ -571,9 +583,20 @@
         const slotSelect = document.getElementById('slot-select');
         const btnSearch = document.getElementById('btn-search');
         const loading = document.getElementById('loading');
+        const favOnlyToggle = document.getElementById('fav-only-toggle');
 
-        // Favorites System
+        // Favorites System (Talismans)
         let favorites = JSON.parse(localStorage.getItem('mhwilds_fav_talismans') || '[]');
+
+        // Favorite Skills System (Added)
+        let favSkills = JSON.parse(localStorage.getItem('mhwilds_fav_skills') || '[]');
+
+        // Load fav only toggle state
+        favOnlyToggle.checked = localStorage.getItem('mhwilds_talisman_fav_only') === 'true';
+        favOnlyToggle.onchange = () => {
+            localStorage.setItem('mhwilds_talisman_fav_only', favOnlyToggle.checked);
+            updateSkill1Dropdown();
+        };
 
         function saveFavorites() {
             localStorage.setItem('mhwilds_fav_talismans', JSON.stringify(favorites));
@@ -622,8 +645,15 @@
             selectEl.innerHTML = '<option value="any">指定なし</option>';
             const sortedGIDs = Array.from(groupIds).sort((a, b) => a - b);
 
+            const isFavOnly = favOnlyToggle.checked;
+
             sortedGIDs.forEach(gid => {
-                const skills = getSortedSkillsForGroup(gid).filter(s => !excludeSkillNames.includes(s.name));
+                let skills = getSortedSkillsForGroup(gid).filter(s => !excludeSkillNames.includes(s.name));
+
+                if (isFavOnly) {
+                    skills = skills.filter(s => favSkills.includes(`${s.name}|${s.level}`));
+                }
+
                 if (skills.length === 0) return;
 
                 // Header
@@ -766,8 +796,9 @@
                 ? TALISMAN_COMBINATIONS
                 : TALISMAN_COMBINATIONS.filter(p => p.rare == targetRare);
 
+            const isFavOnly = favOnlyToggle.checked;
+
             for (const p of patterns) {
-                // ... same loop as before
                 const g1 = TALISMAN_GROUPS[p.s1] || [];
                 const g2 = TALISMAN_GROUPS[p.s2] || [];
                 const g3 = p.s3 ? (TALISMAN_GROUPS[p.s3] || []) : [{ name: '-', level: '' }];
@@ -775,17 +806,28 @@
 
                 for (const s1 of g1) {
                     if (targetS1Key !== 'any' && `${s1.name}|${s1.level}` !== targetS1Key) continue;
+
                     for (const s2 of g2) {
                         if (s2.name !== '-' && s1.name !== '-' && s2.name === s1.name) continue;
                         if (targetS2Key !== 'any' && `${s2.name}|${s2.level}` !== targetS2Key) continue;
+
                         for (const s3 of g3) {
                             if (s3.name !== '-' && (s3.name === s1.name || s3.name === s2.name)) continue;
                             if (targetS3Key !== 'any' && `${s3.name}|${s3.level}` !== targetS3Key) continue;
+
+                            const currentSkills = [s1, s2, s3].filter(s => s.name !== '-');
+
+                            // お気に入りのみ表示がONの場合、いずれかのスキルがお気に入りに入っていることを必須とする（十分条件）
+                            if (isFavOnly) {
+                                const hasFav = currentSkills.some(s => favSkills.includes(`${s.name}|${s.level}`));
+                                if (!hasFav) continue;
+                            }
+
                             for (const slot of slots) {
                                 if (targetSlot !== 'any' && slot !== targetSlot) continue;
                                 results.push({
                                     rare: p.rare,
-                                    skills: [s1, s2, s3].filter(s => s.name !== '-'),
+                                    skills: currentSkills,
                                     slot: slot
                                 });
                                 if (results.length >= maxResults) break;
@@ -827,6 +869,7 @@
                 let skillsHtml = '';
                 res.skills.forEach(s => {
                     const isDamage = DAMAGE_RELATED_SKILLS.includes(s.name);
+                    const isFavSkill = favSkills.includes(`${s.name}|${s.level}`);
                     let maxLvl = 3;
                     let iconCat = 'placeholder';
                     const mSkill = SKILLS.find(x => x.name === s.name);
@@ -836,9 +879,9 @@
                     }
                     if (s.name === '砲弾装填') { maxLvl = 2; iconCat = 'reinforce_skill'; }
                     if (s.name === '地質学' || s.name === '氷耐性') { maxLvl = 3; iconCat = 'gathering_skill'; }
-                    
+
                     const actualLvl = parseInt(s.level, 10);
-                    if (actualLvl > maxLvl) maxLvl = actualLvl; // Ensure we show enough squares for the level
+                    if (actualLvl > maxLvl) maxLvl = actualLvl;
                     let squaresHtml = '';
                     for (let i = 0; i < maxLvl; i++) {
                         if (i < actualLvl) squaresHtml += '<div class="sq-fill"></div>';
@@ -848,10 +891,15 @@
                         ? `<img src="icon/skills/${iconCat}.webp" class="tc-skill-icon" onerror="this.src='icon/skills/${iconCat}.png'; this.onerror='';">`
                         : `<div class="tc-skill-icon"></div>`;
 
+                    const favIcon = isFavSkill ? '<span style="color:#ffcc00; margin-right:4px; text-shadow: 0 0 5px rgba(255,204,0,0.5);">★</span>' : '';
+
                     skillsHtml += `<div class="tc-skill-item">
                         <div class="tc-skill-icon-frame">${iconEl}</div>
                         <div class="tc-skill-content">
-                            <div class="tc-skill-name-row"><span class="tc-skill-name">${s.name}</span><span class="tc-skill-lv">Lv${actualLvl}</span></div>
+                            <div class="tc-skill-name-row">
+                                <span class="tc-skill-name">${favIcon}${s.name}</span>
+                                <span class="tc-skill-lv">Lv${actualLvl}</span>
+                            </div>
                             <div class="tc-skill-squares">${squaresHtml}</div>
                         </div>
                     </div>`;

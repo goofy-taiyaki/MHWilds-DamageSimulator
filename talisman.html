@@ -328,6 +328,30 @@
         .section-body {
             padding: 2rem;
         }
+
+        /* Favorite Star Styles */
+        .fav-star {
+            cursor: pointer;
+            color: #444;
+            font-size: 1.2rem;
+            margin-right: 0.5rem;
+            transition: color 0.2s, transform 0.1s;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .fav-star:hover {
+            transform: scale(1.2);
+            color: #666;
+        }
+        .fav-star.active {
+            color: var(--color-primary);
+        }
+        .fav-star.active::before {
+            content: '★';
+        }
+        .fav-star:not(.active)::before {
+            content: '☆';
+        }
     </style>
 </head>
 
@@ -388,6 +412,7 @@
                     <table id="group-table">
                         <thead>
                             <tr>
+                                <th style="width: 40px;">★</th>
                                 <th>スキル名</th>
                                 <th>レベル</th>
                             </tr>
@@ -409,6 +434,20 @@
         const rareTabs = document.getElementById('rare-tabs');
         const groupTabs = document.getElementById('group-tabs');
         const groupBody = document.getElementById('group-body');
+
+        // Favorite Skills Management
+        let favSkills = JSON.parse(localStorage.getItem('mhwilds_fav_skills') || '[]');
+
+        function toggleFavSkill(skillName, level) {
+            const key = `${skillName}|${level}`;
+            const index = favSkills.indexOf(key);
+            if (index > -1) {
+                favSkills.splice(index, 1);
+            } else {
+                favSkills.push(key);
+            }
+            localStorage.setItem('mhwilds_fav_skills', JSON.stringify(favSkills));
+        }
 
         const groupColors = {
             1: '#27ae60', 2: '#e67e22', 3: '#8e44ad', 4: '#f1c40f', 5: '#3498db',
@@ -503,7 +542,22 @@
             const skills = TALISMAN_GROUPS[groupId] || [];
             skills.forEach(s => {
                 const tr = document.createElement('tr');
-                tr.innerHTML = `<td>${s.name}</td><td>Lv${s.level}</td>`;
+                const isFav = favSkills.includes(`${s.name}|${s.level}`);
+                
+                tr.innerHTML = `
+                    <td style="text-align: center;">
+                        <span class="fav-star ${isFav ? 'active' : ''}" data-skill="${s.name}" data-level="${s.level}"></span>
+                    </td>
+                    <td>${s.name}</td>
+                    <td>Lv${s.level}</td>
+                `;
+                
+                const star = tr.querySelector('.fav-star');
+                star.onclick = () => {
+                    toggleFavSkill(s.name, s.level);
+                    star.classList.toggle('active');
+                };
+                
                 groupBody.appendChild(tr);
             });
         }
