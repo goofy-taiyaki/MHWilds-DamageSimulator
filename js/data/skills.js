@@ -668,27 +668,22 @@ export const SKILLS = [
     "effects": [
       {
         "level": 1,
-        "attackAdd": 3,
         "affinity": 5
       },
       {
         "level": 2,
-        "attackAdd": 5,
         "affinity": 10
       },
       {
         "level": 3,
-        "attackAdd": 10,
         "affinity": 15
       },
       {
         "level": 4,
-        "attackAdd": 15,
         "affinity": 20
       },
       {
         "level": 5,
-        "attackAdd": 20,
         "affinity": 30
       }
     ]
@@ -724,18 +719,15 @@ export const SKILLS = [
     "effects": [
       {
         "level": 1,
-        "elementAdd": 8,
-        "elementMult": 0.1
+        "elementAdd": 80
       },
       {
         "level": 2,
-        "elementAdd": 12,
-        "elementMult": 0.15
+        "elementAdd": 120
       },
       {
         "level": 3,
-        "elementAdd": 18,
-        "elementMult": 0.2
+        "elementAdd": 180
       }
     ]
   },
@@ -1219,27 +1211,22 @@ export const SKILLS = [
     "effects": [
       {
         "level": 1,
-        "attackAdd": 70,
         "affinity": 10
       },
       {
         "level": 2,
-        "attackAdd": 70,
         "affinity": 20
       },
       {
         "level": 3,
-        "attackAdd": 50,
         "affinity": 30
       },
       {
         "level": 4,
-        "attackAdd": 50,
         "affinity": 40
       },
       {
         "level": 5,
-        "attackAdd": 50,
         "affinity": 50
       }
     ]
@@ -1252,19 +1239,19 @@ export const SKILLS = [
     "maxLevel": 5,
     "effects": [
       {
-        "level": 1,
-        "attackAdd": 50
+        "level": 1
       },
       {
         "level": 2,
-        "attackAdd": 50,
         "attackMult": 0.05
       },
       {
-        "level": 3
+        "level": 3,
+        "attackMult": 0.05
       },
       {
-        "level": 4
+        "level": 4,
+        "attackMult": 0.1
       },
       {
         "level": 5,
@@ -1704,20 +1691,16 @@ export const SKILLS = [
         "level": 1
       },
       {
-        "level": 2,
-        "attackMult": 0.2
+        "level": 2
       },
       {
-        "level": 3,
-        "attackMult": 0.6
+        "level": 3
       },
       {
-        "level": 4,
-        "attackMult": 1
+        "level": 4
       },
       {
-        "level": 5,
-        "attackMult": 1.5
+        "level": 5
       }
     ]
   },
@@ -1978,17 +1961,14 @@ export const SKILLS = [
     "effects": [
       {
         "level": 1,
-        "attackAdd": 30,
         "attackMult": 0.05
       },
       {
         "level": 2,
-        "attackAdd": 30,
         "attackMult": 0.1
       },
       {
         "level": 3,
-        "attackAdd": 30,
         "attackMult": 0.15
       }
     ]
@@ -2002,17 +1982,14 @@ export const SKILLS = [
     "effects": [
       {
         "level": 1,
-        "attackAdd": 3,
         "affinity": 3
       },
       {
         "level": 2,
-        "attackAdd": 6,
         "affinity": 6
       },
       {
         "level": 3,
-        "attackAdd": 10,
         "affinity": 10
       }
     ]
@@ -2640,17 +2617,19 @@ export const SKILLS = [
   },
   {
     "id": "power_proud",
-    "name": "闢獣の力",
+    "name": "闘獣の力",
     "mainCategory": "series",
     "subCategory": null,
     "maxLevel": 2,
     "effects": [
       {
-        "level": 2,
+        "level": 1,
+        "name": "力自慢 I",
         "attackAdd": 10
       },
       {
-        "level": 4,
+        "level": 2,
+        "name": "力自慢 II",
         "attackAdd": 25
       }
     ]
@@ -2664,27 +2643,29 @@ export const SKILLS = [
     "effects": [
       {
         "level": 1,
-        "name": "灼熱化Ⅰ"
+        "name": "灼熱化 I"
       },
       {
         "level": 2,
-        "name": "灼熱化Ⅱ"
+        "name": "灼熱化 II"
       }
     ]
   },
   {
     "id": "bold_table",
-    "name": "暗器蛸の力",
+    "name": "暗器蜘蛛の力",
     "mainCategory": "series",
     "subCategory": null,
     "maxLevel": 2,
     "effects": [
       {
-        "level": 2,
+        "level": 1,
+        "name": "蛮勇の食卓 I",
         "attackAdd": 15
       },
       {
-        "level": 4,
+        "level": 2,
+        "name": "蛮勇の食卓 II",
         "attackAdd": 30
       }
     ]
@@ -2698,11 +2679,11 @@ export const SKILLS = [
     "effects": [
       {
         "level": 1,
-        "name": "無傷の重装Ⅰ"
+        "name": "無傷の重装 I"
       },
       {
         "level": 2,
-        "name": "無傷の重装Ⅱ"
+        "name": "無傷の重装 II"
       }
     ]
   },
@@ -2714,11 +2695,13 @@ export const SKILLS = [
     "effects": [
       {
         "level": 1,
-        "name": "ウォークライⅠ"
+        "name": "ウォークライ I",
+        "attackAdd": 3
       },
       {
         "level": 2,
-        "name": "ウォークライⅡ"
+        "name": "ウォークライ II",
+        "attackAdd": 6
       }
     ]
   },
@@ -2730,11 +2713,13 @@ export const SKILLS = [
     "maxLevel": 2,
     "effects": [
       {
-        "level": 2,
+        "level": 1,
+        "name": "連撃強化 I",
         "attackAdd": 8
       },
       {
-        "level": 4,
+        "level": 2,
+        "name": "連撃強化 II",
         "attackAdd": 18
       }
     ]
@@ -2748,11 +2733,11 @@ export const SKILLS = [
     "effects": [
       {
         "level": 1,
-        "name": "無尽蔵Ⅰ"
+        "name": "無尽蔵 I"
       },
       {
         "level": 2,
-        "name": "無尽蔵Ⅱ"
+        "name": "無尽蔵 II"
       }
     ]
   },
@@ -2765,11 +2750,11 @@ export const SKILLS = [
     "effects": [
       {
         "level": 1,
-        "name": "守護のヴェールⅠ"
+        "name": "守護のヴェール I"
       },
       {
         "level": 2,
-        "name": "守護のヴェールⅡ"
+        "name": "守護のヴェール II"
       }
     ]
   },
@@ -2782,30 +2767,28 @@ export const SKILLS = [
     "effects": [
       {
         "level": 1,
-        "name": "雷々響鳴Ⅰ"
+        "name": "雷々響鳴 I"
       },
       {
         "level": 2,
-        "name": "雷々響鳴Ⅱ"
+        "name": "雷々響鳴 II"
       }
     ]
   },
   {
     "id": "hell_octopus_rebellion",
-    "name": "獄焔蛸の反逆",
+    "name": "獄焔蜻の反逆",
     "mainCategory": "series",
     "subCategory": null,
     "maxLevel": 2,
     "effects": [
       {
         "level": 1,
-        "name": "恨撃Ⅰ",
-        "attackAdd": 10
+        "name": "恨撃 I"
       },
       {
         "level": 2,
-        "name": "恨撃Ⅱ",
-        "attackAdd": 25
+        "name": "恨撃 II"
       }
     ]
   },
@@ -2818,11 +2801,13 @@ export const SKILLS = [
     "effects": [
       {
         "level": 1,
-        "name": "束縛反攻Ⅰ"
+        "name": "束縛反攻 I",
+        "attackAdd": 25
       },
       {
         "level": 2,
-        "name": "束縛反攻Ⅱ"
+        "name": "束縛反攻 II",
+        "attackAdd": 50
       }
     ]
   },
@@ -2835,12 +2820,12 @@ export const SKILLS = [
     "effects": [
       {
         "level": 1,
-        "name": "黒蝕一体Ⅰ",
+        "name": "黒蝕一体 I",
         "affinity": 15
       },
       {
         "level": 2,
-        "name": "黒蝕一体Ⅱ",
+        "name": "黒蝕一体 II",
         "attackAdd": 15,
         "affinity": 15
       }
@@ -2855,11 +2840,11 @@ export const SKILLS = [
     "effects": [
       {
         "level": 1,
-        "name": "加速再生Ⅰ"
+        "name": "加速再生 I"
       },
       {
         "level": 2,
-        "name": "加速再生Ⅱ"
+        "name": "加速再生 II"
       }
     ]
   },
@@ -2872,11 +2857,11 @@ export const SKILLS = [
     "effects": [
       {
         "level": 1,
-        "name": "破壊衝動Ⅰ"
+        "name": "破壊衝動 I"
       },
       {
         "level": 2,
-        "name": "破壊衝動Ⅱ"
+        "name": "破壊衝動 II"
       }
     ]
   },
@@ -2889,11 +2874,11 @@ export const SKILLS = [
     "effects": [
       {
         "level": 1,
-        "name": "泡沫の舞Ⅰ"
+        "name": "泡沫の舞 I"
       },
       {
         "level": 2,
-        "name": "泡沫の舞Ⅱ"
+        "name": "泡沫の舞 II"
       }
     ]
   },
@@ -2906,11 +2891,11 @@ export const SKILLS = [
     "effects": [
       {
         "level": 1,
-        "name": "超回復力Ⅰ"
+        "name": "超回復力 I"
       },
       {
         "level": 2,
-        "name": "超回復力Ⅱ"
+        "name": "超回復力 II"
       }
     ]
   },
@@ -2923,12 +2908,12 @@ export const SKILLS = [
     "effects": [
       {
         "level": 1,
-        "name": "蒼雷一閃Ⅰ",
+        "name": "蒼雷一閃 I",
         "affinity": 15
       },
       {
         "level": 2,
-        "name": "蒼雷一閃Ⅱ",
+        "name": "蒼雷一閃 II",
         "affinity": 15
       }
     ]
@@ -2942,11 +2927,11 @@ export const SKILLS = [
     "effects": [
       {
         "level": 1,
-        "name": "千刃の身躱しⅠ"
+        "name": "千刃の身躱し I"
       },
       {
         "level": 2,
-        "name": "千刃の身躱しⅡ",
+        "name": "千刃の身躱し II",
         "attackMult": 0.04
       }
     ]
@@ -2957,6 +2942,57 @@ export const SKILLS = [
     "mainCategory": "series",
     "subCategory": null,
     "maxLevel": 2,
+    "weaponSpecific": true,
+    "weaponEffects": {
+      "gs": [
+        { "level": 1, "name": "ダークアーツ", "elementMult": 0.2 },
+        { "level": 2, "name": "ブラックナイト" }
+      ],
+      "hh": [
+        { "level": 1, "name": "ダークアーツ", "elementMult": 0.2 },
+        { "level": 2, "name": "ブラックナイト" }
+      ],
+      "hammer": [
+        { "level": 1, "name": "ダークアーツ", "elementMult": 0.2 },
+        { "level": 2, "name": "ブラックナイト" }
+      ],
+      "ls": [
+        { "level": 1, "name": "ダークアーツ", "elementMult": 0.14 },
+        { "level": 2, "name": "ブラックナイト" }
+      ],
+      "sns": [
+        { "level": 1, "name": "ダークアーツ", "elementMult": 0.14 },
+        { "level": 2, "name": "ブラックナイト" }
+      ],
+      "db": [
+        { "level": 1, "name": "ダークアーツ", "elementMult": 0.14 },
+        { "level": 2, "name": "ブラックナイト" }
+      ],
+      "lance": [
+        { "level": 1, "name": "ダークアーツ", "elementMult": 0.14 },
+        { "level": 2, "name": "ブラックナイト" }
+      ],
+      "gl": [
+        { "level": 1, "name": "ダークアーツ", "elementMult": 0.14 },
+        { "level": 2, "name": "ブラックナイト" }
+      ],
+      "sa": [
+        { "level": 1, "name": "ダークアーツ", "elementMult": 0.14 },
+        { "level": 2, "name": "ブラックナイト" }
+      ],
+      "cb": [
+        { "level": 1, "name": "ダークアーツ", "elementMult": 0.14 },
+        { "level": 2, "name": "ブラックナイト" }
+      ],
+      "ig": [
+        { "level": 1, "name": "ダークアーツ", "elementMult": 0.14 },
+        { "level": 2, "name": "ブラックナイト" }
+      ],
+      "bow": [
+        { "level": 1, "name": "ダークアーツ", "elementMult": 0.14 },
+        { "level": 2, "name": "ブラックナイト" }
+      ]
+    },
     "effects": [
       {
         "level": 1,
@@ -2969,22 +3005,39 @@ export const SKILLS = [
     ]
   },
   {
-    "id": "omega_resonance",
-    "name": "オメガレゾナンス",
+    "id": "omega_resonance_attack",
+    "name": "オメガレゾナンス（攻撃力）",
     "mainCategory": "series",
     "subCategory": null,
     "maxLevel": 2,
     "effects": [
       {
         "level": 1,
-        "name": "レゾナンスⅠ",
-        "attackAdd": 10,
+        "name": "レゾナンス I（攻撃力）",
+        "attackAdd": 10
+      },
+      {
+        "level": 2,
+        "name": "レゾナンス II（攻撃力）",
+        "attackAdd": 20
+      }
+    ]
+  },
+  {
+    "id": "omega_resonance_crit",
+    "name": "オメガレゾナンス（会心率）",
+    "mainCategory": "series",
+    "subCategory": null,
+    "maxLevel": 2,
+    "effects": [
+      {
+        "level": 1,
+        "name": "レゾナンス I（会心率）",
         "affinity": 20
       },
       {
         "level": 2,
-        "name": "レゾナンスⅡ",
-        "attackAdd": 20,
+        "name": "レゾナンス II（会心率）",
         "affinity": 40
       }
     ]
@@ -2998,13 +3051,13 @@ export const SKILLS = [
     "effects": [
       {
         "level": 1,
-        "name": "宣戦呼応Ⅰ",
+        "name": "宣戦呼応 I",
         "elementMult": 0.2,
         "elementAdd": 20
       },
       {
         "level": 2,
-        "name": "宣戦呼応Ⅱ",
+        "name": "宣戦呼応 II",
         "elementMult": 0.3,
         "elementAdd": 40
       }
@@ -3019,11 +3072,12 @@ export const SKILLS = [
     "effects": [
       {
         "level": 1,
-        "name": "地の恵み【花舞】Ⅰ"
+        "name": "地の恵み【花舞】 I"
       },
       {
         "level": 2,
-        "name": "地の恵み【花舞】Ⅱ"
+        "name": "地の恵み【花舞】 II",
+        "attackMult": 0.09
       }
     ]
   },
@@ -3036,11 +3090,12 @@ export const SKILLS = [
     "effects": [
       {
         "level": 1,
-        "name": "地の恵み【踊火】Ⅰ"
+        "name": "地の恵み【踊火】 I"
       },
       {
         "level": 2,
-        "name": "地の恵み【踊火】Ⅱ"
+        "name": "地の恵み【踊火】 II",
+        "attackMult": 0.09
       }
     ]
   },
@@ -3053,11 +3108,12 @@ export const SKILLS = [
     "effects": [
       {
         "level": 1,
-        "name": "地の恵み【夢灯】Ⅰ"
+        "name": "地の恵み【夢灯】 I"
       },
       {
         "level": 2,
-        "name": "地の恵み【夢灯】Ⅱ"
+        "name": "地の恵み【夢灯】 II",
+        "attackMult": 0.09
       }
     ]
   },
@@ -3070,11 +3126,12 @@ export const SKILLS = [
     "effects": [
       {
         "level": 1,
-        "name": "地の恵み【祝謡】Ⅰ"
+        "name": "地の恵み【祝謡】 I"
       },
       {
         "level": 2,
-        "name": "地の恵み【祝謡】Ⅱ"
+        "name": "地の恵み【祝謡】 II",
+        "attackMult": 0.09
       }
     ]
   },
@@ -4136,18 +4193,7 @@ export const SKILLS = [
       }
     ]
   },
-  {
-    "id": "skill_0z3iok",
-    "name": "暗黒",
-    "mainCategory": "weapon",
-    "subCategory": "utility",
-    "maxLevel": 1,
-    "effects": [
-      {
-        "level": 1
-      }
-    ]
-  },
+
   {
     "id": "skill_bj2xfz",
     "name": "シールドオプション",
@@ -4179,26 +4225,6 @@ export const SKILLS = [
     "subCategory": "utility",
     "maxLevel": 0,
     "effects": []
-  },
-  {
-    "id": "skill_cu2wsq",
-    "name": "防御力ＤＯＷＮ耐性",
-    "mainCategory": "armor",
-    "subCategory": "utility",
-    "maxLevel": 3,
-    "effects": [
-      {
-        "level": 1,
-        "attackAdd": 50
-      },
-      {
-        "level": 2,
-        "attackAdd": 25
-      },
-      {
-        "level": 3
-      }
-    ]
   },
   {
     "id": "skill_6m58jj",

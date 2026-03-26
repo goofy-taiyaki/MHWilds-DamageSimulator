@@ -231,8 +231,9 @@ document.addEventListener('DOMContentLoaded', () => {
             
             let label = "";
             if (s.mainCategory === 'series' || s.mainCategory === 'group') {
-                const effect = (s.effects && s.effects[targetSkills[sid]-1]) ? s.effects[targetSkills[sid]-1] : null;
-                label = effect ? effect.name : s.name;
+                // シリーズ・グループスキルは以前は効果名を表示していたが、
+                // 統一感のためシリーズ名/グループ名での表示に変更
+                label = s.name.replace(/[ⅠⅡⅢⅣⅤ]$/, '').trim();
             } else {
                 label = `${s.name} Lv${targetSkills[sid]}`;
             }
@@ -283,12 +284,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     row.className = 'skill-selector-row';
                     if (targetSkills[skill.id]) row.classList.add('selected');
 
-                    const effectName = (skill.effects && skill.effects[0]) ? skill.effects[0].name : null;
-                    let displayName = (skill.mainCategory === 'series' || skill.mainCategory === 'group') && effectName ? effectName : skill.name;
+                    let displayName = skill.name;
                     
                     // 検索用キーワード
                     const searchKeys = [skill.name.toLowerCase()];
-                    if (effectName) searchKeys.push(effectName.toLowerCase());
+                    const firstEffect = (skill.effects && skill.effects[0]) ? skill.effects[0] : null;
+                    if (firstEffect && firstEffect.name) searchKeys.push(firstEffect.name.toLowerCase());
                     if (skill.effects) {
                         skill.effects.forEach(e => { if (e.name) searchKeys.push(e.name.toLowerCase()); });
                     }
@@ -383,8 +384,8 @@ document.addEventListener('DOMContentLoaded', () => {
             
             let label = "";
             if (skill.mainCategory === 'series' || skill.mainCategory === 'group') {
-                const effect = (skill.effects && skill.effects[targetSkills[sid]-1]) ? skill.effects[targetSkills[sid]-1] : null;
-                label = effect ? effect.name : skill.name;
+                // 統一感のためシリーズ名を表示
+                label = skill.name.replace(/[ⅠⅡⅢⅣⅤ]$/, '').trim();
             } else {
                 label = `${skill.name} Lv${targetSkills[sid]}`;
             }

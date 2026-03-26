@@ -226,9 +226,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 subSkills.forEach(skill => {
                     const row = document.createElement('div');
                     row.className = 'skill-selector-row';
-                    const effectName = (skill.effects && skill.effects[0]) ? skill.effects[0].name : null;
-                    let displayName = (skill.mainCategory === 'series' || skill.mainCategory === 'group') && effectName ? effectName : skill.name;
-                    // シリーズスキルのリスト表示用ラベルからはローマ数字(Ⅰ, Ⅱ...)を削除
+                    let displayName = skill.name;
+                    // リスト表示用ラベルからは末尾のローマ数字(Ⅰ, Ⅱ...)を削除して統一感を出す
                     if (skill.mainCategory === 'series' || skill.mainCategory === 'group') {
                         displayName = displayName.replace(/[ⅠⅡⅢⅣⅤ]$/, '').trim();
                     }
