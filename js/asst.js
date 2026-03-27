@@ -631,11 +631,13 @@ document.addEventListener('DOMContentLoaded', () => {
         updateTalismanDropdowns(-1);
 
         const btnFav = document.getElementById('btn-talisman-fav');
+        const btnFavSkills = document.getElementById('btn-talisman-fav-skills');
         const talismanAutoCheckbox = document.getElementById('talisman-auto');
         const talismanSelectorUI = document.getElementById('talisman-selector-ui');
 
         const updateTalismanUIVisibility = () => {
-            if (talismanAutoCheckbox && talismanAutoCheckbox.checked) {
+            if ((talismanAutoCheckbox && talismanAutoCheckbox.checked) || 
+                (btnFavSkills && btnFavSkills.classList.contains('active'))) {
                 talismanSelectorUI.style.opacity = '0.5';
                 talismanSelectorUI.style.pointerEvents = 'none';
             } else {
@@ -644,29 +646,63 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
+        if (btnFavSkills) {
+            btnFavSkills.onclick = () => {
+                const isActive = btnFavSkills.classList.toggle('active');
+                if (isActive) {
+                    btnFavSkills.style.background = 'rgba(0, 204, 255, 0.2)';
+                    btnFavSkills.style.borderColor = '#66ccff';
+                    if (btnFav) {
+                        btnFav.classList.remove('active');
+                        btnFav.style.background = 'rgba(255, 215, 0, 0.05)';
+                        btnFav.style.borderColor = 'rgba(255, 215, 0, 0.4)';
+                    }
+                    if (talismanAutoCheckbox && talismanAutoCheckbox.checked) {
+                        talismanAutoCheckbox.checked = false;
+                    }
+                } else {
+                    btnFavSkills.style.background = 'rgba(0, 204, 255, 0.05)';
+                    btnFavSkills.style.borderColor = 'rgba(0, 204, 255, 0.4)';
+                }
+                updateTalismanUIVisibility();
+            };
+        }
+
         if (btnFav) {
             btnFav.onclick = () => {
                 const isActive = btnFav.classList.toggle('active');
                 if (isActive) {
                     btnFav.style.background = 'rgba(255, 215, 0, 0.2)';
                     btnFav.style.borderColor = '#ffcc00';
+                    if (btnFavSkills) {
+                        btnFavSkills.classList.remove('active');
+                        btnFavSkills.style.background = 'rgba(0, 204, 255, 0.05)';
+                        btnFavSkills.style.borderColor = 'rgba(0, 204, 255, 0.4)';
+                    }
                     if (talismanAutoCheckbox && talismanAutoCheckbox.checked) {
                         talismanAutoCheckbox.checked = false;
-                        updateTalismanUIVisibility();
                     }
                 } else {
                     btnFav.style.background = 'rgba(255, 215, 0, 0.05)';
                     btnFav.style.borderColor = 'rgba(255, 215, 0, 0.4)';
                 }
+                updateTalismanUIVisibility();
             };
         }
 
         if (talismanAutoCheckbox) {
             talismanAutoCheckbox.onchange = () => {
                 if (talismanAutoCheckbox.checked) {
-                    btnFav.classList.remove('active');
-                    btnFav.style.background = 'rgba(255, 215, 0, 0.05)';
-                    btnFav.style.borderColor = 'rgba(255, 215, 0, 0.4)';
+                    if (btnFav) {
+                        btnFav.classList.remove('active');
+                        btnFav.style.background = 'rgba(255, 215, 0, 0.05)';
+                        btnFav.style.borderColor = 'rgba(255, 215, 0, 0.4)';
+                    }
+                    if (btnFavSkills) {
+                        btnFavSkills.classList.remove('active');
+                        btnFavSkills.style.background = 'rgba(0, 204, 255, 0.05)';
+                        btnFavSkills.style.borderColor = 'rgba(0, 204, 255, 0.4)';
+                    }
                 }
                 updateTalismanUIVisibility();
             };
@@ -711,10 +747,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         const isAutoTalisman = talismanAutoCheckbox && talismanAutoCheckbox.checked;
+        const isFavSkillsMode = document.getElementById('btn-talisman-fav-skills')?.classList.contains('active');
         const talismanData = {};
         let talismanSlots = [];
 
-        if (!isAutoTalisman) {
+        if (!isAutoTalisman && !isFavSkillsMode && !document.getElementById('btn-talisman-fav')?.classList.contains('active')) {
             tSkillSelects.forEach(s => {
                 if (s && s.value !== 'any') {
                     const [name, lvl] = s.value.split('|');
@@ -741,7 +778,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        performSearch(targetSkills, wSlotsRemaining, wSkills, talismanData, talismanSlots, isAutoTalisman, [...weaponDecos], wSlotsFull);
+        performSearch(targetSkills, wSlotsRemaining, wSkills, talismanData, talismanSlots, isAutoTalisman, [...weaponDecos], wSlotsFull, isFavSkillsMode);
     };
 
     if (btnReSearch) btnReSearch.onclick = startSearch;
@@ -749,7 +786,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 初回検索
     setTimeout(startSearch, 200);
 
-    async function performSearch(target, wSlots, wSkills, tDataFixed, tSlotsFixed, autoTalisman, manualWDecos, fullWSlots) {
+    async function performSearch(target, wSlots, wSkills, tDataFixed, tSlotsFixed, autoTalisman, manualWDecos, fullWSlots, isFavSkillsMode) {
         statusText.innerHTML = '<span class="loader"></span>初期化中...';
         const targetPoints = {};
 
@@ -886,37 +923,42 @@ document.addEventListener('DOMContentLoaded', () => {
             const filterS2 = tSkillSelects[1].value;
             const filterS3 = tSkillSelects[2].value;
 
+            // ★リストのスキルを読み込む
+            const favoriteSkills = JSON.parse(localStorage.getItem('mhwilds_fav_skills') || '[]');
+            const favoriteSkillSet = new Set(favoriteSkills);
+
             TALISMAN_COMBINATIONS.forEach(comb => {
-                if (!autoTalisman && tRareVal !== 'any' && comb.rare != tRareVal) return;
+                const isManualMode = !autoTalisman && !isFavSkillsMode;
+                if (isManualMode && tRareVal !== 'any' && comb.rare != tRareVal) return;
+                
                 const patternSlots = TALISMAN_SLOTS[`RARE${comb.rare}`] || [];
                 patternSlots.forEach(slotStr => {
-                    if (!autoTalisman && tSlotValFilter !== 'any' && slotStr !== tSlotValFilter) return;
-                    let tSlots = [];
-                    const isW = slotStr.startsWith('W');
-                    const cleaned = slotStr.replace('W', '');
-                    for (let char of cleaned) {
-                        if (char === '①') tSlots.push(1);
-                        else if (char === '②') tSlots.push(2);
-                        else if (char === '③') tSlots.push(3);
-                        else if (char === '④') tSlots.push(4);
-                    }
+                    if (isManualMode && tSlotValFilter !== 'any' && slotStr !== tSlotValFilter) return;
+                    
                     const choices = [comb.s1, comb.s2, comb.s3].filter(g => g !== null);
                     const groupOptions = choices.map((gid, idx) => {
                         const filter = [filterS1, filterS2, filterS3][idx];
                         let skills = TALISMAN_GROUPS[gid] || [];
-                        if (!autoTalisman && filter !== 'any' && filter !== undefined) {
+                        
+                        if (isManualMode && filter !== 'any' && filter !== undefined) {
                             const [fName, fLvl] = filter.split('|');
                             const match = skills.find(s => s.name === fName && s.level == fLvl);
                             return match ? [match] : [];
                         }
+                        
+                        // ★スキルモードまたは自動選択モードにおける候補スキル
                         let relevant = skills.filter(s => {
                             const found = SKILL_BY_NAME[s.name];
                             const sid = found ? found.id : null;
-                            return sid && targetPoints[sid];
+                            const inTarget = sid && targetPoints[sid];
+                            const inFav = favoriteSkillSet.has(`${s.name}|${s.level}`);
+                            return inTarget || inFav;
                         });
+
                         if (relevant.length === 0) return [{ name: "None", level: 0 }];
                         return relevant;
                     });
+
                     if (groupOptions.some(opts => opts.length === 0)) return;
 
                     const combos = [[]];
@@ -930,14 +972,22 @@ document.addEventListener('DOMContentLoaded', () => {
                         });
                         combos.splice(0, combos.length, ...next);
                     });
+
                     combos.forEach(combo => {
                         const tSkills = {};
+                        let hasFavSkill = false;
+                        
                         combo.forEach(s => {
                             if (s.name !== "None") {
                                 const found = SKILL_BY_NAME[s.name];
                                 if (found) tSkills[found.id] = (tSkills[found.id] || 0) + s.level;
+                                if (favoriteSkillSet.has(`${s.name}|${s.level}`)) hasFavSkill = true;
                             }
                         });
+
+                        // ★リストモードの場合、★スキルを一つも含まないパターンは除外
+                        if (isFavSkillsMode && !hasFavSkill) return;
+
                         const isW = slotStr.startsWith('W');
                         const cleaned = slotStr.replace('W', '');
                         const tSlots = [];
