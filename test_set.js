@@ -75,3 +75,4 @@ Object.keys(goals).sort().forEach(name => {
     const goal = goals[name];
     console.log(`${(name + ' '.repeat(15)).slice(0, 15)}: ${current} / ${goal} ${current >= goal ? 'OK' : 'MISS'}`);
 });
+

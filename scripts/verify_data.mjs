@@ -1,7 +1,7 @@
 
-import { ARMOR } from './js/data/armor.js';
-import { DECORATIONS } from './js/data/decorations.js';
-import { SKILLS } from './js/data/skills.js';
+import { ARMOR } from '../js/data/armor.js';
+import { DECORATIONS } from '../js/data/decorations.js';
+import { SKILLS } from '../js/data/skills.js';
 
 const searchNames = ['クイーンピアスα', 'エグゾルスメイルγ', '護火竜アームβ', '護火竜コイルβ', 'トゥナムルグリーヴγ'];
 
@@ -19,3 +19,4 @@ searchNames.forEach(name => {
         }
     }
 });
+

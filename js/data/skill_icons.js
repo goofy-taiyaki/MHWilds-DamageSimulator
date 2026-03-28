@@ -192,3 +192,4 @@ export const SKILL_ICON_MAP = {
   "fisher_meal": "Reinforce_Skill",
   "top_cat_meal": "Empower_Skill"
 };
+

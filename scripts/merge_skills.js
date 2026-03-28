@@ -1,7 +1,9 @@
 const fs = require('fs');
 
 async function merge() {
-    const existingContent = fs.readFileSync('e:/Users/tai_r/Documents/AI/mhwilds-site/js/data/skills.js', 'utf8');
+    const path = require('path');
+    const rootDir = path.resolve(__dirname, '..');
+    const existingContent = fs.readFileSync(path.join(rootDir, 'js/data/skills.js'), 'utf8');
     const arrayMatch = existingContent.match(/\[[\s\S]*\]/);
     if (!arrayMatch) throw new Error("Could not find array in skills.js");
     const existingSkillsRaw = eval(arrayMatch[0]);
@@ -84,8 +86,9 @@ async function merge() {
     });
 
     const output = 'export const SKILLS = ' + JSON.stringify(finalSkills, null, 2) + ';';
-    fs.writeFileSync('e:/Users/tai_r/Documents/AI/mhwilds-site/js/data/skills.js', output, 'utf8');
+    fs.writeFileSync(path.join(rootDir, 'js/data/skills.js'), output, 'utf8');
     console.log(`Merged ${finalSkills.length} skills total.`);
 }
 
 merge();
+

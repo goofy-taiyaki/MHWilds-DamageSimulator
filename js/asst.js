@@ -1200,16 +1200,15 @@ document.addEventListener('DOMContentLoaded', () => {
             function calculateFinalStats(h, c, a, w, l, t, assignment, ws, wSk, aSS, aGS) {
                 let def = (h.d || 0) + (c.d || 0) + (a.d || 0) + (w.d || 0) + (l.d || 0);
                 let res = [0, 0, 0, 0, 0];
-                const baseAtkInput = parseInt(document.getElementById('base-attack-input')?.value || "330", 10);
-                const baseAffInput = parseInt(document.getElementById('base-affinity-input')?.value || "0", 10);
-                
-                // アーティア初期設定のボーナスを加算 (+67 Atk, -15% Aff)
-                let atk = baseAtkInput + 67;
-                let aff = baseAffInput - 15;
+                [h, c, a, w, l].forEach(p => { if (p.r) p.r.forEach((v, i) => res[i] += v); });
+
+                // 初期値を0から計算（武器攻撃力・会心が渡されていない場合は0ベース）
+                const params = new URLSearchParams(window.location.search);
+                let atk = parseInt(params.get('base_atk') || "0", 10);
+                let aff = parseInt(params.get('base_aff') || "0", 10);
                 let atkMult = 1.0;
                 let critMult = 1.25;
 
-                [h, c, a, w, l].forEach(p => { if (p.r) p.r.forEach((v, i) => res[i] += v); });
                 const pts = {};
                 const addP = (sid, n) => { if (sid) pts[sid] = (pts[sid] || 0) + n; };
                 [h, c, a, w, l].forEach(item => {
@@ -1245,12 +1244,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const finalAtk = atk * atkMult;
                 const finalAff = aff;
-                const cr = Math.max(0, finalAff) / 100;
-                const fr = finalAff < 0 ? Math.abs(finalAff) / 100 : 0;
-                const exp = (finalAtk * (1 - cr - fr)) + (finalAtk * critMult * cr) + (finalAtk * 0.75 * fr);
+                
+                // 期待値は攻撃力と会心率の情報のみで算出 (物理期待値 = 攻撃力 * (1 + 0.25 * 会心率/100))
+                const exp = finalAtk * (1 + (finalAff / 100) * 0.25);
 
-                return { def, res, atk: Math.floor(finalAtk), aff: finalAff, exp: Math.round(exp * 10) / 10 };
+                return {
+                    def,
+                    res,
+                    atk: Math.floor(finalAtk),
+                    aff: finalAff,
+                    exp: Math.round(exp * 10) / 10
+                };
             }
+
 
             function finish(results, interrupted = false) {
                 progressBar.style.width = '100%';
@@ -1449,14 +1455,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const renderVal = (v) => v > 0 ? v : '<span class="empty-cell">-</span>';
 
         card.innerHTML = `
-            <div class="result-header">
-                <h1 class="set-id-tag">SET #${idx}</h1>
-                <div class="defense-info">
-                    期待値: <span class="stat-val" style="color:var(--accent-color)">${stats.exp}</span> &nbsp;
-                    攻撃力: <span class="stat-val">${stats.atk}</span> &nbsp; 会心率: <span class="stat-val">${stats.aff}%</span> &nbsp;
-                    防御力: <span class="stat-val">${stats.def}</span> &nbsp; 耐性: <span class="stat-val">${stats.res[0]} / ${stats.res[1]} / ${stats.res[2]} / ${stats.res[3]} / ${stats.res[4]}</span>
+            <div class="result-header" style="display: flex; align-items: center; padding: 10px 15px; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,215,0,0.2);">
+                <span class="set-id-tag" style="margin-right: 20px; color: var(--accent-color); font-weight: bold;">SET #${idx}</span>
+                <div class="defense-info" style="font-size: 0.95rem; letter-spacing: 0.05em; color: #eee; flex: 1;">
+                    <span style="color: #aaa;">期待値:</span> <span class="stat-val" style="color:var(--accent-color); margin-right: 1.5rem;">${stats.exp}</span>
+                    <span style="color: #aaa;">攻撃力:</span> <span class="stat-val" style="margin-right: 1.5rem;">${stats.atk}</span>
+                    <span style="color: #aaa;">会心率:</span> <span class="stat-val" style="margin-right: 1.5rem;">${stats.aff}%</span>
+                    <span style="color: #aaa;">防御力:</span> <span class="stat-val" style="margin-right: 1.5rem;">${stats.def}</span>
+                    <span style="color: #aaa;">耐性:</span> <span class="stat-val">${stats.res[0]} / ${stats.res[1]} / ${stats.res[2]} / ${stats.res[3]} / ${stats.res[4]}</span>
                 </div>
             </div>
+
             <div class="result-body">
                 <div class="equipment-list">
                     <!-- 武器 -->

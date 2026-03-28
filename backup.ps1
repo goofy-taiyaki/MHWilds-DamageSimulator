@@ -47,3 +47,4 @@ if (Test-Path $destination) {
 } else {
     Write-Host "❌ バックアップの作成に失敗しました。" -ForegroundColor Red
 }
+

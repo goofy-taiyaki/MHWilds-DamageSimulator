@@ -1,4 +1,4 @@
-import { WEAPON_TYPES, SKILLS, EXCITATION_DATA, EXCITATION_TYPES, MONSTERS, MOTION_VALUES, ARMOR, DECORATIONS } from '../data.js';
+import { WEAPON_TYPES, SKILLS, EXCITATION_DATA, EXCITATION_TYPES, MONSTERS, MOTION_VALUES, ARMOR, DECORATIONS } from './data.js';
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -348,7 +348,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </details>`;
 
         arHtml += `
-            <div style="margin-bottom: 0.5rem; padding: 0.4rem 0.8rem; background: rgba(${rarity===4?'136,136,136':rarity===5?'170,170,255':rarity===6?'136,238,187':rarity===7?'255,221,102':'255,136,68'},0.08); border-left: 3px solid ${color}; border-radius: 0 4px 4px 0;">
+            <div style="margin-bottom: 0.5rem; padding: 0.4rem 0.8rem; background: rgba(${rarity === 4 ? '136,136,136' : rarity === 5 ? '170,170,255' : rarity === 6 ? '136,238,187' : rarity === 7 ? '255,221,102' : '255,136,68'},0.08); border-left: 3px solid ${color}; border-radius: 0 4px 4px 0;">
                 <span style="font-weight: bold; color: ${color}; font-size: 0.95rem;">◆ ${label}</span>
             </div>`;
 
@@ -404,7 +404,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (arDb) arDb.innerHTML = arHtml;
     if (navArmorSublist) navArmorSublist.innerHTML = navArRarityHtml;
-    
+
     // Render Decorations
     const decDb = document.getElementById('db-decorations');
     if (decDb && DECORATIONS && SKILLS) {
@@ -420,7 +420,7 @@ document.addEventListener('DOMContentLoaded', () => {
             { id: 'w_offense', name: '攻撃系', subCats: ['attack', 'weapon'] },
             { id: 'w_affinity', name: '会心系', subCats: ['affinity'] },
             { id: 'w_element', name: '属性・状態異常系', subCats: ['element'] },
-            { id: 'w_ranged',  name: '弾・弓・ボウガン系', subCats: ['ammo'] },
+            { id: 'w_ranged', name: '弾・弓・ボウガン系', subCats: ['ammo'] },
             { id: 'w_utility', name: '武器補助・その他', subCats: ['utility', 'series', 'group', 'armor'] }
         ];
 
@@ -428,13 +428,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const A_GROUPS = [
             { id: 'a_offense', name: '火力・攻撃系', subCats: ['attack', 'affinity', 'weapon'] },
             { id: 'a_defense', name: '防御・耐性・生存系', subCats: ['utility', 'armor'] },
-            { id: 'a_other',   name: 'その他・補助系', subCats: ['element', 'ammo', 'series', 'group'] }
+            { id: 'a_other', name: 'その他・補助系', subCats: ['element', 'ammo', 'series', 'group'] }
         ];
 
         // データを分類
         const weaponDecs = {};
         const armorDecs = {};
-        
+
         W_GROUPS.forEach(g => weaponDecs[g.id] = []);
         A_GROUPS.forEach(g => armorDecs[g.id] = []);
 
@@ -491,7 +491,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span style="font-size: 1.2rem; vertical-align: middle;">⚔️</span> 武器用装飾品
                 </h3>
                 <p style="font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 1rem;">武器のスロットに装着可能な装飾品です。主に基礎火力、属性、弾強化などが含まれます。</p>`;
-        
+
         W_GROUPS.forEach(group => {
             const decs = weaponDecs[group.id];
             if (decs.length === 0) return;
@@ -514,7 +514,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span style="font-size: 1.2rem; vertical-align: middle;">🛡️</span> 防具用装飾品
                 </h3>
                 <p style="font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 1rem;">防具のスロットに装着可能な装飾品です。弱点特効、挑戦者などの強力な火力や、防御、耐性、生存スキルが含まれます。</p>`;
-        
+
         A_GROUPS.forEach(group => {
             const decs = armorDecs[group.id];
             if (decs.length === 0) return;
@@ -529,7 +529,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </details>`;
         });
         decHtml += `</div>`;
-        
+
         decDb.innerHTML = decHtml;
     }
 

@@ -1,4 +1,4 @@
-import { SHARPNESS, BOWGUN_CORRECTIONS } from '../data.js';
+import { SHARPNESS, BOWGUN_CORRECTIONS } from './data.js';
 
 /**
  * Enhanced Calculator Logic supporting Restoration Bonuses and Monster Hitzones

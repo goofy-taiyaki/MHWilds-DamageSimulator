@@ -388,7 +388,9 @@ const res = list.map(line => {
     return { n: name, sl: slot, sk: skills };
 }).filter(x => x !== null);
 
-const fs = require('fs');
+const path = require('path');
+const rootDir = path.resolve(__dirname, '..');
 const output = 'export const DECORATIONS = ' + JSON.stringify(res, null, 4) + ';';
-fs.writeFileSync('e:/Users/tai_r/Documents/AI/mhwilds-site/js/data/decorations.js', output, 'utf8');
+fs.writeFileSync(path.join(rootDir, 'js/data/decorations.js'), output, 'utf8');
 console.log('Successfully written decorations.js');
+

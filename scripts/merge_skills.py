@@ -107,3 +107,4 @@ with open(r'e:\Users\tai_r\Documents\AI\mhwilds-site\js\data\skills_merged.js', 
     f.write(';')
 
 print(f"Successfully merged. Total skills: {len(final_skills)}")
+

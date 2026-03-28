@@ -179,3 +179,4 @@ const updatedARMOR = ARMOR.concat(filteredNew);
 
 fs.writeFileSync(filePath, `export const ARMOR = ${JSON.stringify(updatedARMOR)};\n`, 'utf8');
 console.log(`Added ${filteredNew.length} new pieces.`);
+

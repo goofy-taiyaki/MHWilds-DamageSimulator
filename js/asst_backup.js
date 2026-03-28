@@ -1048,3 +1048,4 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnReSearch) btnReSearch.addEventListener('click', startSearch);
     setTimeout(startSearch, 200);
 });
+

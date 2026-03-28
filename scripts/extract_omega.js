@@ -1,6 +1,8 @@
 const fs = require('fs');
 
-const html = fs.readFileSync('omega_raw.html', 'utf8');
+const path = require('path');
+const rootDir = path.resolve(__dirname, '..');
+const html = fs.readFileSync(path.join(rootDir, 'raw_data/omega_raw.html'), 'utf8');
 
 const rowRegex = /<tr class="[^"]*?border-b[^"]*?">(.*?)<\/tr>/g;
 let match;
@@ -73,5 +75,6 @@ data.forEach(d => {
     }
 });
 
-fs.writeFileSync('omega_processed.json', JSON.stringify(processed, null, 2));
+fs.writeFileSync(path.join(rootDir, 'raw_data/omega_processed.json'), JSON.stringify(processed, null, 2));
 console.log("Extracted and processed data to omega_processed.json");
+

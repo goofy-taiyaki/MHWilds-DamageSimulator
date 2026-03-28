@@ -28,3 +28,4 @@ const upgradedARMOR = ARMOR.map(a => {
 
 fs.writeFileSync(filePath, `export const ARMOR = ${JSON.stringify(upgradedARMOR)};\n`, 'utf8');
 console.log(`Upgraded slots for newly added Rare 5/6 pieces.`);
+

@@ -56,8 +56,9 @@ async function main() {
     }
 
     // Also let's save a map file so we can see which skill uses which generic icon
-    fs.writeFileSync('icon/skills/mapping.json', JSON.stringify(Object.fromEntries(skillIconMap), null, 2));
+    fs.writeFileSync('assets/icons/skills/mapping.json', JSON.stringify(Object.fromEntries(skillIconMap), null, 2));
 
     console.log('Done mapping and downloading.');
 }
 main();
+

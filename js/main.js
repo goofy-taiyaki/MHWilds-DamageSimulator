@@ -1,4 +1,4 @@
-import { WEAPON_TYPES, WEAPONS, SKILLS, SHARPNESS, RESTORATION_PARTS, RESTORATION_BONUSES, EXCITATION_DATA, EXCITATION_TYPES, MONSTERS, ELEMENT_TYPES, MOTION_VALUES, BUFF_GROUPS } from '../data.js';
+import { WEAPON_TYPES, WEAPONS, SKILLS, SHARPNESS, RESTORATION_PARTS, RESTORATION_BONUSES, EXCITATION_DATA, EXCITATION_TYPES, MONSTERS, ELEMENT_TYPES, MOTION_VALUES, BUFF_GROUPS } from './data.js';
 import { MHWCalculator } from './calculator.js';
 import { findOptimalArtiaConfiguration as runOptimizer } from './modules/optimizer.js';
 import { BuildShare } from './modules/share.js';
@@ -452,7 +452,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 参照ステータス枠の背景画像を更新
         const statusBox = document.getElementById('status-section-box');
         if (statusBox) {
-            const imgPath = `icon/weapons/${weaponType}.webp`;
+            const imgPath = `assets/icons/weapons/${weaponType}.webp`;
             statusBox.style.backgroundImage = `linear-gradient(rgba(10, 11, 13, 0.7), rgba(10, 11, 13, 0.7)), url('${imgPath}')`;
             statusBox.style.backgroundSize = 'contain';
             statusBox.style.backgroundRepeat = 'no-repeat';
@@ -514,11 +514,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div></div>
             </div>
             <div style="grid-column: span 4; display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.2rem; text-align: center;">
-                <div style="${hl('fire', currentElem)} display: flex; align-items: center; justify-content: center; gap: 4px;"><img src="icon/element_fire.png" alt="火" style="width: 18px; height: 18px; object-fit: contain;"> ${hitzone.fire}</div>
-                <div style="${hl('water', currentElem)} display: flex; align-items: center; justify-content: center; gap: 4px;"><img src="icon/element_water.png" alt="水" style="width: 18px; height: 18px; object-fit: contain;"> ${hitzone.water}</div>
-                <div style="${hl('thunder', currentElem)} display: flex; align-items: center; justify-content: center; gap: 4px;"><img src="icon/element_thunder.png" alt="雷" style="width: 18px; height: 18px; object-fit: contain;"> ${hitzone.thunder}</div>
-                <div style="${hl('ice', currentElem)} display: flex; align-items: center; justify-content: center; gap: 4px;"><img src="icon/element_ice.png" alt="氷" style="width: 18px; height: 18px; object-fit: contain;"> ${hitzone.ice}</div>
-                <div style="${hl('dragon', currentElem)} display: flex; align-items: center; justify-content: center; gap: 4px;"><img src="icon/element_dragon.png" alt="龍" style="width: 18px; height: 18px; object-fit: contain;"> ${hitzone.dragon}</div>
+                <div style="${hl('fire', currentElem)} display: flex; align-items: center; justify-content: center; gap: 4px;"><img src="assets/icons/element_fire.png" alt="火" style="width: 18px; height: 18px; object-fit: contain;"> ${hitzone.fire}</div>
+                <div style="${hl('water', currentElem)} display: flex; align-items: center; justify-content: center; gap: 4px;"><img src="assets/icons/element_water.png" alt="水" style="width: 18px; height: 18px; object-fit: contain;"> ${hitzone.water}</div>
+                <div style="${hl('thunder', currentElem)} display: flex; align-items: center; justify-content: center; gap: 4px;"><img src="assets/icons/element_thunder.png" alt="雷" style="width: 18px; height: 18px; object-fit: contain;"> ${hitzone.thunder}</div>
+                <div style="${hl('ice', currentElem)} display: flex; align-items: center; justify-content: center; gap: 4px;"><img src="assets/icons/element_ice.png" alt="氷" style="width: 18px; height: 18px; object-fit: contain;"> ${hitzone.ice}</div>
+                <div style="${hl('dragon', currentElem)} display: flex; align-items: center; justify-content: center; gap: 4px;"><img src="assets/icons/element_dragon.png" alt="龍" style="width: 18px; height: 18px; object-fit: contain;"> ${hitzone.dragon}</div>
             </div>
         `;
     }
@@ -531,20 +531,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const targetBox = document.getElementById('target-section-box');
         if (targetBox) {
             const MONSTER_IMAGE_MAP = {
-                'ゴグマジオス': 'icon/monsters/gogmazios.webp',
-                'オメガ': 'icon/monsters/omega.webp',
-                'ラギアクルス': 'icon/monsters/lagiacrus.webp',
-                'セルレギオス': 'icon/monsters/seregios.webp',
-                'タマミツネ': 'icon/monsters/mizutsune.webp',
-                'アルシュベルド': 'icon/monsters/arkveld.webp',
-                'ゴアマガラ': 'icon/monsters/gore_magala.webp',
-                'グラビモス': 'icon/monsters/gravios.webp',
-                'リオレウス': 'icon/monsters/rathalos.webp',
-                'ゾシア': 'icon/monsters/zoshia.webp',
-                'ジンダハド': 'icon/monsters/jindahaad.webp',
-                'レダウ': 'icon/monsters/redau.webp',
-                'ウズトゥナ': 'icon/monsters/uzutuna.webp',
-                'ネコ式訓練タルパンチャー': 'icon/monsters/dummy.png'
+                'ゴグマジオス': 'assets/icons/monsters/gogmazios.webp',
+                'オメガ': 'assets/icons/monsters/omega.webp',
+                'ラギアクルス': 'assets/icons/monsters/lagiacrus.webp',
+                'セルレギオス': 'assets/icons/monsters/seregios.webp',
+                'タマミツネ': 'assets/icons/monsters/mizutsune.webp',
+                'アルシュベルド': 'assets/icons/monsters/arkveld.webp',
+                'ゴアマガラ': 'assets/icons/monsters/gore_magala.webp',
+                'グラビモス': 'assets/icons/monsters/gravios.webp',
+                'リオレウス': 'assets/icons/monsters/rathalos.webp',
+                'ゾシア': 'assets/icons/monsters/zoshia.webp',
+                'ジンダハド': 'assets/icons/monsters/jindahaad.webp',
+                'レダウ': 'assets/icons/monsters/redau.webp',
+                'ウズトゥナ': 'assets/icons/monsters/uzutuna.webp',
+                'ネコ式訓練タルパンチャー': 'assets/icons/monsters/dummy.png'
             };
             const imgPath = MONSTER_IMAGE_MAP[monsterName];
             if (imgPath) {
@@ -1253,18 +1253,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            const baseAtk = document.getElementById('base-atk-display')?.textContent || "0";
+            const baseAff = (document.getElementById('base-aff-display')?.textContent || "0%").replace('%', '');
+            
             const params = new URLSearchParams();
             for (const [id, lvl] of Object.entries(activeSkills)) {
                 params.append(id, lvl);
             }
             
-            // 武器スロット情報も追加
+            // 武器情報を追加 (スロット、基礎ステータス)
             const weaponType = weaponTypeSelect.value;
-            // 武器スロットのデフォルト（Artia等）
             params.append('weapon_type', weaponType);
+            params.append('base_atk', baseAtk);
+            params.append('base_aff', baseAff);
             
-            console.log('Searching armor for skills:', activeSkills);
+            console.log('Searching armor for skills:', activeSkills, 'BaseAtk:', baseAtk);
             const targetUrl = `asst.html?${params.toString()}`;
+
             
             // ルーティング等でパラメータが消失するケースへの対策として localStorage にも保存
             localStorage.setItem('asst_request', JSON.stringify({

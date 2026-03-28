@@ -66,3 +66,4 @@ const updatedARMOR = ARMOR.map(a => {
 
 fs.writeFileSync(filePath, `export const ARMOR = ${JSON.stringify(updatedARMOR)};\n`, 'utf8');
 console.log(`Fixed series grouping for armors.`);
+

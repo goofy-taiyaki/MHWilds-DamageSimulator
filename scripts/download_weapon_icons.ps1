@@ -1,5 +1,5 @@
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8;
-$dest = "e:/Users/tai_r/Documents/AI/mhwilds-site/icon/weapons"
+$dest = Join-Path $PSScriptRoot "../assets/icons/weapons"
 if (!(Test-Path $dest)) { New-Item -ItemType Directory -Path $dest }
 
 $weapons = @(
@@ -28,3 +28,4 @@ foreach ($w in $weapons) {
         Write-Warning "Failed to download $($w.id): $($_.Exception.Message)"
     }
 }
+

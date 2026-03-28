@@ -11,3 +11,4 @@ powershell -Command "Start-Process powershell -ArgumentList '$command' -Verb Run
 Write-Host "[2/2] ローカルサーバー (Port 3000) を起動します..." -ForegroundColor Yellow
 Write-Host "停止するには Ctrl+C を押してください。" -ForegroundColor Gray
 npx -y serve -l 3000 .
+

@@ -2,7 +2,7 @@ import { MHWCalculator } from '../calculator.js';
 import {
     WEAPON_TYPES, WEAPONS, SKILLS, MONSTERS, MOTION_VALUES,
     EXCITATION_DATA, RESTORATION_PARTS, RESTORATION_BONUSES, BUFF_GROUPS
-} from '../../data.js';
+} from '../data.js';
 
 /**
  * Artia構成の最適解を探索するモジュール
