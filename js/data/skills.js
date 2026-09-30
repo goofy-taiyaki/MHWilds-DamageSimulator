@@ -450,7 +450,7 @@ export const SKILLS = [
   },
   {
     "id": "normal_up",
-    "name": "通常弾・連射矢強化",
+    "name": "通常弾・通常矢強化",
     "mainCategory": "weapon",
     "subCategory": "ammo",
     "maxLevel": 1,
@@ -915,7 +915,7 @@ export const SKILLS = [
   },
   {
     "id": "defense_down_resistance",
-    "name": "防御力DOWN耐性",
+    "name": "防御力ＤＯＷＮ耐性",
     "mainCategory": "armor",
     "subCategory": "utility",
     "maxLevel": 3,
@@ -1038,7 +1038,7 @@ export const SKILLS = [
   },
   {
     "id": "recovery_up",
-    "name": "体力回復量UP",
+    "name": "体力回復量ＵＰ",
     "mainCategory": "armor",
     "subCategory": "utility",
     "maxLevel": 3,
@@ -2653,7 +2653,7 @@ export const SKILLS = [
   },
   {
     "id": "bold_table",
-    "name": "暗器蜘蛛の力",
+    "name": "暗器蛸の力",
     "mainCategory": "series",
     "subCategory": null,
     "maxLevel": 2,
@@ -4223,8 +4223,8 @@ export const SKILLS = [
     "name": "にゃんにゃんぼう",
     "mainCategory": "weapon",
     "subCategory": "utility",
-    "maxLevel": 0,
-    "effects": []
+    "maxLevel": 1,
+    "effects": [{ "level": 1, "description": "攻撃で会心が発生した際に、低確率で様々なアイテムを入手できる" }]
   },
   {
     "id": "skill_6m58jj",
@@ -4267,5 +4267,17 @@ export const SKILLS = [
         "level": 1
       }
     ]
+  },
+  {
+    "id": "stench_resistance",
+    "name": "悪臭耐性",
+    "mainCategory": "armor",
+    "subCategory": "utility",
+    "maxLevel": 2,
+    "effects": [
+      { "level": 1, "description": "悪臭状態の時間を５０％減らす" },
+      { "level": 2, "description": "悪臭状態にならない" }
+    ]
   }
 ];
+

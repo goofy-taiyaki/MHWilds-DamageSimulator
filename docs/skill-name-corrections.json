@@ -1,0 +1,91 @@
+{
+  "date": "2026-09-30",
+  "basis": "Extracted installed game MSG, matching common skill names; IDs/effects retained.",
+  "changes": [
+    {
+      "old": "体力回復量UP",
+      "new": "体力回復量ＵＰ",
+      "archive": "re_chunk_000.pak.patch_014.pak",
+      "internal_path": "natives/stm/gamedesign/text/excel_equip/skillcommon.msg.23",
+      "sha256": "f581895b696c535476629278ffa55ecdca10afc0832abc609b11f9f06dbe5514",
+      "message_key": "SkillCommon_m1235658624",
+      "guid": "db72c7a0-0850-483d-a1f7-7fce8c545f84"
+    },
+    {
+      "old": "防御力DOWN耐性",
+      "new": "防御力ＤＯＷＮ耐性",
+      "archive": "re_chunk_000.pak.patch_014.pak",
+      "internal_path": "natives/stm/gamedesign/text/excel_equip/skillcommon.msg.23",
+      "sha256": "f581895b696c535476629278ffa55ecdca10afc0832abc609b11f9f06dbe5514",
+      "message_key": "SkillCommon_1522518528",
+      "guid": "d0b33bdd-e9fe-4b6f-8063-2a6bd7e819c4"
+    },
+    {
+      "old": "暗器蜘蛛の力",
+      "new": "暗器蛸の力",
+      "archive": "re_chunk_000.pak.patch_014.pak",
+      "internal_path": "natives/stm/gamedesign/text/excel_equip/skillcommon.msg.23",
+      "sha256": "f581895b696c535476629278ffa55ecdca10afc0832abc609b11f9f06dbe5514",
+      "message_key": "SkillCommon_m1468066176",
+      "guid": "37cfafa9-04fa-4525-bec1-da9b46008bed"
+    },
+    {
+      "old": "鎖刃刺激",
+      "new": "鎖刃刺撃",
+      "archive": "re_chunk_000.pak.patch_014.pak",
+      "internal_path": "natives/stm/gamedesign/text/excel_equip/skillcommon.msg.23",
+      "sha256": "f581895b696c535476629278ffa55ecdca10afc0832abc609b11f9f06dbe5514",
+      "message_key": "SkillCommon_m856322816",
+      "guid": "46eb80f7-2bc8-43bd-ba0a-5a44298c7348"
+    },
+    {
+      "old": "通常弾・連射矢強化",
+      "new": "通常弾・通常矢強化",
+      "archive": "re_chunk_000.pak.patch_014.pak",
+      "internal_path": "natives/stm/gamedesign/text/excel_equip/skillcommon.msg.23",
+      "sha256": "f581895b696c535476629278ffa55ecdca10afc0832abc609b11f9f06dbe5514",
+      "message_key": "SkillCommon_m1961297152",
+      "guid": "7d4e6565-6542-4a66-839f-0351a104a287"
+    },
+    {
+      "old": "KO術",
+      "new": "ＫＯ術",
+      "archive": "re_chunk_000.pak.patch_014.pak",
+      "internal_path": "natives/stm/gamedesign/text/excel_equip/skillcommon.msg.23",
+      "sha256": "f581895b696c535476629278ffa55ecdca10afc0832abc609b11f9f06dbe5514",
+      "message_key": "SkillCommon_m893407296",
+      "guid": "d35e461c-6937-4ec8-979a-db460c7d7e98"
+    },
+    {
+      "old": "貫通弾・竜の一矢強化",
+      "new": "貫通弾・竜の矢強化",
+      "archive": "re_chunk_000.pak.patch_014.pak",
+      "internal_path": "natives/stm/gamedesign/text/excel_equip/skillcommon.msg.23",
+      "sha256": "f581895b696c535476629278ffa55ecdca10afc0832abc609b11f9f06dbe5514",
+      "message_key": "SkillCommon_552982656",
+      "guid": "f357f123-2de2-44d8-a229-44a93dfd54e7"
+    },
+    {
+      "old": "災禍転覆",
+      "new": "災禍転福",
+      "archive": "re_chunk_000.pak.patch_014.pak",
+      "internal_path": "natives/stm/gamedesign/text/excel_equip/skillcommon.msg.23",
+      "sha256": "f581895b696c535476629278ffa55ecdca10afc0832abc609b11f9f06dbe5514",
+      "message_key": "SkillCommon_m1700743296",
+      "guid": "27f6d051-9254-48a7-84b0-bcd60010be44"
+    }
+  ],
+  "modified_files": [
+    "js\\data\\armor.js",
+    "js\\data\\damage_skills.js",
+    "js\\data\\skills.js",
+    "js\\data\\talisman.js"
+  ],
+  "pending": [
+    "砲撃術: source talisman identity not yet established",
+    "悪臭耐性: missing site definition",
+    "採集の達人: activated group skill vs armor standalone reference",
+    "オメガレゾナンス: independent attack/affinity variants in site",
+    "毒ダメージ強化Lv3: game supports Lv1; talisman rule needs investigation"
+  ]
+}

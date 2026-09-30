@@ -5,3 +5,8 @@ git_version.txt
 temp/
 tmp/
 node_modules/
+
+raw_data/game_extract/
+__pycache__/
+dist/
+scripts/github-pages-admin.py

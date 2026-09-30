@@ -1,0 +1,338 @@
+{
+  "scope": "Static structure and data references; excludes browser behavior and game accuracy.",
+  "counts": {
+    "pages": 6,
+    "jsFiles": 19,
+    "skills": 176,
+    "armor": 621,
+    "decorations": 361,
+    "weapons": 14,
+    "monsters": 14
+  },
+  "errors": [
+    {
+      "kind": "unknown-skill",
+      "owner": "クックコイルα",
+      "name": "体力回復量ＵＰ"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "クックグリーヴα",
+      "name": "体力回復量ＵＰ"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "クックコイルβ",
+      "name": "体力回復量ＵＰ"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "クックグリーヴβ",
+      "name": "体力回復量ＵＰ"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "ラバラメイルα",
+      "name": "体力回復量ＵＰ"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "ラバラアームα",
+      "name": "体力回復量ＵＰ"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "ラバラメイルβ",
+      "name": "体力回復量ＵＰ"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "ラバラアームβ",
+      "name": "体力回復量ＵＰ"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "ドシャグマグリーヴα",
+      "name": "体力回復量ＵＰ"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "ドシャグマグリーヴβ",
+      "name": "体力回復量ＵＰ"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "護闢獣メイルα",
+      "name": "防御力ＤＯＷＮ耐性"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "護闢獣アームα",
+      "name": "防御力ＤＯＷＮ耐性"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "シーウーヘルムα",
+      "name": "暗器蛸の力"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "シーウーメイルα",
+      "name": "暗器蛸の力"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "シーウーアームα",
+      "name": "暗器蛸の力"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "シーウーコイルα",
+      "name": "暗器蛸の力"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "シーウーグリーヴα",
+      "name": "暗器蛸の力"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "シーウーヘルムβ",
+      "name": "暗器蛸の力"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "シーウーメイルβ",
+      "name": "暗器蛸の力"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "シーウーアームβ",
+      "name": "暗器蛸の力"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "シーウーコイルβ",
+      "name": "暗器蛸の力"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "シーウーグリーヴβ",
+      "name": "暗器蛸の力"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "パピメルガンバα",
+      "name": "体力回復量ＵＰ"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "ハイメタメイルα",
+      "name": "防御力ＤＯＷＮ耐性"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "メルホアオッハα",
+      "name": "体力回復量ＵＰ"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "ダマスクメイルα",
+      "name": "体力回復量ＵＰ"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "ダマスクコイルα",
+      "name": "体力回復量ＵＰ"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "クリークバイザーα",
+      "name": "体力回復量ＵＰ"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "クリークベルトα",
+      "name": "体力回復量ＵＰ"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "ゴグメイルα",
+      "name": "暗器蛸の力"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "オリオンベストα",
+      "name": "体力回復量ＵＰ"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "オリオンアームα",
+      "name": "体力回復量ＵＰ"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "オメガイヤーカフα",
+      "name": "オメガレゾナンス"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "オメガスーツα",
+      "name": "オメガレゾナンス"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "オメガアームα",
+      "name": "オメガレゾナンス"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "オメガアクセサリーα",
+      "name": "オメガレゾナンス"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "オメガレッグα",
+      "name": "オメガレゾナンス"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "ドシャグマフェイクα",
+      "name": "体力回復量ＵＰ"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "タリオスアームα",
+      "name": "採集の達人"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "シュバルカアームγ",
+      "name": "鎖刃刺激"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "シュバルカコイルγ",
+      "name": "鎖刃刺激"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "シュバルカグリーヴγ",
+      "name": "鎖刃刺激"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "強弾珠【３】",
+      "name": "通常弾・通常矢強化"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "耐防珠【１】",
+      "name": "防御力ＤＯＷＮ耐性"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "耐臭珠【1】",
+      "name": "悪臭耐性"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "治癒珠【1】",
+      "name": "体力回復量ＵＰ"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "talisman:1",
+      "name": "KO術"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "talisman:1",
+      "name": "砲撃術"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "talisman:2",
+      "name": "KO術"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "talisman:2",
+      "name": "砲撃術"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "talisman:3",
+      "name": "KO術"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "talisman:3",
+      "name": "貫通弾・竜の一矢強化"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "talisman:3",
+      "name": "通常弾・通常矢強化"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "talisman:5",
+      "name": "悪臭耐性"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "talisman:6",
+      "name": "悪臭耐性"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "talisman:8",
+      "name": "災禍転覆"
+    },
+    {
+      "kind": "unknown-skill",
+      "owner": "talisman:9",
+      "name": "災禍転覆"
+    }
+  ],
+  "warnings": [
+    {
+      "kind": "skill-level",
+      "owner": "talisman:3",
+      "name": "毒ダメージ強化",
+      "level": 3,
+      "maxLevel": 1
+    },
+    {
+      "kind": "empty-skill",
+      "id": "critical_element",
+      "name": "会心撃【属性】"
+    },
+    {
+      "kind": "empty-skill",
+      "id": "burst",
+      "name": "連撃"
+    },
+    {
+      "kind": "empty-skill",
+      "id": "coalescence",
+      "name": "災禍転福"
+    },
+    {
+      "kind": "empty-skill",
+      "id": "element_absorption",
+      "name": "属性吸収"
+    },
+    {
+      "kind": "empty-skill",
+      "id": "skill_2utnlo",
+      "name": "チャージマスター"
+    },
+    {
+      "kind": "empty-skill",
+      "id": "skill_9sybh3",
+      "name": "にゃんにゃんぼう"
+    }
+  ]
+}

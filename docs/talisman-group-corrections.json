@@ -1,0 +1,112 @@
+[
+  {
+    "group": 1,
+    "added": [
+      {
+        "name": "砲弾装填",
+        "level": 1
+      }
+    ],
+    "removed": [
+      {
+        "name": "砲撃術",
+        "level": 1
+      }
+    ]
+  },
+  {
+    "group": 2,
+    "added": [
+      {
+        "name": "砲弾装填",
+        "level": 2
+      },
+      {
+        "name": "溜打強化",
+        "level": 1
+      }
+    ],
+    "removed": [
+      {
+        "name": "睡眠ビン追加",
+        "level": 1
+      },
+      {
+        "name": "砲弾装填",
+        "level": 1
+      },
+      {
+        "name": "砲撃術",
+        "level": 2
+      }
+    ]
+  },
+  {
+    "group": 3,
+    "added": [
+      {
+        "name": "速射強化",
+        "level": 1
+      }
+    ],
+    "removed": [
+      {
+        "name": "毒ダメージ強化",
+        "level": 3
+      }
+    ]
+  },
+  {
+    "group": 4,
+    "added": [
+      {
+        "name": "会心撃【属性】",
+        "level": 2
+      },
+      {
+        "name": "睡眠属性強化",
+        "level": 2
+      }
+    ],
+    "removed": [
+      {
+        "name": "チャージマスター",
+        "level": 2
+      },
+      {
+        "name": "抜刀術【技】",
+        "level": 2
+      }
+    ]
+  },
+  {
+    "group": 5,
+    "added": [],
+    "removed": []
+  },
+  {
+    "group": 6,
+    "added": [],
+    "removed": []
+  },
+  {
+    "group": 7,
+    "added": [],
+    "removed": []
+  },
+  {
+    "group": 8,
+    "added": [],
+    "removed": []
+  },
+  {
+    "group": 9,
+    "added": [],
+    "removed": []
+  },
+  {
+    "group": 10,
+    "added": [],
+    "removed": []
+  }
+]

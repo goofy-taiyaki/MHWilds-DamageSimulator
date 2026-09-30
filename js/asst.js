@@ -999,7 +999,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             if (char === '①') lvl = 1; else if (char === '②') lvl = 2; else if (char === '③') lvl = 3; else if (char === '④') lvl = 4;
                             if (lvl > 0) tSlots.push({ lvl, type: (isW && i === 0) ? 'w' : 'a' });
                         }
-                        relevantTalismans.push({ name: `RARE${comb.rare}護石 (${slotStr})`, skills: tSkills, slots: tSlots, defense: 0, p: 'talisman' });
+                        const patternStr = [comb.s1, comb.s2, comb.s3].filter(v => v !== null).join('-');
+                        relevantTalismans.push({ name: `RARE${comb.rare}護石 (${slotStr})　パターン: ${patternStr}`, skills: tSkills, slots: tSlots, defense: 0, p: 'talisman' });
                     });
                 });
             });
