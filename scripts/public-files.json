@@ -95,6 +95,8 @@
     "js/db_main.js",
     "js/main.js",
     "js/modules/asst_patterns.js",
+    "js/modules/asst_optimization.js",
+    "js/modules/asst_weapon.js",
     "js/modules/ocr.js",
     "js/modules/optimizer.js",
     "js/modules/share.js",

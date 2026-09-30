@@ -6,6 +6,8 @@ import { initOCR } from './modules/ocr.js';
 import { buildSkillMatrix, sortActivatedSkills } from './result_renderer.js';
 import { BuildShare } from './modules/share.js';
 import { analyzePatterns } from './modules/asst_patterns.js';
+import { optimizeDecorationAssignment } from './modules/asst_optimization.js';
+import { WEAPON_TYPES, PARTS, BONUSES, EXCITATIONS, createWeaponEvaluator, describeWeapon } from './modules/asst_weapon.js';
 
 const SKILL_NAME_TO_ID = Object.fromEntries(SKILLS.map(s => [s.name, s.id]));
 const SKILL_BY_ID = Object.fromEntries(SKILLS.map((s, idx) => [s.id, { ...s, originalIndex: idx }]));
@@ -20,7 +22,36 @@ const PREFERRED_ORDER = [
 
 document.addEventListener('DOMContentLoaded', () => {
     let weaponDecos = [null, null, null];
+    let searchGeneration=0;
     let activeResFilters = new Map(); // idx -> value
+    const artiaSettings=document.getElementById('artia-settings');
+    const settingSelect=(id,label,options,automatic=true)=>{
+        const row=document.createElement('label'); row.style.cssText='display:flex;gap:6px;align-items:center;font-size:0.75rem;';
+        const text=document.createElement('span');text.textContent=label;text.style.minWidth='62px';row.appendChild(text);
+        const select=document.createElement('select');select.id=id;select.style.cssText='flex:1;min-width:0;background:#000;color:#fff;border:1px solid #444;height:28px;';
+        for(const o of [...(automatic?[{id:'auto',name:'自動（最適化）'}]:[]),...options]){
+            const opt=document.createElement('option');opt.value=o.id;opt.textContent=o.name;select.appendChild(opt);
+        }
+        row.appendChild(select);artiaSettings.appendChild(row);
+    };
+    settingSelect('weapon-type-select','武器種',WEAPON_TYPES,false);
+    settingSelect('artia-excitation','激化',EXCITATIONS);
+    for(let i=0;i<3;i++)settingSelect(`artia-part-${i}`,`パーツ${i+1}`,PARTS);
+    for(let i=0;i<5;i++)settingSelect(`artia-bonus-${i}`,`復元${i+1}`,BONUSES);
+    const readWeaponSettings=()=>({weaponTypeId:document.getElementById('weapon-type-select').value,
+        excitation:document.getElementById('artia-excitation').value,
+        parts:[0,1,2].map(i=>document.getElementById(`artia-part-${i}`).value),
+        bonuses:[0,1,2,3,4].map(i=>document.getElementById(`artia-bonus-${i}`).value)});
+    // Only ASST-specific query settings are restored; calculator weapon/buffs are not imported.
+    try{
+        const saved=JSON.parse(new URLSearchParams(location.search).get('asst_weapon')||'null');
+        if(saved){
+            const values=[['weapon-type-select',saved.weaponTypeId],['artia-excitation',saved.excitation],
+                ...[0,1,2].map(i=>[`artia-part-${i}`,saved.parts?.[i]]),...[0,1,2,3,4].map(i=>[`artia-bonus-${i}`,saved.bonuses?.[i]])];
+            for(const [id,value] of values){const select=document.getElementById(id);if([...select.options].some(o=>o.value===value))select.value=value;}
+        }
+    }catch{/* Old URLs without weapon settings keep automatic defaults. */}
+
 
     const updateResFilterUI = () => {
         const container = document.getElementById('active-res-filters');
@@ -805,6 +836,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        try { createWeaponEvaluator(readWeaponSettings(),SKILLS); }
+        catch(error){ statusText.textContent=error.message; return; }
         performSearch(targetSkills, wSlotsRemaining, wSkills, talismanData, talismanSlots, isAutoTalisman, [...weaponDecos], wSlotsFull, isFavSkillsMode);
     };
 
@@ -815,6 +848,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function performSearch(target, wSlots, wSkills, tDataFixed, tSlotsFixed, autoTalisman, manualWDecos, fullWSlots, isFavSkillsMode) {
         statusText.innerHTML = '<span class="loader"></span>初期化中...';
+        const generation=++searchGeneration;
+        const weaponSettings=readWeaponSettings();
+        const evaluator=createWeaponEvaluator(weaponSettings,SKILLS);
         const targetPoints = {};
 
         for (const id in target) {
@@ -1090,6 +1126,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let currentSearchTimeout = null;
             function solveChunkDFS() {
+                if(generation!==searchGeneration)return;
                 try {
                     const startTime = Date.now();
                     while (stack.length > 0) {
@@ -1152,7 +1189,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (isInterrupted) {
                         statusText.innerHTML = '<span style="color:var(--accent-color); font-weight:bold;">⚠ 検索結果が30件を超えたため中断しました。条件をさらに絞り込んでください。</span>';
                     }
-                    finish(allResults, isInterrupted);
+                    finish(allResults, isInterrupted).catch(e=>{
+                        console.error('Optimization error:',e);statusText.textContent=`最適化エラー: ${e.message}`;
+                    });
                 } catch (e) {
                     console.error("solveChunkDFS Error:", e);
                     statusText.innerHTML = `<span style="color:red">検索中のエラー(DFS): ${e.message}</span>`;
@@ -1251,13 +1290,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 let res = [0, 0, 0, 0, 0];
                 [h, c, a, w, l].forEach(p => { if (p.r) p.r.forEach((v, i) => res[i] += v); });
 
-                // 初期値を0から計算（武器攻撃力・会心が渡されていない場合は0ベース）
-                const params = new URLSearchParams(window.location.search);
-                let atk = parseInt(params.get('base_atk') || "0", 10);
-                let aff = parseInt(params.get('base_aff') || "0", 10);
-                let atkMult = 1.0;
-                let critMult = 1.25;
-
                 const pts = {};
                 const addP = (sid, n) => { if (sid) pts[sid] = (pts[sid] || 0) + n; };
                 [h, c, a, w, l].forEach(item => {
@@ -1278,11 +1310,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     const eff = s.effects && s.effects.find(e => e.level === lvl);
                     if (eff) {
                         if (eff.defAdd) def += eff.defAdd;
-                        if (eff.attackAdd) atk += eff.attackAdd;
-                        if (eff.atkAdd) atk += eff.atkAdd;
-                        if (eff.attackMult) atkMult *= (1 + eff.attackMult);
-                        if (eff.affinity) aff += eff.affinity;
-                        if (eff.critMultAdd) critMult += eff.critMultAdd;
                         if (eff.resAdd) {
                             const rIds = ['fire_resistance', 'water_resistance', 'thunder_resistance', 'ice_resistance', 'dragon_resistance'];
                             const idx = rIds.indexOf(sid);
@@ -1291,30 +1318,51 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
 
-                const finalAtk = atk * atkMult;
-                const finalAff = aff;
-                
-                // 期待値は攻撃力と会心率の情報のみで算出 (物理期待値 = 攻撃力 * (1 + 0.25 * 会心率/100))
-                const exp = finalAtk * (1 + (finalAff / 100) * 0.25);
-
-                return {
-                    def,
-                    res,
-                    atk: Math.floor(finalAtk),
-                    aff: finalAff,
-                    exp: Math.round(exp * 10) / 10
-                };
+                const physical=evaluator.evaluate(pts);
+                return {def,res,atk:physical.atk,aff:physical.aff,exp:Math.round(physical.value*10)/10,
+                    value:physical.value,weapon:physical.weapon,weaponSettings};
             }
 
 
-            function finish(results, interrupted = false) {
+            function optimizePattern(r,required=targetPoints){
+                const base=buildSkillMatrix(r,wSkills,[],SKILL_NAME_TO_ID,null,null);
+                const basePoints=Object.fromEntries(Object.entries(base).map(([id,m])=>[id,m.total]));
+                const slots=[];
+                [r.h,r.c,r.a,r.w,r.l].forEach((item,piece)=>item.slots.forEach(s=>{const lvl=s.lvl||s;if(lvl>0)slots.push({piece,lvl,type:'a'});}));
+                wSlots.forEach(lvl=>{if(lvl>0)slots.push({piece:'weapon',lvl,type:'w'});});
+                r.t.slots.forEach(s=>{const lvl=s.lvl||s;if(lvl>0)slots.push({piece:'talisman',lvl,type:s.type||'a'});});
+                // A free automatic weapon skill can also complete an armor threshold.
+                const series=r.assignment.autoSS?[r.assignment.autoSS]:wSkills.auto_ss?[null,...SKILLS.filter(s=>s.mainCategory==='series'&&evaluator.scoreSkillIds.includes(s.id)&&[1,3].includes(basePoints[s.id])).map(s=>s.id)]:[null];
+                const groups=r.assignment.autoGS?[r.assignment.autoGS]:wSkills.auto_gs?[null,...SKILLS.filter(s=>s.mainCategory==='group'&&evaluator.scoreSkillIds.includes(s.id)&&basePoints[s.id]===2).map(s=>s.id)]:[null];
+                let best=null,complete=true;
+                for(const autoSS of series)for(const autoGS of groups){
+                    const points={...basePoints};for(const id of [autoSS,autoGS])if(id)points[id]=(points[id]||0)+1;
+                    const optimized=optimizeDecorationAssignment({slots,basePoints:points,target:required,skills:SKILLS,decorations:DECORATIONS,
+                        nameToId:SKILL_NAME_TO_ID,...evaluator,initialAssignment:r.assignment.decos,maxNodes:200000});
+                    complete&&=optimized.complete;
+                    if(!optimized.best)continue;
+                    const result={...r,assignment:{decos:optimized.best.assignment,autoSS,autoGS}};
+                    result.stats=calculateFinalStats(r.h,r.c,r.a,r.w,r.l,r.t,result.assignment.decos,wSlots,wSkills,autoSS,autoGS);
+                    if(!best||result.stats.value>best.stats.value)best=result;
+                }
+                if(!best)return {noMatch:true,optimizationComplete:complete};
+                best.optimizationComplete=complete;best.stats.optimizationComplete=complete;
+                return best;
+            }
+            async function finish(results, interrupted = false) {
                 progressBar.style.width = '100%';
                 const sortType = document.getElementById('search-sort-type').value;
 
-                const processed = results.map(r => ({
-                    ...r,
-                    stats: calculateFinalStats(r.h, r.c, r.a, r.w, r.l, r.t, r.assignment.decos, wSlots, wSkills, r.assignment.autoSS, r.assignment.autoGS)
-                }));
+                const processed=[];
+                let optimizationIncomplete=false;
+                for(let i=0;i<results.length;i++){
+                    statusText.textContent=`武器・装飾品を最適化中... ${i+1}/${results.length}`;
+                    await new Promise(resolve=>setTimeout(resolve,0));
+                    if(generation!==searchGeneration)return;
+                    const r=optimizePattern(results[i]);
+                    optimizationIncomplete ||= !r.optimizationComplete;
+                    if(!r.noMatch)processed.push(r);
+                }
 
                 const filtered = processed.filter(r => {
                     for (const [idx, val] of activeResFilters.entries()) {
@@ -1332,7 +1380,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const uniqueResults = [];
                 groups.forEach(vs => {
-                    vs.sort((a, b) => (a.t.rare || 5) - (b.t.rare || 5));
+                    vs.sort((a,b)=>b.stats.value-a.stats.value||(a.t.rare||5)-(b.t.rare||5));
                     uniqueResults.push({...vs[0], patterns:vs});
                 });
 
@@ -1350,7 +1398,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         buildSkillMatrix(pattern,wSkills,pattern.assignment.decos,SKILL_NAME_TO_ID,pattern.assignment.autoSS,pattern.assignment.autoGS),
                         SKILLS,SKILL_BY_ID).filter(s=>s.lvl>0).map(s=>[s.id,s.lvl]));
                     let analysis;
-                    const drawPattern = (pattern, selectedIndex, replacedCard = null, addedNote = '') => {
+                    const drawPattern = (pattern, selectedIndex, replacedCard = null, addedNote = '', required=targetPoints) => {
                         const card = renderResult(pattern.h, pattern.c, pattern.a, pattern.w, pattern.l, pattern.t, wSlots, wSkills,
                             pattern.assignment.decos, idx + 1, target, armorLabels, pattern.assignment.autoSS, pattern.assignment.autoGS,
                             pattern.stats, manualWDecos, fullWSlots);
@@ -1374,6 +1422,36 @@ document.addEventListener('DOMContentLoaded', () => {
                         const note = document.createElement('p'); note.className = 'pattern-note';
                         note.textContent = addedNote || '検出した全パターンを対象に、候補を個別に判定します。複数候補の同時追加を保証するものではありません。';
                         panel.appendChild(note);
+
+                        const extraRow=document.createElement('div');extraRow.className='pattern-candidates';
+                        const extraSkill=document.createElement('select');extraSkill.setAttribute('aria-label','再配置で追加するスキル');
+                        for(const skill of SKILLS.filter(s=>['weapon','armor','support','resistance'].includes(s.mainCategory)&&DECORATIONS.some(d=>d.sk.some(e=>e.n===s.name)))){
+                            const option=document.createElement('option');option.value=skill.id;option.textContent=skill.name;extraSkill.appendChild(option);
+                        }
+                        const extraLevel=document.createElement('select');extraLevel.setAttribute('aria-label','再配置で追加するレベル');
+                        const updateLevels=()=>{extraLevel.innerHTML='';for(let i=1;i<=SKILL_BY_ID[extraSkill.value].maxLevel;i++){
+                            const option=document.createElement('option');option.value=String(i);option.textContent=`Lv${i}`;extraLevel.appendChild(option);
+                        }extraLevel.value=String(SKILL_BY_ID[extraSkill.value].maxLevel);};
+                        extraSkill.onchange=updateLevels;updateLevels();
+                        const extraButton=document.createElement('button');extraButton.className='btn';extraButton.textContent='複合珠・再配置で追加して最適化';
+                        extraRow.append(extraSkill,extraLevel,extraButton);panel.appendChild(extraRow);
+                        extraButton.onclick=async()=>{
+                            extraButton.disabled=true;
+                            const requiredNext={...required,[extraSkill.value]:Math.max(required[extraSkill.value]||0,Number(extraLevel.value))};
+                            let best=null,bestIndex=0,complete=true;
+                            try{
+                                for(let i=0;i<patterns.length;i++){
+                                    note.textContent=`追加条件で再配置中... ${i+1}/${patterns.length}`;
+                                    await new Promise(resolve=>setTimeout(resolve,0));
+                                    if(generation!==searchGeneration)return;
+                                    const optimized=optimizePattern(patterns[i],requiredNext);
+                                    complete&&=optimized.optimizationComplete;
+                                    if(!optimized.noMatch&&(!best||optimized.stats.value>best.stats.value)){best=optimized;bestIndex=i;}
+                                }
+                                if(best)drawPattern(best,bestIndex,card,`${SKILL_BY_ID[extraSkill.value].name} Lv${extraLevel.value}を維持して再配置しました。${complete?'検出候補内の最適化完了。':'探索上限に到達した候補があり最大値未確定。'}`,requiredNext);
+                                else note.textContent='指定レベルを満たす配置は検出できませんでした（探索上限を含むため不成立の断定ではありません）。';
+                            }finally{extraButton.disabled=false;}
+                        };
                         let populated = false;
                         panel.addEventListener('toggle',()=> {
                             if (!panel.open || populated) return;
@@ -1394,11 +1472,11 @@ document.addEventListener('DOMContentLoaded', () => {
                                             : `${candidate.skill.name} 最大Lv${candidate.level}（${candidate.count}/${patterns.length}パターン）`;
                                         button.onclick = () => {
                                             const original = patterns[candidate.patternIndex];
-                                            const decos = [...original.assignment.decos,...(useExtras ? candidate.extra : [])];
-                                            const adopted = {...original,assignment:{...original.assignment,decos},
-                                                stats:calculateFinalStats(original.h,original.c,original.a,original.w,original.l,original.t,decos,wSlots,wSkills,original.assignment.autoSS,original.assignment.autoGS)};
-                                            drawPattern(adopted,candidate.patternIndex,card,
-                                                `${candidate.skill.name}の候補を採用しました。表示中の装備・装飾品・全発動スキルを計算機へ反映／保存できます。`);
+                                            const addedPoints=candidate.skill.mainCategory==='series'?candidate.level*2:candidate.skill.mainCategory==='group'?3:candidate.level;
+                                            const requiredNext={...required,[candidate.skill.id]:Math.max(required[candidate.skill.id]||0,addedPoints)};
+                                            const adopted=optimizePattern(original,requiredNext);
+                                            if(adopted&&!adopted.noMatch)drawPattern(adopted,candidate.patternIndex,card,
+                                                `${candidate.skill.name}の候補を採用して再最適化しました。計算機への反映・保存に対応しています。`,requiredNext);
                                         };
                                         list.appendChild(button);
                                     });
@@ -1413,7 +1491,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 resultCountEl.textContent = `${uniqueResults.length} sets`;
                 if (!interrupted) {
-                    statusText.textContent = `検索完了! ${uniqueResults.length}種類の防具構成・${filtered.length}パターンが見つかりました。各構成の代表1パターンを表示しています。${uniqueResults.length>100 ? '（画面表示は先頭100構成）' : ''}`;
+                    statusText.textContent = `検索完了! ${uniqueResults.length}種類の防具構成・${filtered.length}パターンが見つかりました。各構成の物理期待値が最良の1パターンを表示しています。${optimizationIncomplete?'（一部の再配置探索は上限に到達・最大値未確定）':'（検出候補内の再配置探索完了）'}${uniqueResults.length>100 ? '（画面表示は先頭100構成）' : ''}`;
                 }
 
 
@@ -1431,7 +1509,7 @@ document.addEventListener('DOMContentLoaded', () => {
         card.className = 'result-card' + (idx === 1 ? ' best-match' : '');
         const armorItems = [h, c, a, w, l];
         
-        const weaponNameDisplay = (autoSS || autoGS || h.ss || h.gs) ? "巨戟アーティア" : "その他";
+        const weaponNameDisplay = "巨戟アーティア";
 
         const getWeaponSlotsHtml = () => {
             let html = [];
@@ -1496,7 +1574,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="result-header" style="display: flex; align-items: center; padding: 10px 15px; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,215,0,0.2);">
                 <span class="set-id-tag" style="margin-right: 20px; color: var(--accent-color); font-weight: bold;">SET #${idx}</span>
                 <div class="defense-info" style="font-size: 0.95rem; letter-spacing: 0.05em; color: #eee; flex: 1;">
-                    <span style="color: #aaa;">期待値:</span> <span class="stat-val" style="color:var(--accent-color); margin-right: 1.5rem;">${stats.exp}</span>
+                    <span style="color: #aaa;">物理期待値:</span> <span class="stat-val" style="color:var(--accent-color); margin-right: 1.5rem;">${stats.exp}</span>
                     <span style="color: #aaa;">攻撃力:</span> <span class="stat-val" style="margin-right: 1.5rem;">${stats.atk}</span>
                     <span style="color: #aaa;">会心率:</span> <span class="stat-val" style="margin-right: 1.5rem;">${stats.aff}%</span>
                     <span style="color: #aaa;">防御力:</span> <span class="stat-val" style="margin-right: 1.5rem;">${stats.def}</span>
@@ -1510,6 +1588,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="equip-item">
                         <div class="equip-label">武</div>
                         <div class="equip-name">${weaponNameDisplay}</div>
+                        <div style="font-size:0.75rem;color:#aaa;overflow-wrap:anywhere;">${describeWeapon(stats.weapon)}</div>
                         <div class="equip-sub">防: -- &nbsp; 耐: --/--/--/--/--</div>
                         <div class="native-skills">${getWeaponSkillsHtml()}</div>
                         <div class="slots-stack">
@@ -1574,6 +1653,8 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
 
         const resultState = {
+            weaponTypeId:stats.weapon.weaponTypeId,excitationType:stats.weapon.excitationType,
+            parts:[...stats.weapon.parts],bonuses:[...stats.weapon.bonuses],
             currentSkillLevels: Object.fromEntries(activatedRows.filter(row => row.lvl > 0).map(row => [row.id, row.lvl])),
             asst_build_data: {
                 h: h.n, c: c.n, a: a.n, w: w.n, l: l.n, t: t.name,
@@ -1604,11 +1685,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const sets = JSON.parse(localStorage.getItem('mhwilds_mysets') || '{}');
             const data = {
                 currentSkillLevels: { ...resultState.currentSkillLevels },
-                weaponTypeId: document.getElementById('weapon-type-select')?.value || 'gs',
+                weaponTypeId: resultState.weaponTypeId,
                 timestamp: Date.now(),
-                excitationType: 'attack',
-                parts: ['attack', 'attack', 'attack'],
-                bonuses: ['atk_3', 'atk_3', 'atk_ex', 'atk_ex', 'sharp_load_ex'],
+                excitationType:resultState.excitationType,
+                parts:[...resultState.parts],bonuses:[...resultState.bonuses],
                 asst_build_data: resultState.asst_build_data
             };
             sets[setName] = data;
@@ -1625,6 +1705,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const currentUrl = new URL(window.location.href);
             const params = new URLSearchParams(currentUrl.search);
             
+            params.set('asst_weapon',JSON.stringify(stats.weaponSettings));
+
             // 既存のスキルパラメータをクリア
             SKILLS.forEach(s => params.delete(s.id));
             
