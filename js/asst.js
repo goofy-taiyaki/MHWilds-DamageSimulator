@@ -5,6 +5,7 @@ import { TALISMAN_GROUPS, TALISMAN_COMBINATIONS, TALISMAN_SLOTS } from './data/t
 import { initOCR } from './modules/ocr.js';
 import { buildSkillMatrix, sortActivatedSkills } from './result_renderer.js';
 import { BuildShare } from './modules/share.js';
+import { analyzePatterns } from './modules/asst_patterns.js';
 
 const SKILL_NAME_TO_ID = Object.fromEntries(SKILLS.map(s => [s.name, s.id]));
 const SKILL_BY_ID = Object.fromEntries(SKILLS.map((s, idx) => [s.id, { ...s, originalIndex: idx }]));
@@ -268,10 +269,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const catSkills = SKILLS.filter(s => s.mainCategory === mainCat);
             if (catSkills.length === 0) return;
 
-            const mainHeader = document.createElement('div');
+            const category = document.createElement('details');
+            category.className = 'skill-category';
+            category.dataset.category = mainCat;
+            category.open = true;
+            const mainHeader = document.createElement('summary');
             mainHeader.className = 'skill-category-title';
             mainHeader.textContent = MAIN_CATEGORY_NAMES[mainCat];
-            skillsSelectionList.appendChild(mainHeader);
+            category.appendChild(mainHeader);
+            const categoryBody = document.createElement('div');
+            categoryBody.className = 'skill-category-body';
+            category.appendChild(categoryBody);
+            skillsSelectionList.appendChild(category);
 
             const SUB_CATEGORY_NAMES = { attack: '攻撃力強化', affinity: '会心率', element: '属性・状態異常', ammo: '弾・矢強化', utility: 'その他' };
             const SUB_CATEGORY_ORDER = ['attack', 'affinity', 'element', 'ammo', 'utility', null];
@@ -284,7 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const subHeader = document.createElement('div');
                     subHeader.className = 'skill-subcategory-title';
                     subHeader.textContent = SUB_CATEGORY_NAMES[subCat] || '';
-                    skillsSelectionList.appendChild(subHeader);
+                    categoryBody.appendChild(subHeader);
                 }
 
                 subSkills.forEach(skill => {
@@ -325,7 +334,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             }).join('')}
                         </select>
                     `;
-                    skillsSelectionList.appendChild(row);
+                    categoryBody.appendChild(row);
                     const selectEl = row.querySelector('select');
                     cachedSkillSelects[skill.id] = selectEl;
                     selectEl.value = targetSkills[skill.id] || 0;
@@ -417,6 +426,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const allTitles = skillsSelectionList.querySelectorAll('.skill-category-title, .skill-subcategory-title');
             allRows.forEach(r => r.style.display = 'grid');
             allTitles.forEach(t => t.style.display = 'block');
+            skillsSelectionList.querySelectorAll('.skill-category').forEach(category => {
+                category.style.display = '';
+                if (category.dataset.beforeFilter !== undefined) {
+                    category.open = category.dataset.beforeFilter === 'true';
+                    delete category.dataset.beforeFilter;
+                }
+            });
             return;
         }
 
@@ -438,6 +454,13 @@ document.addEventListener('DOMContentLoaded', () => {
             // 判定：入力文字列そのものが含まれるか、あるいはレベルを除去した名前が含まれるか
             const isMatch = searchData.includes(rawQuery) || searchData.includes(skillNameQuery);
             row.style.display = isMatch ? 'grid' : 'none';
+        });
+        skillsSelectionList.querySelectorAll('.skill-category').forEach(category => {
+            if (category.dataset.beforeFilter === undefined) category.dataset.beforeFilter = String(category.open);
+            const matches = [...category.querySelectorAll('.skill-selector-row')].some(row => row.style.display !== 'none');
+            category.style.display = matches ? '' : 'none';
+            category.open = matches;
+            category.querySelector('summary').style.display = 'block';
         });
     };
 
@@ -1308,7 +1331,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 const uniqueResults = [];
-                groups.forEach(vs => { vs.sort((a, b) => (a.t.rare || 5) - (b.t.rare || 5)); uniqueResults.push(vs[0]); });
+                groups.forEach(vs => {
+                    vs.sort((a, b) => (a.t.rare || 5) - (b.t.rare || 5));
+                    uniqueResults.push({...vs[0], patterns:vs});
+                });
 
                 if (sortType === 'exp') uniqueResults.sort((a, b) => b.stats.exp - a.stats.exp);
                 else if (sortType === 'def') uniqueResults.sort((a, b) => b.stats.def - a.stats.def);
@@ -1319,93 +1345,78 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 resultsContainer.innerHTML = '';
                 uniqueResults.slice(0, 100).forEach((r, idx) => {
-                    renderResult(r.h, r.c, r.a, r.w, r.l, r.t, wSlots, wSkills, r.assignment.decos, idx + 1, target, armorLabels, r.assignment.autoSS, r.assignment.autoGS, r.stats, manualWDecos, fullWSlots);
+                    const patterns = r.patterns;
+                    const levelsFor = pattern => Object.fromEntries(sortActivatedSkills(
+                        buildSkillMatrix(pattern,wSkills,pattern.assignment.decos,SKILL_NAME_TO_ID,pattern.assignment.autoSS,pattern.assignment.autoGS),
+                        SKILLS,SKILL_BY_ID).filter(s=>s.lvl>0).map(s=>[s.id,s.lvl]));
+                    let analysis;
+                    const drawPattern = (pattern, selectedIndex, replacedCard = null, addedNote = '') => {
+                        const card = renderResult(pattern.h, pattern.c, pattern.a, pattern.w, pattern.l, pattern.t, wSlots, wSkills,
+                            pattern.assignment.decos, idx + 1, target, armorLabels, pattern.assignment.autoSS, pattern.assignment.autoGS,
+                            pattern.stats, manualWDecos, fullWSlots);
+                        const panel = document.createElement('details');
+                        panel.className = 'pattern-options';
+                        const summary = document.createElement('summary');
+                        summary.textContent = `全${patterns.length}パターン・追加可能なスキルを確認`;
+                        panel.appendChild(summary);
+                        const selector = document.createElement('select');
+                        selector.setAttribute('aria-label', `SET #${idx+1} のパターン`);
+                        patterns.forEach((p,i)=> {
+                            const option = document.createElement('option');
+                            option.value = String(i);
+                            const charmSkills = Object.entries(p.t.skills).map(([sid,lv])=>`${SKILL_BY_ID[sid]?.name || sid}Lv${lv}`).join('・');
+                            option.textContent = `${i+1}: ${p.t.name}｜${charmSkills}`;
+                            selector.appendChild(option);
+                        });
+                        selector.value = String(selectedIndex);
+                        panel.appendChild(selector);
+                        selector.onchange = () => drawPattern(patterns[Number(selector.value)],Number(selector.value),card);
+                        const note = document.createElement('p'); note.className = 'pattern-note';
+                        note.textContent = addedNote || '検出した全パターンを対象に、候補を個別に判定します。複数候補の同時追加を保証するものではありません。';
+                        panel.appendChild(note);
+                        let populated = false;
+                        panel.addEventListener('toggle',()=> {
+                            if (!panel.open || populated) return;
+                            populated = true;
+                            try {
+                                analysis ||= analyzePatterns(patterns,target,SKILLS,DECORATIONS,wSlots,levelsFor);
+                                for (const [title, candidates, useExtras] of [
+                                    ['空きスロットへ追加できるスキル',analysis.addable,true],
+                                    ['別パターンで発動する追加スキル（目標との差）',analysis.existing,false]
+                                ]) {
+                                    const heading = document.createElement('h4'); heading.textContent = title; panel.appendChild(heading);
+                                    const list = document.createElement('div'); list.className = 'pattern-candidates'; panel.appendChild(list);
+                                    if (!candidates.length) list.textContent = '該当なし';
+                                    candidates.forEach(candidate=> {
+                                        const button = document.createElement('button'); button.className = 'btn';
+                                        button.textContent = useExtras
+                                            ? `${candidate.skill.name} Lv${candidate.current}→${candidate.level}（${candidate.count}/${patterns.length}パターン）`
+                                            : `${candidate.skill.name} 最大Lv${candidate.level}（${candidate.count}/${patterns.length}パターン）`;
+                                        button.onclick = () => {
+                                            const original = patterns[candidate.patternIndex];
+                                            const decos = [...original.assignment.decos,...(useExtras ? candidate.extra : [])];
+                                            const adopted = {...original,assignment:{...original.assignment,decos},
+                                                stats:calculateFinalStats(original.h,original.c,original.a,original.w,original.l,original.t,decos,wSlots,wSkills,original.assignment.autoSS,original.assignment.autoGS)};
+                                            drawPattern(adopted,candidate.patternIndex,card,
+                                                `${candidate.skill.name}の候補を採用しました。表示中の装備・装飾品・全発動スキルを計算機へ反映／保存できます。`);
+                                        };
+                                        list.appendChild(button);
+                                    });
+                                }
+                            } catch (error) { note.textContent = error.message; }
+                        });
+                        card.appendChild(panel);
+                        if (replacedCard) {replacedCard.replaceWith(card); panel.open = true;}
+                    };
+                    drawPattern(r,0);
                 });
 
                 resultCountEl.textContent = `${uniqueResults.length} sets`;
                 if (!interrupted) {
-                    statusText.textContent = `検索完了! ${uniqueResults.length}種類の装備構成が見つかりました。${results.length > uniqueResults.length ? ` (全${results.length}パターンから集約表示)` : ''}`;
+                    statusText.textContent = `検索完了! ${uniqueResults.length}種類の防具構成・${filtered.length}パターンが見つかりました。各構成の代表1パターンを表示しています。${uniqueResults.length>100 ? '（画面表示は先頭100構成）' : ''}`;
                 }
 
-                // 「追加可能なスキル」の解析 (上位30件対象)
-                const addableSkillsSet = new Map(); // skillId -> count
-                uniqueResults.slice(0, 30).forEach(r => {
-                    const hS = r.h.slots.map(s => ({ lvl: s.lvl || s, type: 'a' }));
-                    const cS = r.c.slots.map(s => ({ lvl: s.lvl || s, type: 'a' }));
-                    const aS = r.a.slots.map(s => ({ lvl: s.lvl || s, type: 'a' }));
-                    const wS_part = r.w.slots.map(s => ({ lvl: s.lvl || s, type: 'a' }));
-                    const lS = r.l.slots.map(s => ({ lvl: s.lvl || s, type: 'a' }));
-                    const tS = r.t.slots.map(s => ({ lvl: s.lvl || s, type: s.type || 'a' }));
-                    const wSlotFixed = wSlots.map(s => ({ lvl: s, type: 'w' }));
-                    
-                    const totalSlots = [...hS, ...cS, ...aS, ...wS_part, ...lS, ...tS, ...wSlotFixed].filter(s => s.lvl > 0);
-                    // 使ったスロットを除く
-                    r.assignment.decos.forEach(d => {
-                        const idx = totalSlots.findIndex(ts => ts.lvl >= d.deco.lvl && ts.type === d.deco.type);
-                        if (idx !== -1) totalSlots.splice(idx, 1);
-                    });
-                    
-                    // 空きスロットがある場合のみ解析
-                    if (totalSlots.length > 0) {
-                        SKILLS.forEach(s => {
-                            if (s.mainCategory !== 'weapon' && s.mainCategory !== 'armor') return;
-                            const currentLv = targetSkills[s.id] || 0;
-                            if (currentLv >= s.maxLevel) return;
-                            
-                            // このスキルを上げられるか装飾品でチェック
-                            const usableDecos = (decoBySkill[s.id] || []).filter(d => totalSlots.some(ts => ts.lvl >= d.lvl && ts.type === d.type));
-                            if (usableDecos.length > 0) {
-                                addableSkillsSet.set(s.id, (addableSkillsSet.get(s.id) || 0) + 1);
-                            }
-                        });
-                    }
-                });
 
-                if (addableSkillsSet.size > 0) {
-                    const topAddable = Array.from(addableSkillsSet.entries())
-                        .map(([sid, count]) => ({ id: sid, count, name: SKILL_BY_ID[sid].name }))
-                        .sort((a, b) => b.count - a.count)
-                        .slice(0, 10);
-
-                    const summaryEl = document.getElementById('target-summary');
-                    if (summaryEl) {
-                        const addableArea = document.createElement('div');
-                        addableArea.style.marginTop = '1rem';
-                        addableArea.style.width = '100%';
-                        addableArea.style.padding = '0.8rem';
-                        addableArea.style.background = 'rgba(255, 204, 0, 0.05)';
-                        addableArea.style.border = '1px dashed rgba(255, 204, 0, 0.3)';
-                        addableArea.style.borderRadius = '4px';
-                        
-                        let html = `<div style="font-size: 0.8rem; color: var(--accent-color); margin-bottom: 0.5rem; font-weight: bold;">
-                                        <span style="font-size:1rem">💡</span> 抽出された構成にさらに追加可能なスキル（目安）:
-                                     </div><div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">`;
-                        
-                        topAddable.forEach(x => {
-                            html += `<button class="btn add-suggest-btn" data-sid="${x.id}" style="font-size: 0.7rem; padding: 2px 8px; background: rgba(255,255,255,0.05); border: 1px solid #444; color: #eee; cursor:pointer;" title="${x.count}個の構成で追加可能">＋ ${x.name}</button>`;
-                        });
-                        html += `</div>`;
-                        addableArea.innerHTML = html;
-                        summaryEl.appendChild(addableArea);
-                        
-                        // ボタンクリックでスキルを選択
-                        addableArea.querySelectorAll('.add-suggest-btn').forEach(btn => {
-                            btn.onclick = () => {
-                                const sid = btn.dataset.sid;
-                                const select = cachedSkillSelects[sid];
-                                if (select) {
-                                    const current = parseInt(select.value);
-                                    if (current < select.options.length - 1) {
-                                        select.value = current + 1;
-                                        select.dispatchEvent(new Event('change'));
-                                        // 自動で再検索される
-                                        startSearch();
-                                    }
-                                }
-                            };
-                        });
-                    }
-                }
             }
 
             solveChunkDFS();
@@ -1639,6 +1650,7 @@ document.addEventListener('DOMContentLoaded', () => {
         header.appendChild(shareBtn);
 
         resultsContainer.appendChild(card);
+        return card;
     }
 
     // --- MySet System (Shared with Calculator) ---

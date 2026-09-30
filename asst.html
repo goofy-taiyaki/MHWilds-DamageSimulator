@@ -254,6 +254,16 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
+        .skill-category { grid-column: 1 / -1; min-width: 0; }
+        .skill-category > summary { cursor: pointer; display: list-item; }
+        .skill-category-body { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.5rem; }
+        .pattern-options { padding: 12px 15px; border-top: 1px solid #444; }
+        .pattern-options summary { cursor: pointer; color: var(--accent-color); }
+        .pattern-options select { max-width: 100%; margin: 0.5rem 0; }
+        .pattern-candidates { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+        .pattern-candidates button { white-space: normal; text-align: left; font-family: inherit; }
+        .pattern-note { font-size: 0.75rem; color: var(--color-text-muted); margin: 0.5rem 0; }
+
         .skill-selector-row {
             display: grid;
             grid-template-columns: 1fr 60px;
