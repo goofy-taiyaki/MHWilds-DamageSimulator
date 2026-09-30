@@ -1325,28 +1325,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            const baseAtk = document.getElementById('base-atk-display')?.textContent || "0";
-            const baseAff = (document.getElementById('base-aff-display')?.textContent || "0%").replace('%', '');
-            
             const params = new URLSearchParams();
             for (const [id, lvl] of Object.entries(activeSkills)) {
                 params.append(id, lvl);
             }
             
-            // 武器情報を追加 (スロット、基礎ステータス)
-            const weaponType = weaponTypeSelect.value;
-            params.append('weapon_type', weaponType);
-            params.append('base_atk', baseAtk);
-            params.append('base_aff', baseAff);
-            
-            console.log('Searching armor for skills:', activeSkills, 'BaseAtk:', baseAtk);
+            console.log('Searching armor for skills:', activeSkills);
             const targetUrl = `asst.html?${params.toString()}`;
 
             
             // ルーティング等でパラメータが消失するケースへの対策として localStorage にも保存
             localStorage.setItem('asst_request', JSON.stringify({
                 skills: activeSkills,
-                weaponType: weaponType,
                 timestamp: Date.now()
             }));
             

@@ -1538,6 +1538,23 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
 
+        const resultState = {
+            currentSkillLevels: Object.fromEntries(activatedRows.filter(row => row.lvl > 0).map(row => [row.id, row.lvl])),
+            asst_build_data: {
+                h: h.n, c: c.n, a: a.n, w: w.n, l: l.n, t: t.name,
+                decos: assignment.map(d => ({ n: d.deco.name || d.deco.n, p: String(d.piece) })),
+                autoSS: autoSS, autoGS: autoGS
+            }
+        };
+        const calculatorUrl = BuildShare.generateUrl(resultState, new URL('index.html', window.location.href).href);
+        const applyLink = document.createElement('a');
+        applyLink.className = 'btn btn-apply-set';
+        applyLink.textContent = '計算機へ反映';
+        applyLink.href = calculatorUrl;
+        applyLink.target = '_blank';
+        applyLink.rel = 'noopener';
+        applyLink.style.cssText = 'font-size: 0.7rem; padding: 4px 10px; color: #ffcc00;';
+
         const saveBtn = document.createElement('button');
         saveBtn.className = 'btn btn-save-set';
         saveBtn.style.cssText = 'margin-left: auto; font-size: 0.7rem; padding: 4px 10px; background: rgba(0, 255, 127, 0.1); border: 1px solid rgba(0, 255, 127, 0.3); color: #00ff7f;';
@@ -1548,17 +1565,13 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const sets = JSON.parse(localStorage.getItem('mhwilds_mysets') || '{}');
             const data = {
-                currentSkillLevels: { ...target },
+                currentSkillLevels: { ...resultState.currentSkillLevels },
                 weaponTypeId: document.getElementById('weapon-type-select')?.value || 'gs',
                 timestamp: Date.now(),
                 excitationType: 'attack',
                 parts: ['attack', 'attack', 'attack'],
                 bonuses: ['atk_3', 'atk_3', 'atk_ex', 'atk_ex', 'sharp_load_ex'],
-                asst_build_data: {
-                    h: h.n, c: c.n, a: a.n, w: w.n, l: l.n, t: t.name,
-                    decos: assignment.map(d => ({ n: d.deco.name, p: d.piece })),
-                    autoSS: autoSS, autoGS: autoGS
-                }
+                asst_build_data: resultState.asst_build_data
             };
             sets[setName] = data;
             localStorage.setItem('mhwilds_mysets', JSON.stringify(sets));
@@ -1594,6 +1607,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         const header = card.querySelector('.result-header');
+        header.appendChild(applyLink);
         header.appendChild(saveBtn);
         header.appendChild(shareBtn);
 
@@ -1690,4 +1704,3 @@ document.addEventListener('DOMContentLoaded', () => {
     updateMySetList();
 
 });
-
