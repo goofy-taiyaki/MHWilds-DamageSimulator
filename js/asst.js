@@ -1661,7 +1661,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const weaponPanel = card.querySelector('.equipment-list .equip-item');
         weaponPanel.classList.add('weapon-panel');
-        card.querySelector('.result-body').prepend(weaponPanel);
 
         const resultState = {
             weaponTypeId:stats.weapon.weaponTypeId,excitationType:stats.weapon.excitationType,
