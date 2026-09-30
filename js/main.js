@@ -455,7 +455,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // 参照ステータス枠の背景画像を更新
         const statusBox = document.getElementById('status-section-box');
         if (statusBox) {
-            const imgPath = `assets/icons/weapons/${weaponType}.webp`;
+            const iconId = { hammer: 'hm', lance: 'lnc', sa: 'sax' }[weaponType] || weaponType;
+            const imgPath = `assets/icons/weapons/${iconId}.webp`;
             statusBox.style.backgroundImage = `linear-gradient(rgba(10, 11, 13, 0.7), rgba(10, 11, 13, 0.7)), url('${imgPath}')`;
             statusBox.style.backgroundSize = 'contain';
             statusBox.style.backgroundRepeat = 'no-repeat';
@@ -986,6 +987,11 @@ document.addEventListener('DOMContentLoaded', () => {
             motionName: motionName,
             sharpness: sharpnessSelect.value,
             locks,
+            lockSlots: {
+                excitation: document.getElementById('lock-exci')?.checked || false,
+                parts: Array.from(partSelects, (_, i) => document.getElementById(`lock-part-${i + 1}`)?.checked || false),
+                bonuses: Array.from(bonusSelects, (_, i) => document.getElementById(`lock-bonus-${i + 1}`)?.checked || false)
+            },
             buffStates,
             weaponSpecificParams: {
                 dbDemonMode: dbDemonMode ? dbDemonMode.checked : false,
@@ -1007,7 +1013,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function loadStateIntoUI(state) {
-        if (!state) return;
+        if (!BuildShare.isValidState(state)) return;
 
         // 1. スキルの表示を一旦すべてリセット (0: ---)
         SKILLS.forEach(skill => {
@@ -1076,6 +1082,20 @@ document.addEventListener('DOMContentLoaded', () => {
         updateWeaponSpecificUI();
         updateBonusOptions(); // 武器に応じたボーナスリストの更新を確実に行う
 
+        // 新形式は枠ごとに復元。旧形式は固定値の個数を保って復元する。
+        if (state.lockSlots || state.locks) {
+            document.getElementById('lock-exci').checked = !!(state.lockSlots || state.locks).excitation;
+            for (const [key, selects, prefix] of [['parts', partSelects, 'part'], ['bonuses', bonusSelects, 'bonus']]) {
+                const remaining = [...(state.locks?.[key] || [])];
+                Array.from(selects).forEach((select, i) => {
+                    const index = remaining.indexOf(select.value);
+                    const checked = state.lockSlots ? !!state.lockSlots[key]?.[i] : index >= 0;
+                    document.getElementById(`lock-${prefix}-${i + 1}`).checked = checked;
+                    if (index >= 0) remaining.splice(index, 1);
+                });
+            }
+        }
+
         // バフ状態の復元
         if (state.buffStates) {
             // チェックボックスを一旦すべてリセット
@@ -1122,22 +1142,23 @@ document.addEventListener('DOMContentLoaded', () => {
             currentLoadedAsstBuildData = state.asst_build_data;
             equippedArmorPanel.style.display = 'block';
             const b = state.asst_build_data;
+            const escapeText = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
             let html = '';
-            if (b.h) html += `<div>[頭] ${b.h}</div>`;
-            if (b.c) html += `<div>[胴] ${b.c}</div>`;
-            if (b.a) html += `<div>[腕] ${b.a}</div>`;
-            if (b.w) html += `<div>[腰] ${b.w}</div>`;
-            if (b.l) html += `<div>[脚] ${b.l}</div>`;
-            if (b.t) html += `<div style="color: var(--color-accent);">[石] ${b.t}</div>`;
+            if (b.h) html += `<div>[頭] ${escapeText(b.h)}</div>`;
+            if (b.c) html += `<div>[胴] ${escapeText(b.c)}</div>`;
+            if (b.a) html += `<div>[腕] ${escapeText(b.a)}</div>`;
+            if (b.w) html += `<div>[腰] ${escapeText(b.w)}</div>`;
+            if (b.l) html += `<div>[脚] ${escapeText(b.l)}</div>`;
+            if (b.t) html += `<div style="color: var(--color-accent);">[石] ${escapeText(b.t)}</div>`;
             
             // 装飾品
             if (b.decos && b.decos.length > 0) {
                 html += '<div style="margin-top:0.3rem; border-top:1px dashed rgba(255,255,255,0.1); padding-top:0.3rem; font-size:0.65rem; color:#aaa;">';
                 const decosByPiece = {};
                 b.decos.forEach(d => {
-                    const pieceShort = d.p ? d.p.charAt(0).toUpperCase() : '?';
+                    const pieceShort = d.p ? escapeText(d.p.charAt(0).toUpperCase()) : '?';
                     if (!decosByPiece[pieceShort]) decosByPiece[pieceShort] = [];
-                    decosByPiece[pieceShort].push(d.n);
+                    decosByPiece[pieceShort].push(escapeText(d.n));
                 });
                 
                 Object.entries(decosByPiece).forEach(([piece, names]) => {
@@ -1267,6 +1288,10 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Build load complete.');
         }, 200);
     }
+    window.addEventListener('hashchange', () => {
+        const state = BuildShare.decodeUrl();
+        if (state) loadStateIntoUI(state);
+    });
 
     // 防具検索ボタン
     const btnSearchArmor = document.getElementById('btn-search-armor');
