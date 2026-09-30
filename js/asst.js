@@ -7,7 +7,7 @@ import { buildSkillMatrix, sortActivatedSkills } from './result_renderer.js';
 import { BuildShare } from './modules/share.js';
 import { analyzePatterns } from './modules/asst_patterns.js';
 import { optimizeDecorationAssignment } from './modules/asst_optimization.js';
-import { WEAPON_TYPES, PARTS, BONUSES, EXCITATIONS, createWeaponEvaluator, describeWeapon } from './modules/asst_weapon.js';
+import { WEAPON_TYPES, PARTS, BONUSES, EXCITATIONS, createWeaponEvaluator } from './modules/asst_weapon.js';
 
 const SKILL_NAME_TO_ID = Object.fromEntries(SKILLS.map(s => [s.name, s.id]));
 const SKILL_BY_ID = Object.fromEntries(SKILLS.map((s, idx) => [s.id, { ...s, originalIndex: idx }]));
@@ -1506,7 +1506,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderResult(h, c, a, w, l, t, wSlots, wSkills, assignment, idx, target, labels, autoSS, autoGS, stats, manualWDecos, fullWSlots) {
         const card = document.createElement('div');
-        card.className = 'result-card' + (idx === 1 ? ' best-match' : '');
+        card.className = 'result-card asst-result' + (idx === 1 ? ' best-match' : '');
         const armorItems = [h, c, a, w, l];
         
         const weaponNameDisplay = "巨戟アーティア";
@@ -1569,16 +1569,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const activatedRows = sortActivatedSkills(matrix, SKILLS, SKILL_BY_ID);
 
         const renderVal = (v) => v > 0 ? v : '<span class="empty-cell">-</span>';
+        const upgradeName = name => (name || 'なし').replace(/(強化(?:EX|Ⅱ|Ⅲ))$/, '<span class="upgrade-suffix">$1</span>');
 
         card.innerHTML = `
-            <div class="result-header" style="display: flex; align-items: center; padding: 10px 15px; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,215,0,0.2);">
-                <span class="set-id-tag" style="margin-right: 20px; color: var(--accent-color); font-weight: bold;">SET #${idx}</span>
-                <div class="defense-info" style="font-size: 0.95rem; letter-spacing: 0.05em; color: #eee; flex: 1;">
-                    <span style="color: #aaa;">物理期待値:</span> <span class="stat-val" style="color:var(--accent-color); margin-right: 1.5rem;">${stats.exp}</span>
-                    <span style="color: #aaa;">攻撃力:</span> <span class="stat-val" style="margin-right: 1.5rem;">${stats.atk}</span>
-                    <span style="color: #aaa;">会心率:</span> <span class="stat-val" style="margin-right: 1.5rem;">${stats.aff}%</span>
-                    <span style="color: #aaa;">防御力:</span> <span class="stat-val" style="margin-right: 1.5rem;">${stats.def}</span>
-                    <span style="color: #aaa;">耐性:</span> <span class="stat-val">${stats.res[0]} / ${stats.res[1]} / ${stats.res[2]} / ${stats.res[3]} / ${stats.res[4]}</span>
+            <div class="result-header">
+                <div class="result-title-row"><span class="set-id-tag">SET #${idx}</span>
+                    <div class="expected-stat">物理期待値: <strong>${stats.exp}</strong></div>
+                    <div class="result-actions"></div>
+                </div>
+                <div class="result-metrics">
+                    <span>攻撃力: <strong>${stats.atk}</strong></span>
+                    <span>会心率: <strong>${stats.aff}%</strong></span>
+                    <span>防御力: <strong>${stats.def}</strong></span>
+                    <span class="resistance-stat">耐性: <strong>${stats.res.join(' / ')}</strong></span>
                 </div>
             </div>
 
@@ -1587,9 +1590,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     <!-- 武器 -->
                     <div class="equip-item">
                         <div class="equip-label">武</div>
-                        <div class="equip-name">${weaponNameDisplay}</div>
-                        <div style="font-size:0.75rem;color:#aaa;overflow-wrap:anywhere;">${describeWeapon(stats.weapon)}</div>
-                        <div class="equip-sub">防: -- &nbsp; 耐: --/--/--/--/--</div>
+                        <div class="equip-name">${weaponNameDisplay}<span class="weapon-kind">：${WEAPON_TYPES.find(x=>x.id===stats.weapon.weaponTypeId)?.name}</span></div>
+                        <table class="equip-details"><tbody>
+                            <tr><th scope="row">激化タイプ</th><td>${EXCITATIONS.find(x=>x.id===stats.weapon.excitationType)?.name}</td></tr>
+                            <tr><th scope="row">パーツ</th><td><div class="upgrade-grid">${stats.weapon.parts.map(id=>`<span>${PARTS.find(x=>x.id===id)?.name}</span>`).join('')}</div></td></tr>
+                            <tr><th scope="row">復元</th><td><div class="upgrade-grid">${stats.weapon.bonuses.map(id=>`<span>${upgradeName(BONUSES.find(x=>x.id===id)?.name)}</span>`).join('')}</div></td></tr>
+                        </tbody></table>
                         <div class="native-skills">${getWeaponSkillsHtml()}</div>
                         <div class="slots-stack">
                             ${getWeaponSlotsHtml()}
@@ -1600,26 +1606,28 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="equip-item">
                             <div class="equip-label">${labels[i]}</div>
                             <div class="equip-name">${item.n}</div>
-                            <div class="equip-sub">防: <span class="stat-val">${item.d}</span> &nbsp; 耐: <span class="stat-val">${item.r ? item.r.join('/') : '-'}</span></div>
-                            <div class="native-skills">${getPieceSkillsHtml(item)}</div>
-                            <div class="slots-row">
+                            <table class="equip-details"><tbody>
+                                <tr><th scope="row">防御力</th><td><strong>${item.d}</strong></td></tr>
+                                <tr><th scope="row">耐性</th><td class="resistance-value">${item.r ? item.r.join(' / ') : '-'}</td></tr>
+                                <tr><th scope="row">固有スキル</th><td><div class="native-skills">${getPieceSkillsHtml(item)}</div></td></tr>
+                                <tr><th scope="row">装飾品</th><td><div class="slots-row">
                                 ${item.sl ? item.sl.filter(s => s > 0).map(s => `<span class="slot-box">[${s}]</span>`).join('') : ''}
                                 <span class="decos-inline">${getDecoLabels(i)}</span>
-                            </div>
+                                </div></td></tr>
+                            </tbody></table>
                         </div>
                     `).join('')}
                     <!-- 護石 -->
                     <div class="equip-item">
                         <div class="equip-label">石</div>
                         <div class="equip-name">${t.name}</div>
-                        <div class="equip-sub">防: 0</div>
-                        <div class="native-skills">
+                        <table class="equip-details"><tbody><tr><th scope="row">固有スキル</th><td><div class="native-skills">
                             ${Object.entries(t.skills).map(([sid, pts]) => `<span class="piece-skill-label">${SKILL_BY_ID[sid]?.name || sid} +${pts}</span>`).join(' ')}
                         </div>
-                        <div class="slots-row">
+                        </td></tr><tr><th scope="row">装飾品</th><td><div class="slots-row">
                             ${t.slots.map(s => `<span class="slot-box">[${s.lvl}]</span>`).join('')}
                             <span class="decos-inline">${getDecoLabels('talisman')}</span>
-                        </div>
+                        </div></td></tr></tbody></table>
                     </div>
                 </div>
                 <!-- 右側：スキル合計テーブル -->
@@ -1726,7 +1734,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         };
 
-        const header = card.querySelector('.result-header');
+        const header = card.querySelector('.result-actions');
         header.appendChild(applyLink);
         header.appendChild(saveBtn);
         header.appendChild(shareBtn);

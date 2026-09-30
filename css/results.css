@@ -1,4 +1,36 @@
 /* shared results styles */
+.asst-result .result-header { display: block; padding: 16px 20px; background: rgba(0,0,0,.25); }
+.asst-result .result-title-row { display: flex; align-items: center; flex-wrap: wrap; gap: 14px 22px; }
+.asst-result .set-id-tag { white-space: nowrap; }
+.asst-result .expected-stat { color: var(--accent-color); }
+.asst-result .expected-stat strong { font-size: 1.8rem; }
+.asst-result .result-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-left: auto; }
+.asst-result .result-metrics { display: flex; flex-wrap: wrap; gap: 10px 24px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border-color); color: var(--text-muted); }
+.asst-result .result-metrics > span { white-space: nowrap; }
+.asst-result .result-metrics strong { color: #eee; font-variant-numeric: tabular-nums; }
+.asst-result .resistance-stat { flex-basis: 100%; }
+.asst-result .equipment-list, .asst-result .totals-panel { min-width: 0; }
+.asst-result .equip-item { padding: 14px; border: 1px solid var(--border-color); border-radius: 4px; }
+.asst-result .equip-label { position: static; display: inline; margin-right: 10px; font-size: 1rem; }
+.asst-result .equip-name { display: inline; font-size: 1.1rem; }
+.asst-result .weapon-kind { font-size: .9rem; font-weight: normal; }
+.asst-result .equip-details { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: .8rem; table-layout: fixed; }
+.asst-result .equip-details th, .asst-result .equip-details td { border: 1px solid var(--border-color); padding: 8px; text-align: left; vertical-align: top; }
+.asst-result .equip-details th { width: 6em; white-space: nowrap; color: var(--text-muted); font-weight: normal; background: rgba(255,255,255,.025); }
+.asst-result .upgrade-suffix { display: inline-block; white-space: nowrap; }
+.asst-result .upgrade-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
+.asst-result .upgrade-grid > span { padding: 5px; border: 1px solid var(--border-color); line-height: 1.6; }
+.asst-result .equip-details .native-skills, .asst-result .equip-details .slots-row { margin: 0; }
+.asst-result .resistance-value { white-space: nowrap; font-variant-numeric: tabular-nums; }
+@media (max-width: 1040px) { .asst-result .result-body { grid-template-columns: minmax(0,1fr); gap: 24px; } }
+@media (max-width: 480px) {
+    .asst-result .result-body { padding: 12px; }
+    .asst-result .result-header { padding: 14px; }
+    .asst-result .result-actions { margin-left: 0; }
+    .asst-result .equip-item { padding: 10px; }
+    .asst-result .upgrade-grid { grid-template-columns: 1fr; gap: 4px; font-size: .8rem; }
+    .asst-result .equip-details th, .asst-result .equip-details td { padding: 5px; }
+}
 .result-card {
     background: var(--panel-bg);
     border: 1px solid var(--border-color);
