@@ -1420,6 +1420,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         panel.appendChild(selector);
                         selector.onchange = () => drawPattern(patterns[Number(selector.value)],Number(selector.value),card);
                         const note = document.createElement('p'); note.className = 'pattern-note';
+                        note.setAttribute('role','status');
                         note.textContent = addedNote || '検出した全パターンを対象に、候補を個別に判定します。複数候補の同時追加を保証するものではありません。';
                         panel.appendChild(note);
 
@@ -1470,13 +1471,27 @@ document.addEventListener('DOMContentLoaded', () => {
                                         button.textContent = useExtras
                                             ? `${candidate.skill.name} Lv${candidate.current}→${candidate.level}（${candidate.count}/${patterns.length}パターン）`
                                             : `${candidate.skill.name} 最大Lv${candidate.level}（${candidate.count}/${patterns.length}パターン）`;
-                                        button.onclick = () => {
-                                            const original = patterns[candidate.patternIndex];
+                                        button.onclick = async () => {
+                                            const originalLabel=button.textContent;
+                                            button.disabled = true;
                                             const addedPoints=candidate.skill.mainCategory==='series'?candidate.level*2:candidate.skill.mainCategory==='group'?3:candidate.level;
                                             const requiredNext={...required,[candidate.skill.id]:Math.max(required[candidate.skill.id]||0,addedPoints)};
-                                            const adopted=optimizePattern(original,requiredNext);
-                                            if(adopted&&!adopted.noMatch)drawPattern(adopted,candidate.patternIndex,card,
-                                                `${candidate.skill.name}の候補を採用して再最適化しました。計算機への反映・保存に対応しています。`,requiredNext);
+                                            let best=null,bestIndex=0,complete=true;
+                                            try {
+                                                for(let i=0;i<patterns.length;i++) {
+                                                    note.textContent=`${candidate.skill.name} Lv${candidate.level}を追加して再配置中... ${i+1}/${patterns.length}`;
+                                                    button.textContent=note.textContent;
+                                                    await new Promise(resolve=>setTimeout(resolve,0));
+                                                    if(generation!==searchGeneration)return;
+                                                    const adopted=optimizePattern(patterns[i],requiredNext);
+                                                    complete&&=adopted.optimizationComplete;
+                                                    if(!adopted.noMatch&&(!best||adopted.stats.value>best.stats.value)){best=adopted;bestIndex=i;}
+                                                }
+                                                if(best)drawPattern(best,bestIndex,card,
+                                                    `${candidate.skill.name} Lv${candidate.level}を条件に採用しました。既に発動していた場合も維持して再最適化しています。${complete?'検出候補内の最適化完了。':'一部の探索は上限到達・最大値未確定。'}`,requiredNext);
+                                                else {note.textContent=`${candidate.skill.name} Lv${candidate.level}を満たす配置は検出できませんでした。${complete?'':'探索上限に到達した候補があります。'}`;note.scrollIntoView({block:'nearest'});}
+                                            } catch(error) {note.textContent=`追加スキルの採用に失敗しました: ${error.message}`;note.scrollIntoView({block:'nearest'});}
+                                            finally {button.disabled=false;button.textContent=originalLabel;}
                                         };
                                         list.appendChild(button);
                                     });
@@ -1484,7 +1499,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             } catch (error) { note.textContent = error.message; }
                         });
                         card.appendChild(panel);
-                        if (replacedCard) {replacedCard.replaceWith(card); panel.open = true;}
+                        if (replacedCard) {replacedCard.replaceWith(card); panel.open = true; note.scrollIntoView({block:'nearest'});}
                     };
                     drawPattern(r,0);
                 });
