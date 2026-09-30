@@ -9,6 +9,8 @@ import { BuildShare } from './modules/share.js';
 const SKILL_NAME_TO_ID = Object.fromEntries(SKILLS.map(s => [s.name, s.id]));
 const SKILL_BY_ID = Object.fromEntries(SKILLS.map((s, idx) => [s.id, { ...s, originalIndex: idx }]));
 const SKILL_BY_NAME = Object.fromEntries(SKILLS.map((s, idx) => [s.name, { ...s, originalIndex: idx }]));
+// 旧保存・計算機の半角表記IDを実データの全角表記IDへ対応させる。
+const SEARCH_SKILL_ALIASES = { evade_extender: 'skill_sayel1' };
 
 const PREFERRED_ORDER = [
     "攻撃", "超会心", "見切り", "挑戦者", "弱点特効", "力の解放", "連撃", "逆襲", "巧撃", "鎖刃刺撃", 
@@ -737,7 +739,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const wSlotsFull = [];
         [1, 2, 3].forEach(i => {
             const size = parseInt(document.getElementById(`wslot-${i}`).value);
-            if (size > 0) wSlotsFull.push(size);
+            wSlotsFull.push(size);
         });
 
         const wSlotsRemaining = [];
@@ -798,7 +800,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 let pts = target[id];
                 if (skill.mainCategory === 'series') pts = target[id] * 2;
                 else if (skill.mainCategory === 'group') pts = 3; // 修正：3点そろって発動するため3点要求とする
-                targetPoints[id] = pts;
+                const searchId = SEARCH_SKILL_ALIASES[id] || id;
+                targetPoints[searchId] = Math.max(targetPoints[searchId] || 0, pts);
             }
         }
 
@@ -860,7 +863,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     const b = survivors[j];
                     if (b.sScore >= a.sScore && b.slotScore >= a.slotScore && b.def >= a.def) {
                         const skillsOk = tIds.every(id => (b.item.skills[id] || 0) >= (a.item.skills[id] || 0));
-                        const slotsOk = b.slotDetail.every((lvl, idx) => lvl >= (a.slotDetail[idx] || 0));
+                        // 護石の武器枠と防具枠は相互に代用できない。
+                        const slotsOk = ['w', 'a'].every(type => {
+                            const levels = entry => (entry.item.slots || [])
+                                .filter(s => (s.type || 'a') === type)
+                                .map(s => s.lvl || s || 0).filter(lvl => lvl > 0).sort((x, y) => y - x);
+                            const aLevels = levels(a), bLevels = levels(b);
+                            return aLevels.every((lvl, idx) => (bLevels[idx] || 0) >= lvl);
+                        });
                         if (skillsOk && slotsOk) { isInferior = true; break; }
                     }
                 }
@@ -896,7 +906,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 (f.skills || []).forEach(s => {
                     const found = SKILL_BY_NAME[s.name];
                     const sid = found ? found.id : null;
-                    if (sid && targetPoints[sid]) relSkills[sid] = (relSkills[sid] || 0) + parseInt(s.level, 10);
+                    if (sid) relSkills[sid] = (relSkills[sid] || 0) + parseInt(s.level, 10);
                 });
 
                 let tSlots = [];
@@ -1052,7 +1062,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const uniqueSetCountedKeys = new Set();
             let isInterrupted = false;
 
-            const stack = [{ part: 0, currentSkills: { ...wSkills }, currentItems: [] }];
+            const stack = [{ part: 0, currentSkills: { ...wSkills }, currentItems: [], slotTotal: 0 }];
             let baseWeaponPotential = wSlots.reduce((a, b) => a + (b.lvl || b || 0), 0);
 
             let currentSearchTimeout = null;
@@ -1085,7 +1095,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 let possible = true;
                                 const itemSlotsVal = (item.slots || []).reduce((sum, s) => sum + (s.lvl || s || 0), 0);
                                 const remSlotsVal = (pIdx < 5 ? maxRemainSlots[pIdx + 1] : 0);
-                                const totalPotentialSlotsVal = itemSlotsVal + remSlotsVal + baseWeaponPotential;
+                                const totalPotentialSlotsVal = node.slotTotal + itemSlotsVal + remSlotsVal + baseWeaponPotential;
 
                                 for (const sid in targetPoints) {
                                     const cur = (node.currentSkills[sid] || 0) + (item.skills[sid] || 0);
@@ -1106,7 +1116,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 if (possible) {
                                     const nextSkills = { ...node.currentSkills };
                                     Object.keys(item.skills).forEach(sid => { nextSkills[sid] = (nextSkills[sid] || 0) + item.skills[sid]; });
-                                    stack.push({ part: pIdx + 1, currentSkills: nextSkills, currentItems: [...node.currentItems, item] });
+                                    stack.push({ part: pIdx + 1, currentSkills: nextSkills, currentItems: [...node.currentItems, item], slotTotal: node.slotTotal + itemSlotsVal });
                                 }
                             }
                         }
@@ -1179,25 +1189,38 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             function canFillWithTracking(missing, slots, deccos, decosUsed) {
-                const missingIds = Object.keys(missing);
-                if (missingIds.length === 0) return true;
-                const skillId = missingIds[0];
-                const ptsNeeded = missing[skillId];
-                const usable = deccos[skillId] || [];
-                if (usable.length === 0) return false;
-
-                return (function branchFill(id, nPts, curSlots, dIdx) {
-                    if (nPts <= 0) { const nextMissing = { ...missing }; delete nextMissing[id]; return canFillWithTracking(nextMissing, curSlots, deccos, decosUsed); }
-                    if (dIdx >= usable.length) return false;
-                    const deco = usable[dIdx];
-                    const sIdx = curSlots.findIndex(s => s.lvl >= deco.lvl && s.type === deco.type);
-                    if (sIdx === -1) return branchFill(id, nPts, curSlots, dIdx + 1);
-                    const nextSlots = [...curSlots]; const usedSlot = nextSlots.splice(sIdx, 1)[0];
-                    decosUsed.push({ deco, piece: usedSlot.piece });
-                    if (branchFill(id, nPts - deco.pts, nextSlots, dIdx)) return true;
-                    decosUsed.pop();
-                    return branchFill(id, nPts, curSlots, dIdx + 1);
-                })(skillId, ptsNeeded, slots, 0);
+                const failed = new Set();
+                function fill(remaining, available) {
+                    const ids = Object.keys(remaining).filter(id => remaining[id] > 0);
+                    if (ids.length === 0) return true;
+                    if (available.length === 0) return false;
+                    const key = ids.sort().map(id => `${id}:${remaining[id]}`).join(',') + '|' +
+                        available.map(s => `${s.type}:${s.lvl}`).sort().join(',');
+                    if (failed.has(key)) return false;
+                    const skillId = ids[0];
+                    for (const deco of deccos[skillId] || []) {
+                        // 同じ種類の最小適合枠を使い、大きい枠を後続の装飾品へ残す。
+                        const sIdx = available.findIndex(s => s.lvl >= deco.lvl && s.type === deco.type);
+                        if (sIdx === -1) continue;
+                        const nextMissing = { ...remaining };
+                        // 複合装飾品は全スキルを同時に加算する。
+                        for (const skill of deco.sk || []) {
+                            const sid = SKILL_NAME_TO_ID[skill.n];
+                            if (sid && nextMissing[sid]) {
+                                nextMissing[sid] = Math.max(0, nextMissing[sid] - skill.l);
+                            }
+                        }
+                        if (nextMissing[skillId] >= remaining[skillId]) continue;
+                        const nextSlots = [...available];
+                        const usedSlot = nextSlots.splice(sIdx, 1)[0];
+                        decosUsed.push({ deco, piece: usedSlot.piece });
+                        if (fill(nextMissing, nextSlots)) return true;
+                        decosUsed.pop();
+                    }
+                    failed.add(key);
+                    return false;
+                }
+                return fill(missing, slots);
             }
 
             function calculateFinalStats(h, c, a, w, l, t, assignment, ws, wSk, aSS, aGS) {
@@ -1403,6 +1426,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let html = [];
             let autoIdx = 0;
             fullWSlots.forEach((size, i) => {
+                if (size === 0) return;
                 const manual = manualWDecos[i];
                 if (manual) {
                     html.push(`<div class="slots-row"><span class="slot-box">[${size}]</span> <span class="deco-label">${manual.n}</span></div>`);
@@ -1542,7 +1566,10 @@ document.addEventListener('DOMContentLoaded', () => {
             currentSkillLevels: Object.fromEntries(activatedRows.filter(row => row.lvl > 0).map(row => [row.id, row.lvl])),
             asst_build_data: {
                 h: h.n, c: c.n, a: a.n, w: w.n, l: l.n, t: t.name,
-                decos: assignment.map(d => ({ n: d.deco.name || d.deco.n, p: String(d.piece) })),
+                decos: [
+                    ...manualWDecos.filter(Boolean).map(d => ({ n: d.n, p: 'weapon' })),
+                    ...assignment.map(d => ({ n: d.deco.name || d.deco.n, p: String(d.piece) }))
+                ],
                 autoSS: autoSS, autoGS: autoGS
             }
         };

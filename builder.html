@@ -359,6 +359,7 @@
                 const sel = document.getElementById(`select-${p.key}`);
                 sel.value = data[p.key] || "";
                 state[p.key] = ARMOR.find(a => a.n === sel.value) || null;
+                state[p.key + 'De'] = [null, null, null];
                 renderSlots(p.key);
                 
                 // Load Decos
@@ -367,7 +368,7 @@
                     const dSel = document.getElementById(`deco-${p.key}-${idx}`);
                     if (dSel) {
                         dSel.value = dn || "";
-                        state[p.key + 'De'][idx] = DECORATIONS.find(d => d.n === (dn || "")) || null;
+                        state[p.key + 'De'][idx] = DECORATIONS.find(d => d.n === dSel.value) || null;
                     }
                 });
             });
@@ -381,7 +382,7 @@
             data.weapon.decos.forEach((dn, i) => {
                 const sel = document.getElementById(`wDeco-${i}`);
                 sel.value = dn || "";
-                state.weapon.decos[i] = DECORATIONS.find(d => d.n === (dn || "")) || null;
+                state.weapon.decos[i] = DECORATIONS.find(d => d.n === sel.value) || null;
             });
 
             // Talisman
@@ -403,8 +404,8 @@
             refreshSavedList();
         }
 
-        function updateDecoList(el, size) {
-            const allDecos = DECORATIONS.filter(d => d.sl <= size).sort((a,b) => b.sl - a.sl || a.n.localeCompare(b.n));
+        function updateDecoList(el, size, type = 'w') {
+            const allDecos = DECORATIONS.filter(d => d.sl <= size && d.t === type).sort((a,b) => b.sl - a.sl || a.n.localeCompare(b.n));
             el.innerHTML = '<option value="">-- 装飾品 --</option>' + allDecos.map(d => `<option value="${d.n}">[${d.sl}] ${d.n}</option>`).join('');
         }
 
@@ -413,6 +414,7 @@
                 document.getElementById(`select-${p.key}`).onchange = (e) => {
                     const armor = ARMOR.find(a => a.n === e.target.value);
                     state[p.key] = armor || null;
+                    state[p.key + 'De'] = [null, null, null];
                     renderSlots(p.key);
                     update();
                 };
@@ -453,10 +455,10 @@
         function renderSlots(key) {
             const area = document.getElementById(`slots-${key}`);
             const armor = state[key];
-            if (!armor || !armor.slots) { area.innerHTML = ""; return; }
-            area.innerHTML = armor.slots.filter(s => s > 0).map((s, i) => `<select class="deco-picker" id="deco-${key}-${i}" data-size="${s}"></select>`).join('');
+            if (!armor || !armor.sl) { area.innerHTML = ""; return; }
+            area.innerHTML = armor.sl.map((s, i) => s > 0 ? `<select class="deco-picker" id="deco-${key}-${i}" data-size="${s}"></select>` : '').join('');
             area.querySelectorAll('.deco-picker').forEach(sel => {
-                updateDecoList(sel, parseInt(sel.dataset.size));
+                updateDecoList(sel, parseInt(sel.dataset.size), 'a');
                 sel.onchange = (e) => {
                     const idx = parseInt(e.target.id.split('-').pop());
                     state[key + 'De'][idx] = DECORATIONS.find(d => d.n === e.target.value) || null;
