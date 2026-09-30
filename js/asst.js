@@ -1607,8 +1607,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <div class="equip-label">${labels[i]}</div>
                             <div class="equip-name">${item.n}</div>
                             <table class="equip-details"><tbody>
-                                <tr><th scope="row">防御力</th><td><strong>${item.d}</strong></td></tr>
-                                <tr><th scope="row">耐性</th><td class="resistance-value">${item.r ? item.r.join(' / ') : '-'}</td></tr>
+                                <tr><th scope="row">防御 / 耐性</th><td><strong>${item.d}</strong> ／ <span class="resistance-value">${item.r ? item.r.join(' / ') : '-'}</span></td></tr>
                                 <tr><th scope="row">固有スキル</th><td><div class="native-skills">${getPieceSkillsHtml(item)}</div></td></tr>
                                 <tr><th scope="row">装飾品</th><td><div class="slots-row">
                                 ${item.sl ? item.sl.filter(s => s > 0).map(s => `<span class="slot-box">[${s}]</span>`).join('') : ''}
@@ -1659,6 +1658,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
         `;
+
+        const weaponPanel = card.querySelector('.equipment-list .equip-item');
+        weaponPanel.classList.add('weapon-panel');
+        card.querySelector('.result-body').prepend(weaponPanel);
 
         const resultState = {
             weaponTypeId:stats.weapon.weaponTypeId,excitationType:stats.weapon.excitationType,
