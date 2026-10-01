@@ -8,7 +8,7 @@
 // ======================================================================
 // テキスト解析: スキル名 + Lv を全文正規表現で抽出
 // ======================================================================
-function parseSkillsFromText(text, skills) {
+export function parseSkillsFromText(text, skills) {
     const results = {};
 
     const normalized = text
@@ -55,6 +55,19 @@ function parseSkillsFromText(text, skills) {
         // 3. スキル名単体でのチェック (maxLevel=1 の場合や、Lv 表記がない場合)
         if (normalized.includes(skill.name) && !results[skill.id]) {
             results[skill.id] = 1;
+        }
+    }
+    // 正式名の入力は従来どおり認識し、短い検索語だけ候補を部分一致で追加する。
+    const terms = normalized.split(/[\s、,，;；]+/).filter(Boolean);
+    for (const term of terms) {
+        const match = term.match(/^(.*?)(?:[Ll][Vv]\.?\s*([1-9][0-9]?))?$/);
+        const name = match?.[1];
+        if (!name || sortedSkills.some(skill => term.includes(skill.name) ||
+            skill.effects?.some(effect => effect.name && term.includes(effect.name)))) continue;
+        for (const skill of sortedSkills) {
+            if (skill.name.includes(name) && !results[skill.id]) {
+                results[skill.id] = Math.min(Number(match[2] || 1), skill.maxLevel);
+            }
         }
     }
     return results;
@@ -196,7 +209,7 @@ function buildOCRUI(onParse) {
             </span>
         </div>
         <textarea id="ocr-text-input"
-            placeholder="サイトからコピーしたスキル情報を貼り付け...&#10;例: 弱点特効Lv.4 挑戦者Lv.5 渾身Lv.3 連撃Lv.5"
+            placeholder="スキル情報や名前の一部を入力...&#10;例: 弱点特効Lv.4 挑戦者Lv.5 ／ 部分検索: 会心"
             style="width:100%;height:75px;resize:vertical;
                 background:rgba(0,0,0,0.4);color:#fff;
                 border:1px solid rgba(255,215,0,0.25);border-radius:6px;

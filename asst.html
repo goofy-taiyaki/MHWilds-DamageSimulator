@@ -455,8 +455,12 @@
         select { padding: 2px 8px; line-height: normal; min-height: 28px; }
         .search-status { padding: 12px; margin-bottom: 14px; }
         .input-group { padding: 10px; }
-        #artia-settings { grid-template-columns: repeat(2,minmax(0,1fr)); }
+        #artia-settings { grid-template-columns: minmax(0,1fr); }
         #artia-settings > * { min-width: 0; }
+        .artia-setting-group { margin: 0; padding: 6px 0 8px; border: 0; border-top: 1px solid #333; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 6px; }
+        .artia-setting-group legend { padding: 0 6px 0 0; color: var(--color-text-muted); font-size: .7rem; }
+        .artia-setting-group > label { min-width: 0; }
+        @media (max-width: 480px) { .artia-setting-group { grid-template-columns: minmax(0,1fr); } }
         .result-card.asst-result { max-width: 1400px; padding: 0; }
         .asst-result .result-header { padding: 10px 14px; }
         .asst-result .result-metrics { margin-top: 6px; padding-top: 6px; gap: 6px 20px; font-size: .85rem; }

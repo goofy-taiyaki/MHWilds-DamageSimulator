@@ -1,7 +1,9 @@
+import { BONUSES, legalBonuses } from './modules/asst_weapon.js';
 import { WEAPON_TYPES, WEAPONS, SKILLS, SHARPNESS, RESTORATION_PARTS, RESTORATION_BONUSES, EXCITATION_DATA, EXCITATION_TYPES, MONSTERS, ELEMENT_TYPES, MOTION_VALUES, BUFF_GROUPS } from './data.js';
 import { MHWCalculator } from './calculator.js';
-import { findOptimalArtiaConfiguration as runOptimizer } from './modules/optimizer.js';
-import { BuildShare } from './modules/share.js';
+import { findOptimalArtiaConfiguration as runOptimizer, findOptimalArtiaConfigurationAsync as runOptimizerAsync } from './modules/optimizer.js';
+import { BuildShare, normalizeSkillLevels } from './modules/share.js';
+import { savedStorage, isSavedSets } from './modules/storage.js';
 import { initOCR } from './modules/ocr.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -72,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const baseAffDisplay = document.getElementById('base-aff-display');
     const baseElemDisplay = document.getElementById('base-elem-display');
     const displayHitDetails = document.getElementById('display-hit-details');
-    
+
     // ASSTから連携された装備構成データ
     let currentLoadedAsstBuildData = null;
 
@@ -116,15 +118,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // Bonuses for all 5 slots
         bonusSelects.forEach(select => {
             select.addEventListener('change', (e) => {
-                // Systematic restriction: Max 2 same bonuses
-                const selectedIds = Array.from(bonusSelects).map(s => s.value).filter(id => id !== 'none');
-                const val = e.target.value;
-                if (val !== 'none') {
-                    const count = selectedIds.filter(id => id === val).length;
-                    if (count > 2) {
-                        alert('同じボーナスは2つまでしか選択できません。');
-                        e.target.value = 'none';
-                    }
+                const selected = Array.from(bonusSelects).map(s => BONUSES.find(b=>b.id===s.value));
+                if (!legalBonuses(selected)) {
+                    alert('巨戟アーティアは切れ味・装填が合計2枠まで、属性が合計4枠までです。');
+                    e.target.value = 'none';
                 }
                 updateCalculation();
             });
@@ -261,7 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             });
         });
-        
+
         // スキル検索機能
         const skillSearchInput = document.getElementById('skill-search-input');
         const skillSearchClear = document.getElementById('skill-search-clear');
@@ -368,6 +365,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let calcTimeout = null;
     function updateCalculation() {
+        ++optimalGeneration;
+        currentOptimalConfig=null;
+        if(optCalculating)optCalculating.style.display='none';
+        if(optimalResultPanel)optimalResultPanel.style.display='none';
         if (calcTimeout) clearTimeout(calcTimeout);
         calcTimeout = setTimeout(() => {
             performCalculation();
@@ -464,6 +465,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function preserveLegacyBonus(select, id) {
+        if (!id || Array.from(select.options).some(o=>o.value===id)) return;
+        const bonus=RESTORATION_BONUSES.find(b=>b.id===id);
+        if (!bonus) return;
+        const option=document.createElement('option');
+        option.value=id;option.textContent=bonus.name+'（旧設定・現在の候補対象外）';
+        option.disabled=true;select.appendChild(option);
+    }
+
     function updateBonusOptions() {
         const weaponType = weaponTypeSelect.value;
         const isBowgun = ['lbg', 'hbg'].includes(weaponType);
@@ -472,7 +482,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const currentValue = select.value;
             select.innerHTML = '';
 
-            RESTORATION_BONUSES.forEach(bonus => {
+            BONUSES.forEach(bonus => {
                 // ボウガンの場合は属性強化（group: 'elem'）を除外
                 if (isBowgun && bonus.group === 'elem') return;
 
@@ -482,7 +492,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 select.appendChild(opt);
             });
 
-            // 選択されていた値が新しいリストにあるか確認（なければ 'none' へ）
+            preserveLegacyBonus(select, currentValue);
+            // 未知の値だけをnoneへ退避し、既知の旧設定は表示する。
             const exists = Array.from(select.options).some(opt => opt.value === currentValue);
             select.value = exists ? currentValue : 'none';
         });
@@ -599,16 +610,10 @@ document.addEventListener('DOMContentLoaded', () => {
         calc.setRestorationParts(selectedParts);
 
         const selectedBonusIds = Array.from(bonusSelects).map(s => s.value).filter(id => id !== 'none');
-        // Warning display (already partially handled by systematic restriction, but kept for legacy/safety)
-        const counts = {};
-        let violation = false;
-        selectedBonusIds.forEach(id => {
-            counts[id] = (counts[id] || 0) + 1;
-            if (counts[id] > 2) violation = true;
-        });
-        bonusWarning.style.display = violation ? 'block' : 'none';
-
         const bonuses = selectedBonusIds.map(id => RESTORATION_BONUSES.find(b => b.id === id));
+        const validBonuses=legalBonuses(bonuses) && (!['lbg','hbg'].includes(weaponTypeSelect.value) || !bonuses.some(b=>b?.group==='elem'));
+        bonusWarning.style.display = validBonuses ? 'none' : 'block';
+        bonusWarning.textContent = '現在の候補対象外の旧強化、または切れ味・装填2枠／属性4枠を超える設定があります。';
         calc.setRestorationBonuses(bonuses);
 
         // 4. Buffs
@@ -683,10 +688,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const catA = categoryPriority[a.mainCategory] || 99;
             const catB = categoryPriority[b.mainCategory] || 99;
             if (catA !== catB) return catA - catB;
-            
+
             // Level descending
             if (b.currentLevel !== a.currentLevel) return b.currentLevel - a.currentLevel;
-            
+
             // Internal order
             return a.originalIndex - b.originalIndex;
         });
@@ -699,7 +704,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const badge = document.createElement('span');
                     badge.style.cssText = 'background: rgba(212, 175, 55, 0.2); color: #fff; padding: 3px 8px; border-radius: 4px; border: 1px solid rgba(212, 175, 55, 0.3); display: inline-block; word-break: keep-all; font-weight: 500; font-size: 0.8rem;';
                     const effect = skill.effects ? skill.effects[skill.currentLevel - 1] : null;
-                    
+
                     let displayName = "";
                     if (skill.mainCategory === 'series' || skill.mainCategory === 'group') {
                         const prefix = skill.mainCategory === 'series' ? '[S]' : '[G]';
@@ -711,7 +716,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const levelName = effect && effect.name ? `【${effect.name}】` : '';
                         displayName = `${skill.name}${levelName} Lv${skill.currentLevel}`;
                     }
-                    
+
                     badge.textContent = displayName;
                     activeSkillsList.appendChild(badge);
                 });
@@ -744,7 +749,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Ensure we parse the string input for element mod too
         const parseInputArray = (str) => {
             const parts = str.replace(/[^\d.+,]/g, '').split(/[+,]/);
-            const vals = parts.map(p => parseFloat(p)).filter(n => !isNaN(n));
+            const vals = parts.map(p => parseFloat(p)).filter(n => Number.isFinite(n) && n >= 0);
             return vals.length > 0 ? vals : [1.0];
         };
 
@@ -833,16 +838,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const optBonuses = document.getElementById('opt-bonuses');
     const btnApplyOptimal = document.getElementById('btn-apply-optimal');
     let currentOptimalConfig = null;
+    let optimalGeneration = 0;
 
     if (btnCalculateOptimal) {
         btnCalculateOptimal.addEventListener('click', () => {
+            const generation=++optimalGeneration;
+            currentOptimalConfig=null;
             optCalculating.style.display = 'block';
             optimalResultPanel.style.display = 'none';
 
             // Use a slight timeout to allow UI to update (show loading)
-            setTimeout(() => {
+            setTimeout(async () => {
+                if(generation!==optimalGeneration)return;
                 const state = getCurrentState();
-                const result = runOptimizer(state);
+                const result = await runOptimizerAsync(state,{isCancelled:()=>generation!==optimalGeneration});
+                if(generation!==optimalGeneration)return;
 
                 if (result) {
                     currentOptimalConfig = result;
@@ -865,7 +875,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     optimalResultPanel.style.display = 'block';
                 } else {
-                    alert('条件を満たす組み合わせが見つかりませんでした。固定項目が多すぎるか、重複制限（同じボーナスは2つまで）に抵触している可能性があります。');
+                    alert('条件を満たす組み合わせが見つかりませんでした。固定項目が多すぎるか、切れ味・装填2枠／属性4枠の制限に抵触している可能性があります。');
                 }
                 optCalculating.style.display = 'none';
             }, 10);
@@ -943,7 +953,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             const elemModVal = elementModInput ? elementModInput.value : "1.0";
             const parts = elemModVal.replace(/[^\d.+,]/g, '').split(/[+,]/);
-            targetElemMod = parts.map(p => parseFloat(p)).filter(n => !isNaN(n));
+            targetElemMod = parts.map(p => parseFloat(p)).filter(n => Number.isFinite(n) && n >= 0);
             if (targetElemMod.length === 0) targetElemMod = [1.0];
         }
 
@@ -1012,6 +1022,15 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
+    // Ignore stale or unknown options without clearing the current valid selection.
+    function restoreSelectValue(select, value) {
+        if (!select || value === undefined || value === null) return false;
+        const text = String(value);
+        if (!Array.from(select.options).some(option => option.value === text)) return false;
+        select.value = text;
+        return true;
+    }
+
     function loadStateIntoUI(state) {
         if (!BuildShare.isValidState(state)) return;
 
@@ -1030,12 +1049,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateBonusOptions(); // これが必要
             }
         }
-        if (state.excitationType) excitationSelect.value = state.excitationType;
-        if (state.elementType) elementTypeSelect.value = state.elementType;
-        if (state.motionAction !== undefined && motionSelect) motionSelect.value = state.motionAction;
+        if (state.excitationType) restoreSelectValue(excitationSelect, state.excitationType);
+        if (state.elementType) restoreSelectValue(elementTypeSelect, state.elementType);
+        if (state.motionAction !== undefined && motionSelect) restoreSelectValue(motionSelect, state.motionAction);
         if (state.motionValue) motionValueInput.value = state.motionValue;
         if (state.elementModValue !== undefined && elementModInput) elementModInput.value = state.elementModValue;
-        if (state.sharpness) sharpnessSelect.value = state.sharpness;
+        if (state.sharpness) restoreSelectValue(sharpnessSelect, state.sharpness);
 
         if (state.monsterName) {
             const hasMonster = Array.from(monsterSelect.options).some(o => o.value === state.monsterName);
@@ -1045,13 +1064,16 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         if (state.hitzonePartIndex !== undefined) {
-            hitzoneSelect.value = state.hitzonePartIndex;
+            restoreSelectValue(hitzoneSelect, state.hitzonePartIndex);
         } else if (state.hitzonePart !== undefined) {
-            hitzoneSelect.value = state.hitzonePart; // 旧形式対応
+            restoreSelectValue(hitzoneSelect, state.hitzonePart); // 旧形式対応
         }
 
-        if (state.parts) partSelects.forEach((s, i) => { if (state.parts[i]) s.value = state.parts[i]; });
-        if (state.bonuses) bonusSelects.forEach((s, i) => { if (state.bonuses[i]) s.value = state.bonuses[i]; });
+        if (state.parts) partSelects.forEach((s, i) => { if (state.parts[i]) restoreSelectValue(s, state.parts[i]); });
+        if (state.bonuses) bonusSelects.forEach((s, i) => {
+            preserveLegacyBonus(s, state.bonuses[i]);
+            restoreSelectValue(s, state.bonuses[i]);
+        });
 
         // ボウガン設定の復元
         if (state.bowgunSettings) {
@@ -1065,11 +1087,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // 武器固有設定の復元（操虫棍・太刀・スラアク・双剣）
         if (state.weaponSpecificParams) {
             if (igExtract && state.weaponSpecificParams.igExtract !== undefined)
-                igExtract.value = state.weaponSpecificParams.igExtract;
+                restoreSelectValue(igExtract, state.weaponSpecificParams.igExtract);
             if (lsSpiritGauge && state.weaponSpecificParams.lsSpiritGauge !== undefined)
-                lsSpiritGauge.value = state.weaponSpecificParams.lsSpiritGauge;
+                restoreSelectValue(lsSpiritGauge, state.weaponSpecificParams.lsSpiritGauge);
             if (saPhialType && state.weaponSpecificParams.saPhialType !== undefined)
-                saPhialType.value = state.weaponSpecificParams.saPhialType;
+                restoreSelectValue(saPhialType, state.weaponSpecificParams.saPhialType);
             if (dbDemonMode && state.weaponSpecificParams.dbDemonMode !== undefined)
                 dbDemonMode.checked = !!state.weaponSpecificParams.dbDemonMode;
         } else {
@@ -1113,19 +1135,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 } else {
                     const select = cachedBuffSelects[groupId];
-                    if (select) select.value = val;
+                    if (select) restoreSelectValue(select, val);
                 }
             });
         }
 
         // 3. スキルの復元（新形式と旧形式の両方に対応）
-        const skillData = state.currentSkillLevels || state.skills;
+        const skillData = normalizeSkillLevels(state.currentSkillLevels || state.skills);
         if (skillData) {
             console.log('Loading skills:', skillData);
             Object.entries(skillData).forEach(([id, lv]) => {
                 const select = cachedSkillSelects[id];
                 if (select) {
-                    select.value = String(lv);
+                    restoreSelectValue(select, lv);
                 } else {
                     console.warn(`Skill ID not found in UI: ${id}`);
                 }
@@ -1150,17 +1172,18 @@ document.addEventListener('DOMContentLoaded', () => {
             if (b.w) html += `<div>[腰] ${escapeText(b.w)}</div>`;
             if (b.l) html += `<div>[脚] ${escapeText(b.l)}</div>`;
             if (b.t) html += `<div style="color: var(--color-accent);">[石] ${escapeText(b.t)}</div>`;
-            
+
             // 装飾品
             if (b.decos && b.decos.length > 0) {
                 html += '<div style="margin-top:0.3rem; border-top:1px dashed rgba(255,255,255,0.1); padding-top:0.3rem; font-size:0.65rem; color:#aaa;">';
                 const decosByPiece = {};
                 b.decos.forEach(d => {
-                    const pieceShort = d.p ? escapeText(d.p.charAt(0).toUpperCase()) : '?';
+                    const pieceLabels={0:'頭',1:'胴',2:'腕',3:'腰',4:'脚',weapon:'武器',talisman:'護石',h:'頭',c:'胴',a:'腕',w:'腰',l:'脚'};
+                    const pieceShort = escapeText(Object.hasOwn(pieceLabels,d.p) ? pieceLabels[d.p] : d.p || '?');
                     if (!decosByPiece[pieceShort]) decosByPiece[pieceShort] = [];
                     decosByPiece[pieceShort].push(escapeText(d.n));
                 });
-                
+
                 Object.entries(decosByPiece).forEach(([piece, names]) => {
                     html += `<div>${piece}: ${names.join(', ')}</div>`;
                 });
@@ -1174,9 +1197,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    function findOptimalArtiaConfiguration() {
-        return runOptimizer(getCurrentState());
-    }
+
 
     // --- My Set System ---
     const mySetList = document.getElementById('myset-list');
@@ -1186,19 +1207,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const MYSET_STORAGE_KEY = 'mhwilds_mysets';
 
     function getMySets() {
-        try {
-            const stored = localStorage.getItem(MYSET_STORAGE_KEY);
-            if (!stored) return {};
-            const parsed = JSON.parse(stored);
-            if (parsed && typeof parsed === 'object') return parsed;
-            return {};
-        } catch (e) {
-            console.error('Failed to load mysets:', e);
-            return {};
-        }
+        return savedStorage.readJSON(MYSET_STORAGE_KEY, Object.create(null), isSavedSets);
     }
 
-    function saveMySets(sets) { localStorage.setItem(MYSET_STORAGE_KEY, JSON.stringify(sets)); }
+    function saveMySets(sets) { return savedStorage.writeJSON(MYSET_STORAGE_KEY, sets, isSavedSets); }
 
     function updateMySetList() {
         const sets = getMySets();
@@ -1217,15 +1229,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function saveCurrentState(setName) {
+    function saveCurrentState(setName, replacementConfirmed = false) {
         if (!setName) return;
 
         // 最新の共通ロジックを使用して状態を取得
         const setObj = getCurrentState();
 
         const sets = getMySets();
+        if (Object.hasOwn(sets,setName) && !replacementConfirmed && !confirm(`マイセット「${setName}」を現在の設定で置き換えますか？`)) return;
         sets[setName] = setObj;
-        saveMySets(sets);
+        if (!saveMySets(sets)) return;
 
         currentLoadedMySetName = setName;
         updateMySetList();
@@ -1244,7 +1257,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         if (confirm(`マイセット「${currentLoadedMySetName}」を現在の設定で上書きしますか？`)) {
-            saveCurrentState(currentLoadedMySetName);
+            saveCurrentState(currentLoadedMySetName, true);
         }
     });
 
@@ -1266,7 +1279,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (confirm(`マイセット「${setName}」を削除してもよろしいですか？`)) {
             const sets = getMySets();
             delete sets[setName];
-            saveMySets(sets);
+            if (!saveMySets(sets)) return;
             if (currentLoadedMySetName === setName) {
                 currentLoadedMySetName = null;
             }
@@ -1319,7 +1332,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const lvl = parseInt(select.value, 10);
                 if (lvl > 0) activeSkills[id] = lvl;
             });
-            
+
             if (Object.keys(activeSkills).length === 0) {
                 alert('スキルが選択されていません。最低1つのスキルレベルを設定してください。');
                 return;
@@ -1329,17 +1342,21 @@ document.addEventListener('DOMContentLoaded', () => {
             for (const [id, lvl] of Object.entries(activeSkills)) {
                 params.append(id, lvl);
             }
-            
+
             console.log('Searching armor for skills:', activeSkills);
             const targetUrl = `asst.html?${params.toString()}`;
 
-            
+
             // ルーティング等でパラメータが消失するケースへの対策として localStorage にも保存
-            localStorage.setItem('asst_request', JSON.stringify({
-                skills: activeSkills,
-                timestamp: Date.now()
-            }));
-            
+            try {
+                localStorage.setItem('asst_request', JSON.stringify({
+                    skills: activeSkills,
+                    timestamp: Date.now()
+                }));
+            } catch (e) {
+                console.warn('ASST補助保存に失敗しました。検索条件はURLで渡します。', e);
+            }
+
             window.open(targetUrl, '_blank');
         });
     }

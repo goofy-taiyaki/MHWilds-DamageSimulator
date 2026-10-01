@@ -429,6 +429,7 @@
     <script type="module">
         import { TALISMAN_GROUPS, TALISMAN_SLOTS, TALISMAN_COMBINATIONS } from './js/data/talisman.js';
         import { DAMAGE_RELATED_SKILLS } from './js/data/damage_skills.js';
+        import { savedStorage, isFavoriteSkills } from './js/modules/storage.js';
 
         const patternGrid = document.getElementById('pattern-grid');
         const rareTabs = document.getElementById('rare-tabs');
@@ -436,17 +437,20 @@
         const groupBody = document.getElementById('group-body');
 
         // Favorite Skills Management
-        let favSkills = JSON.parse(localStorage.getItem('mhwilds_fav_skills') || '[]');
+        let favSkills = savedStorage.readJSON('mhwilds_fav_skills', [], isFavoriteSkills);
 
         function toggleFavSkill(skillName, level) {
             const key = `${skillName}|${level}`;
-            const index = favSkills.indexOf(key);
+            const next = [...favSkills];
+            const index = next.indexOf(key);
             if (index > -1) {
-                favSkills.splice(index, 1);
+                next.splice(index, 1);
             } else {
-                favSkills.push(key);
+                next.push(key);
             }
-            localStorage.setItem('mhwilds_fav_skills', JSON.stringify(favSkills));
+            if (!savedStorage.writeJSON('mhwilds_fav_skills', next, isFavoriteSkills)) return false;
+            favSkills = next;
+            return true;
         }
 
         const groupColors = {
@@ -554,7 +558,7 @@
                 
                 const star = tr.querySelector('.fav-star');
                 star.onclick = () => {
-                    toggleFavSkill(s.name, s.level);
+                    if (!toggleFavSkill(s.name, s.level)) return;
                     star.classList.toggle('active');
                 };
                 

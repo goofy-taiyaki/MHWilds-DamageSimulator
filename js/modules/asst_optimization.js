@@ -1,5 +1,29 @@
 // Pure search core. Evaluation and game constraints are supplied explicitly.
 // Completion is part of the result: a budget-limited best is never called a maximum.
+// Each skill is maximized independently, so this is a relaxed upper bound, never a feasible assignment.
+export function decorationSkillPotential(slots, decorations, nameToId) {
+    const result={};
+    for(const slot of slots) {
+        const maximum={};
+        for(const deco of decorations) {
+            if((deco.type??deco.t)!==(slot.type||'a') || (deco.lvl??deco.sl)>(slot.lvl??slot))continue;
+            const gains={};
+            for(const effect of deco.sk||[]) {
+                const id=nameToId[effect.n];
+                if(id)gains[id]=(gains[id]||0)+effect.l;
+            }
+            for(const [id,n] of Object.entries(gains))maximum[id]=Math.max(maximum[id]||0,n);
+        }
+        for(const [id,n] of Object.entries(maximum))result[id]=(result[id]||0)+n;
+    }
+    return result;
+}
+
+export function categoryRequirementFits(current, item, target, ids, remaining, automatic) {
+    const missing=ids.reduce((sum,id)=>sum+Math.max(0,target[id]-(current[id]||0)-(item[id]||0)),0);
+    return missing<=remaining+(automatic?1:0);
+}
+
 export function enumerateArtiaConfigurations({excitations, parts, bonuses, maxCopies, categoryLimits={}, categoryFor={}}) {
     const limit = id => typeof maxCopies === 'number' ? maxCopies : maxCopies?.[id];
     if (bonuses.some(id=>!Number.isInteger(limit(id))||limit(id)<0)) throw new Error('復元ボーナスごとの上限が必要です。');
@@ -23,7 +47,7 @@ export function enumerateArtiaConfigurations({excitations, parts, bonuses, maxCo
     return result;
 }
 
-export function optimizeDecorationAssignment({slots,basePoints,target,skills,decorations,nameToId,
+function* decorationSearch({slots,basePoints,target,skills,decorations,nameToId,
     scoreSkillIds,evaluate,upperBound,initialAssignment=[],maxNodes=200000}) {
     const relevant=[...new Set([...Object.keys(target),...scoreSkillIds])];
     const skillById=Object.fromEntries(skills.map(s=>[s.id,s]));
@@ -66,8 +90,9 @@ export function optimizeDecorationAssignment({slots,basePoints,target,skills,dec
     }
     if(validInitial&&feasible(baseline))best={...scored(baseline),points:baseline,assignment:initialAssignment.map(a=>({...a}))};
     const visited=new Set(),path=[];
-    function visit(points,available){
+    function* visit(points,available){
         if(nodes>=maxNodes){complete=false;return;}nodes++;
+        if (nodes % 32 === 0) yield;
         const potential=potentials(available);
         if(Object.entries(target).some(([id,n])=>(points[id]||0)+(potential[id]||0)<n))return;
         if(best&&upperBound&&upperBound(points,potential)<best.value-1e-9)return;
@@ -92,10 +117,35 @@ export function optimizeDecorationAssignment({slots,basePoints,target,skills,dec
             if(relevant.every(id=>c.next[id]===points[id]))continue;
             const index=needed?available.findIndex(s=>s.type===c.deco.type&&s.lvl>=c.deco.lvl):0;
             const nextSlots=[...available],slot=nextSlots.splice(index,1)[0];
-            path.push({piece:slot.piece,deco:c.deco});visit(c.next,nextSlots);path.pop();
+            path.push({piece:slot.piece,deco:c.deco});yield* visit(c.next,nextSlots);path.pop();
         }
-        if(!needed&&complete)visit(points,available.slice(1));
+        if(!needed&&complete)yield* visit(points,available.slice(1));
     }
-    visit(bounded(basePoints),ordered);
+    yield* visit(bounded(basePoints),ordered);
     return {best,complete,nodes};
+}
+
+
+export function optimizeDecorationAssignment(input) {
+    const search=decorationSearch(input);
+    let step;
+    do { step=search.next(); } while(!step.done);
+    return step.value;
+}
+
+// Same traversal and node budget as the synchronous core; yield within each pattern.
+export async function optimizeDecorationAssignmentAsync(input, {
+    isCancelled=()=>false, sliceMs=12, yieldControl=()=>new Promise(resolve=>setTimeout(resolve,0))
+}={}) {
+    const search=decorationSearch(input);
+    while(true) {
+        if(isCancelled()) { search.return(); return {best:null,complete:false,cancelled:true}; }
+        const start=performance.now();
+        let step;
+        do {
+            step=search.next();
+            if(step.done)return step.value;
+        } while(performance.now()-start<sliceMs);
+        await yieldControl();
+    }
 }

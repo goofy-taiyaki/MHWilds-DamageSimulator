@@ -5,6 +5,11 @@ export { WEAPON_TYPES };
 export const PARTS = RESTORATION_PARTS;
 // Em0078 grinding limits, ArtianBonusData patch_012. Rejected / tier I unavailable entries excluded.
 export const BONUSES = RESTORATION_BONUSES.filter(b=>['none','atk_2','atk_3','atk_ex','aff_2','aff_3','aff_ex','elem_2','elem_ex','sharp_load','sharp_load_ex'].includes(b.id));
+export const bonusLimit = bonus => bonus.group === 'sharp_load' ? 2 : bonus.group === 'elem' ? 4 : 5;
+export function legalBonuses(bonuses) {
+    return bonuses.every(b=>b && BONUSES.some(valid=>valid.id===b.id)) &&
+        bonuses.filter(b=>b.group==='sharp_load').length<=2 && bonuses.filter(b=>b.group==='elem').length<=4;
+}
 export const EXCITATIONS = [{id:'attack',name:'攻撃激化'},{id:'affinity',name:'会心激化'},{id:'element',name:'属性激化'}];
 export function weaponConfigurations(settings) {
     if(!WEAPON_TYPES.some(w=>w.id===settings.weaponTypeId))throw new Error('武器種を選択してください。');
@@ -19,7 +24,7 @@ export function weaponConfigurations(settings) {
         for(const value of options[index])product(options,callback,[...path,value],index+1);
     }
     for(const e of excitations)product(partOptions,parts=>product(bonusOptions,bonuses=>{
-        if(bonuses.filter(b=>b.group==='sharp_load').length>2||bonuses.filter(b=>b.group==='elem').length>4)return;
+        if(!legalBonuses(bonuses))return;
         const excitation=EXCITATION_DATA[settings.weaponTypeId][e.id];
         const attack=190+excitation.attack+parts.reduce((n,p)=>n+(p.attack||0),0)+bonuses.reduce((n,b)=>n+(b.attack||0),0);
         const affinity=5+excitation.affinity+parts.reduce((n,p)=>n+(p.affinity||0),0)+bonuses.reduce((n,b)=>n+(b.affinity||0),0);

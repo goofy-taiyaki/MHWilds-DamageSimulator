@@ -229,6 +229,7 @@
         import { DECORATIONS } from './js/data/decorations.js';
         import { SKILLS } from './js/data/skills.js';
         import { buildSkillMatrix, sortActivatedSkills } from './js/result_renderer.js';
+        import { savedStorage, isSavedSets, isRecord } from './js/modules/storage.js';
 
         const SKILL_NAME_TO_ID = Object.fromEntries(SKILLS.map(s => [s.name, s.id]));
         const SKILL_BY_ID = Object.fromEntries(SKILLS.map(s => [s.id, s]));
@@ -301,13 +302,19 @@
         }
 
         function refreshSavedList() {
-            const list = JSON.parse(localStorage.getItem('saved_build_sets') || '{}');
+            const list = savedStorage.readJSON('saved_build_sets', Object.create(null), isSavedSets);
             const ul = document.getElementById('saved-sets-list');
             ul.innerHTML = "";
             Object.keys(list).sort().forEach(name => {
                 const li = document.createElement('li');
                 li.className = 'saved-item';
-                li.innerHTML = `<span>${name}</span> <button class="btn-del" title="削除">×</button>`;
+                const label = document.createElement('span');
+                label.textContent = name;
+                const deleteButton = document.createElement('button');
+                deleteButton.className = 'btn-del';
+                deleteButton.title = '削除';
+                deleteButton.textContent = '×';
+                li.append(label, deleteButton);
                 li.onclick = (e) => {
                     if (e.target.className === 'btn-del') {
                         deleteSet(name);
@@ -323,7 +330,7 @@
             const name = document.getElementById('save-name').value.trim();
             if (!name) { alert("保存名を入力してください"); return; }
             
-            const sets = JSON.parse(localStorage.getItem('saved_build_sets') || '{}');
+            const sets = savedStorage.readJSON('saved_build_sets', Object.create(null), isSavedSets);
             const data = {
                 h: state.h ? state.h.n : null,
                 c: state.c ? state.c.n : null,
@@ -342,15 +349,21 @@
             sets[name] = data;
             sets[name].weapon.ss = state.weapon.ss;
             sets[name].weapon.gs = state.weapon.gs;
-            localStorage.setItem('saved_build_sets', JSON.stringify(sets));
+            if (!savedStorage.writeJSON('saved_build_sets', sets, isSavedSets)) return;
             refreshSavedList();
             alert("「" + name + "」を保存しました。");
         }
 
         function loadSet(name) {
-            const sets = JSON.parse(localStorage.getItem('saved_build_sets') || '{}');
+            const sets = savedStorage.readJSON('saved_build_sets', Object.create(null), isSavedSets);
             const data = sets[name];
             if (!data) return;
+            if (!isRecord(data.weapon) || !Array.isArray(data.weapon.decos) ||
+                !isRecord(data.talisman) || !isRecord(data.talisman.skills) ||
+                parts.some(p => data[p.key + 'De'] != null && !Array.isArray(data[p.key + 'De']))) {
+                alert('このセットの保存形式を読み込めません。既存データは変更していません。');
+                return;
+            }
 
             // Reset state and sync UI
             document.getElementById('save-name').value = name;
@@ -398,9 +411,9 @@
 
         function deleteSet(name) {
             if (!confirm(name + " を削除しますか？")) return;
-            const sets = JSON.parse(localStorage.getItem('saved_build_sets') || '{}');
+            const sets = savedStorage.readJSON('saved_build_sets', Object.create(null), isSavedSets);
             delete sets[name];
-            localStorage.setItem('saved_build_sets', JSON.stringify(sets));
+            if (!savedStorage.writeJSON('saved_build_sets', sets, isSavedSets)) return;
             refreshSavedList();
         }
 

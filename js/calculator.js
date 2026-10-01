@@ -62,11 +62,14 @@ export class MHWCalculator {
     }
 
     _getMotionValueArray() {
-        if (Array.isArray(this.motionValue)) return this.motionValue;
-        if (typeof this.motionValue === 'number') return [this.motionValue];
+        if (Array.isArray(this.motionValue)) {
+            const values=this.motionValue.filter(n=>Number.isFinite(n)&&n>=0);
+            return values.length?values:[100];
+        }
+        if (typeof this.motionValue === 'number') return Number.isFinite(this.motionValue)&&this.motionValue>=0?[this.motionValue]:[100];
         if (typeof this.motionValue === 'string') {
             const parts = this.motionValue.replace(/[^\d.+,]/g, '').split(/[+,]/);
-            const vals = parts.map(p => parseFloat(p)).filter(n => !isNaN(n));
+            const vals = parts.map(p => parseFloat(p)).filter(n => Number.isFinite(n) && n >= 0);
             return vals.length > 0 ? vals : [100];
         }
         return [100];
@@ -74,10 +77,10 @@ export class MHWCalculator {
 
     _getElementModArray(expectedLength) {
         if (Array.isArray(this.motionElementMod)) {
-            let res = [...this.motionElementMod];
-            while (res.length < expectedLength) res.push(res[res.length - 1] || 1.0);
+            let res = this.motionElementMod.map(n=>Number.isFinite(n)&&n>=0?n:1.0);
+            while (res.length < expectedLength) res.push(res[res.length - 1] ?? 1.0);
             return res;
-        } else if (typeof this.motionElementMod === 'number' && !isNaN(this.motionElementMod)) {
+        } else if (typeof this.motionElementMod === 'number' && Number.isFinite(this.motionElementMod) && this.motionElementMod>=0) {
             return Array(expectedLength).fill(this.motionElementMod);
         }
         return Array(expectedLength).fill(1.0);
@@ -106,8 +109,8 @@ export class MHWCalculator {
 
     setMotion(mv, elemMod, partMod = 1.0, name = '') {
         this.motionValue = mv;
-        this.motionElementMod = elemMod || 1.0;
-        this.partMod = partMod || 1.0;
+        this.motionElementMod = elemMod ?? 1.0;
+        this.partMod = partMod ?? 1.0;
         this.currentMotionName = name || '';
     }
 

@@ -1,3 +1,4 @@
+import { normalizeSkillLevels } from './modules/share.js';
 import { ARMOR } from './data/armor.js';
 import { DECORATIONS } from './data/decorations.js';
 import { SKILLS } from './data/skills.js';
@@ -5,8 +6,9 @@ import { TALISMAN_GROUPS, TALISMAN_COMBINATIONS, TALISMAN_SLOTS } from './data/t
 import { initOCR } from './modules/ocr.js';
 import { buildSkillMatrix, sortActivatedSkills } from './result_renderer.js';
 import { BuildShare } from './modules/share.js';
+import { savedStorage, isSavedSets, isFavoriteSkills, isFavoriteTalismans } from './modules/storage.js';
 import { analyzePatterns } from './modules/asst_patterns.js';
-import { optimizeDecorationAssignment } from './modules/asst_optimization.js';
+import { optimizeDecorationAssignmentAsync, decorationSkillPotential, categoryRequirementFits } from './modules/asst_optimization.js';
 import { WEAPON_TYPES, PARTS, BONUSES, EXCITATIONS, createWeaponEvaluator } from './modules/asst_weapon.js';
 
 const SKILL_NAME_TO_ID = Object.fromEntries(SKILLS.map(s => [s.name, s.id]));
@@ -25,6 +27,12 @@ document.addEventListener('DOMContentLoaded', () => {
     let searchGeneration=0;
     let activeResFilters = new Map(); // idx -> value
     const artiaSettings=document.getElementById('artia-settings');
+    const settingGroup=title=>{
+        const group=document.createElement('fieldset');group.className='artia-setting-group';
+        const legend=document.createElement('legend');legend.textContent=title;group.appendChild(legend);
+        artiaSettings.appendChild(group);return group;
+    };
+    let currentSettingGroup=settingGroup('基本設定');
     const settingSelect=(id,label,options,automatic=true)=>{
         const row=document.createElement('label'); row.style.cssText='display:flex;gap:6px;align-items:center;font-size:0.75rem;';
         const text=document.createElement('span');text.textContent=label;text.style.minWidth='62px';row.appendChild(text);
@@ -32,11 +40,13 @@ document.addEventListener('DOMContentLoaded', () => {
         for(const o of [...(automatic?[{id:'auto',name:'自動（最適化）'}]:[]),...options]){
             const opt=document.createElement('option');opt.value=o.id;opt.textContent=o.name;select.appendChild(opt);
         }
-        row.appendChild(select);artiaSettings.appendChild(row);
+        row.appendChild(select);currentSettingGroup.appendChild(row);
     };
     settingSelect('weapon-type-select','武器種',WEAPON_TYPES,false);
     settingSelect('artia-excitation','激化',EXCITATIONS);
+    currentSettingGroup=settingGroup('強化パーツ');
     for(let i=0;i<3;i++)settingSelect(`artia-part-${i}`,`パーツ${i+1}`,PARTS);
+    currentSettingGroup=settingGroup('復元ボーナス');
     for(let i=0;i<5;i++)settingSelect(`artia-bonus-${i}`,`復元${i+1}`,BONUSES);
     const readWeaponSettings=()=>({weaponTypeId:document.getElementById('weapon-type-select').value,
         excitation:document.getElementById('artia-excitation').value,
@@ -183,20 +193,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchParams = new URLSearchParams(window.location.search);
     const targetSkills = {};
 
-    searchParams.forEach((value, key) => {
-        const lvl = parseInt(value, 10);
-        if (isNaN(lvl) || lvl <= 0) return;
-        const skill = SKILL_BY_ID[key];
-        if (skill) targetSkills[key] = lvl;
-    });
+    Object.assign(targetSkills, normalizeSkillLevels(Object.fromEntries(searchParams)));
 
     if (Object.keys(targetSkills).length === 0) {
-        const fallback = localStorage.getItem('asst_request');
+        const fallback = savedStorage.readText('asst_request');
         if (fallback) {
             try {
                 const data = JSON.parse(fallback);
                 if (data.skills && (Date.now() - data.timestamp < 15000)) {
-                    Object.assign(targetSkills, data.skills);
+                    Object.assign(targetSkills, normalizeSkillLevels(data.skills));
                 }
             } catch (e) { }
         }
@@ -768,7 +773,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const startSearch = () => {
+        ++searchGeneration;
         if (Object.keys(targetSkills).length === 0) {
+            resultsContainer.replaceChildren();
             statusText.textContent = 'スキル構成が空です。シミュレーターでスキルを選択してください。';
             return;
         }
@@ -848,7 +855,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function performSearch(target, wSlots, wSkills, tDataFixed, tSlotsFixed, autoTalisman, manualWDecos, fullWSlots, isFavSkillsMode) {
         statusText.innerHTML = '<span class="loader"></span>初期化中...';
-        const generation=++searchGeneration;
+        const generation=searchGeneration;
         const weaponSettings=readWeaponSettings();
         const evaluator=createWeaponEvaluator(weaponSettings,SKILLS);
         const targetPoints = {};
@@ -865,6 +872,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         await new Promise(r => setTimeout(r, 50));
+        if(generation!==searchGeneration)return;
         statusText.innerHTML = '<span class="loader"></span>防具データを整理中...';
 
         const armorLabels = ['頭', '胴', '腕', '腰', '脚', '護石'];
@@ -900,7 +908,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        const prune = (list, targets) => {
+        const prune = (list, targets, resistanceIndices = [], profileSkillNames = null) => {
             if (list.length === 0) return [];
             const tIds = Object.keys(targets);
             const evaluated = list.map(item => {
@@ -908,7 +916,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 tIds.forEach(id => sScore += (item.skills[id] || 0));
                 const slotScore = (item.slots || []).reduce((sum, s) => sum + (s.lvl || s || 0), 0);
                 const slotDetail = (item.slots || []).map(s => s.lvl || s || 0).sort((a, b) => b - a);
-                return { item, sScore, slotScore, slotDetail, def: item.defense || 0 };
+                const profile = JSON.stringify([
+                    (item.sk || []).filter(s=>profileSkillNames===null || profileSkillNames.includes(s.n))
+                        .map(s=>[s.n,s.l]).sort((x,y)=>String(x[0]).localeCompare(String(y[0]))),
+                    item.ss || '', item.gs || '', item.skills
+                ]);
+                return { item, sScore, slotScore, slotDetail, def: item.defense || 0, profile };
             });
 
             const survivors = [];
@@ -930,7 +943,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             const aLevels = levels(a), bLevels = levels(b);
                             return aLevels.every((lvl, idx) => (bLevels[idx] || 0) >= lvl);
                         });
-                        if (skillsOk && slotsOk) { isInferior = true; break; }
+                        const profileOk = a.profile === b.profile;
+                        const resistanceOk = resistanceIndices.every(idx =>
+                            (b.item.r?.[idx] || 0) >= (a.item.r?.[idx] || 0));
+                        if (skillsOk && slotsOk && resistanceOk && profileOk) { isInferior = true; break; }
                     }
                 }
                 if (!isInferior) {
@@ -951,7 +967,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             noSkill.sort((a, b) => b.slotScore - a.slotScore || b.def - a.def);
-            return [...hasSkill.map(s => s.item), ...noSkill.slice(0, 15).map(s => s.item)];
+            return [...hasSkill.map(s => s.item), ...noSkill.map(s => s.item)];
         };
 
         statusText.innerHTML = '<span class="loader"></span>護石パターンを生成中...';
@@ -959,7 +975,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const isFavMode = document.getElementById('btn-talisman-fav')?.classList.contains('active');
 
         if (isFavMode) {
-            const favData = JSON.parse(localStorage.getItem('mhwilds_fav_talismans') || '[]');
+            const favData = savedStorage.readJSON('mhwilds_fav_talismans', [], isFavoriteTalismans);
             favData.forEach(f => {
                 const relSkills = {};
                 (f.skills || []).forEach(s => {
@@ -980,7 +996,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
                 relevantTalismans.push({
-                    name: `お気に入り護石 (R${f.rare})`,
+                    name: `お気に入り護石 (R${Number.isFinite(Number(f.rare)) ? Number(f.rare) : '?'})`,
                     skills: relSkills,
                     slots: tSlots,
                     defense: 0,
@@ -995,7 +1011,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const filterS3 = tSkillSelects[2].value;
 
             // ★リストのスキルを読み込む
-            const favoriteSkills = JSON.parse(localStorage.getItem('mhwilds_fav_skills') || '[]');
+            const favoriteSkills = savedStorage.readJSON('mhwilds_fav_skills', [], isFavoriteSkills);
             const favoriteSkillSet = new Set(favoriteSkills);
 
             TALISMAN_COMBINATIONS.forEach(comb => {
@@ -1079,27 +1095,27 @@ document.addEventListener('DOMContentLoaded', () => {
         await new Promise(r => setTimeout(r, 50));
 
         try {
-            const headList = prune(armorParts.head, targetPoints);
-            const chestList = prune(armorParts.chest, targetPoints);
-            const armsList = prune(armorParts.arms, targetPoints);
-            const waistList = prune(armorParts.waist, targetPoints);
-            const legsList = prune(armorParts.legs, targetPoints);
-            const talismanList = prune(relevantTalismans, targetPoints);
+            const resistanceIndices = [...activeResFilters.keys()];
+            const requestedSort = document.getElementById('search-sort-type').value;
+            if (requestedSort.startsWith('res')) resistanceIndices.push(Number(requestedSort.slice(3)));
+            const profileSkillNames=SKILLS.filter(skill=>targetPoints[skill.id] || evaluator.scoreSkillIds.includes(skill.id) ||
+                (skill.effects || []).some(effect=>effect.defAdd || effect.resAdd)).map(skill=>skill.name);
+            const headList = prune(armorParts.head, targetPoints, resistanceIndices, profileSkillNames);
+            const chestList = prune(armorParts.chest, targetPoints, resistanceIndices, profileSkillNames);
+            const armsList = prune(armorParts.arms, targetPoints, resistanceIndices, profileSkillNames);
+            const waistList = prune(armorParts.waist, targetPoints, resistanceIndices, profileSkillNames);
+            const legsList = prune(armorParts.legs, targetPoints, resistanceIndices, profileSkillNames);
+            const talismanList = prune(relevantTalismans, targetPoints, resistanceIndices, profileSkillNames);
             const parts = [headList, chestList, armsList, waistList, legsList, talismanList];
 
             const allResults = [];
             const maxRemainSkills = Array(6).fill(0).map(() => ({}));
-            const maxRemainSlots = Array(6).fill(0);
             for (let i = 5; i >= 0; i--) {
                 const partMax = {};
-                let partMaxSlots = 0;
                 parts[i].forEach(p => {
                     Object.keys(targetPoints).forEach(sid => { if ((p.skills[sid] || 0) > (partMax[sid] || 0)) partMax[sid] = p.skills[sid]; });
-                    const slotTotal = (p.slots || []).reduce((sum, s) => sum + (s.lvl || s || 0), 0);
-                    if (slotTotal > partMaxSlots) partMaxSlots = slotTotal;
                 });
                 Object.keys(targetPoints).forEach(sid => { maxRemainSkills[i][sid] = (partMax[sid] || 0) + (i < 5 ? maxRemainSkills[i + 1][sid] : 0); });
-                maxRemainSlots[i] = partMaxSlots + (i < 5 ? maxRemainSlots[i + 1] : 0);
             }
 
             const decoBySkill = {};
@@ -1116,13 +1132,34 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             for (const sid in decoBySkill) decoBySkill[sid].sort((a, b) => b.pts / b.lvl - a.pts / a.lvl || b.pts - a.pts);
 
+            const piecePotential=new Map();
+            const decoPotentialFor=item=>{
+                if(!piecePotential.has(item)) {
+                    const all=decorationSkillPotential(item.slots.map(slot=>({lvl:slot.lvl??slot,type:slot.type||'a'})),DECORATIONS,SKILL_NAME_TO_ID);
+                    piecePotential.set(item,Object.fromEntries(Object.keys(targetPoints).map(id=>[id,all[id]||0])));
+                }
+                return piecePotential.get(item);
+            };
+            const maxRemainDecos=Array.from({length:6},()=>({}));
+            for(let i=5;i>=0;i--)for(const sid of Object.keys(targetPoints)) {
+                const maximum=Math.max(0,...parts[i].map(item=>decoPotentialFor(item)[sid]||0));
+                maxRemainDecos[i][sid]=maximum+(maxRemainDecos[i+1]?.[sid]||0);
+            }
+            const weaponDecoPotential=decorationSkillPotential(wSlots.map(lvl=>({lvl:lvl.lvl??lvl,type:'w'})),DECORATIONS,SKILL_NAME_TO_ID);
+
+            const categoryBounds=['series','group'].map(category=>{
+                const ids=Object.keys(targetPoints).filter(id=>SKILL_BY_ID[id].mainCategory===category&&!canBeDeco[id]);
+                const remaining=Array(7).fill(0);
+                for(let i=5;i>=0;i--)remaining[i]=remaining[i+1]+Math.max(0,...parts[i].map(item=>ids.reduce((sum,id)=>sum+(item.skills[id]||0),0)));
+                return {ids,remaining,automatic:category==='series'?wSkills.auto_ss:wSkills.auto_gs};
+            });
+
             let resultsCount = 0;
             let uniqueSetCount = 0;
             const uniqueSetCountedKeys = new Set();
             let isInterrupted = false;
 
-            const stack = [{ part: 0, currentSkills: { ...wSkills }, currentItems: [], slotTotal: 0 }];
-            let baseWeaponPotential = wSlots.reduce((a, b) => a + (b.lvl || b || 0), 0);
+            const stack = [{ part: 0, currentSkills: { ...wSkills }, currentItems: [], decoPotential: {} }];
 
             let currentSearchTimeout = null;
             function solveChunkDFS() {
@@ -1135,10 +1172,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         if (pIdx === 6) {
                             const [h, c, a, w, l, t] = node.currentItems;
-                            const key = `${h.id}-${c.id}-${a.id}-${w.id}-${l.id}`;
+                            const key = JSON.stringify([h, c, a, w, l].map(item => [item.p, item.n]));
                             const assignment = check(h, c, a, w, l, t, targetPoints, wSlots, wSkills, decoBySkill);
                             if (assignment) {
                                 allResults.push({ h, c, a, w, l, t, assignment });
+                                resultsCount++;
                                 if (uniqueSetCountedKeys && !uniqueSetCountedKeys.has(key)) {
                                     uniqueSetCountedKeys.add(key);
                                     uniqueSetCount++;
@@ -1152,22 +1190,20 @@ document.addEventListener('DOMContentLoaded', () => {
                             const currentPartItems = parts[pIdx];
                             for (let i = currentPartItems.length - 1; i >= 0; i--) {
                                 const item = currentPartItems[i];
+                                if(categoryBounds.some(bound=>!categoryRequirementFits(node.currentSkills,item.skills,targetPoints,bound.ids,bound.remaining[pIdx+1],bound.automatic)))continue;
                                 let possible = true;
-                                const itemSlotsVal = (item.slots || []).reduce((sum, s) => sum + (s.lvl || s || 0), 0);
-                                const remSlotsVal = (pIdx < 5 ? maxRemainSlots[pIdx + 1] : 0);
-                                const totalPotentialSlotsVal = node.slotTotal + itemSlotsVal + remSlotsVal + baseWeaponPotential;
 
                                 for (const sid in targetPoints) {
                                     const cur = (node.currentSkills[sid] || 0) + (item.skills[sid] || 0);
                                     const remMax = (pIdx < 5 ? maxRemainSkills[pIdx + 1][sid] : 0);
-                                    const fixedW = wSkills[sid] || 0;
                                     const isAutoCat = (SKILL_BY_ID[sid].mainCategory === 'series' && wSkills.auto_ss) || (SKILL_BY_ID[sid].mainCategory === 'group' && wSkills.auto_gs);
                                     const wPot = isAutoCat ? 1 : 0;
-                                    const potential = canBeDeco[sid] ? (remMax + totalPotentialSlotsVal + wPot) : (remMax + wPot);
-                                    if (cur + fixedW + potential < targetPoints[sid]) {
+                                    const potential = remMax + wPot + (canBeDeco[sid] ?
+                                        (node.decoPotential[sid]||0)+(decoPotentialFor(item)[sid]||0)+(maxRemainDecos[pIdx+1]?.[sid]||0)+(weaponDecoPotential[sid]||0) : 0);
+                                    if (cur + potential < targetPoints[sid]) {
                                         const targetDebugNames = ['クイーンピアスα', 'エグゾルスメイルγ', '護火竜アームβ', '護火竜コイルβ', 'トゥナムルグリーヴγ'];
                                         if (node.currentItems.every(it => targetDebugNames.includes(it.name)) && targetDebugNames.includes(item.name)) {
-                                            console.log(`[DEBUG] Pruned Branch in DFS! Skill: ${SKILL_BY_ID[sid].name}, Needed: ${targetPoints[sid]}, Current: ${cur + fixedW}, Potential: ${potential}`);
+                                            console.log(`[DEBUG] Pruned Branch in DFS! Skill: ${SKILL_BY_ID[sid].name}, Needed: ${targetPoints[sid]}, Current: ${cur}, Potential: ${potential}`);
                                         }
                                         possible = false; break;
                                     }
@@ -1176,7 +1212,9 @@ document.addEventListener('DOMContentLoaded', () => {
                                 if (possible) {
                                     const nextSkills = { ...node.currentSkills };
                                     Object.keys(item.skills).forEach(sid => { nextSkills[sid] = (nextSkills[sid] || 0) + item.skills[sid]; });
-                                    stack.push({ part: pIdx + 1, currentSkills: nextSkills, currentItems: [...node.currentItems, item], slotTotal: node.slotTotal + itemSlotsVal });
+                                    const nextDecoPotential={...node.decoPotential};
+                                    for(const [sid,n] of Object.entries(decoPotentialFor(item)))nextDecoPotential[sid]=(nextDecoPotential[sid]||0)+n;
+                                    stack.push({ part: pIdx + 1, currentSkills: nextSkills, currentItems: [...node.currentItems, item], decoPotential:nextDecoPotential });
                                 }
                             }
                         }
@@ -1187,9 +1225,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     }
                     if (isInterrupted) {
-                        statusText.innerHTML = '<span style="color:var(--accent-color); font-weight:bold;">⚠ 検索結果が30件を超えたため中断しました。条件をさらに絞り込んでください。</span>';
+                        statusText.textContent = '検索結果が30構成に達したため探索を中断しました。検出済み候補を最適化します。';
                     }
                     finish(allResults, isInterrupted).catch(e=>{
+                        if(generation!==searchGeneration)return;
                         console.error('Optimization error:',e);statusText.textContent=`最適化エラー: ${e.message}`;
                     });
                 } catch (e) {
@@ -1324,7 +1363,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
 
-            function optimizePattern(r,required=targetPoints){
+            async function optimizePattern(r,required=targetPoints){
                 const base=buildSkillMatrix(r,wSkills,[],SKILL_NAME_TO_ID,null,null);
                 const basePoints=Object.fromEntries(Object.entries(base).map(([id,m])=>[id,m.total]));
                 const slots=[];
@@ -1337,8 +1376,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 let best=null,complete=true;
                 for(const autoSS of series)for(const autoGS of groups){
                     const points={...basePoints};for(const id of [autoSS,autoGS])if(id)points[id]=(points[id]||0)+1;
-                    const optimized=optimizeDecorationAssignment({slots,basePoints:points,target:required,skills:SKILLS,decorations:DECORATIONS,
-                        nameToId:SKILL_NAME_TO_ID,...evaluator,initialAssignment:r.assignment.decos,maxNodes:200000});
+                    const optimized=await optimizeDecorationAssignmentAsync({slots,basePoints:points,target:required,skills:SKILLS,decorations:DECORATIONS,
+                        nameToId:SKILL_NAME_TO_ID,...evaluator,initialAssignment:r.assignment.decos,maxNodes:200000}, {isCancelled:()=>generation!==searchGeneration});
+                    if(optimized.cancelled)return {noMatch:true,optimizationComplete:false};
                     complete&&=optimized.complete;
                     if(!optimized.best)continue;
                     const result={...r,assignment:{decos:optimized.best.assignment,autoSS,autoGS}};
@@ -1350,6 +1390,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return best;
             }
             async function finish(results, interrupted = false) {
+                if(generation!==searchGeneration)return;
                 progressBar.style.width = '100%';
                 const sortType = document.getElementById('search-sort-type').value;
 
@@ -1359,7 +1400,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     statusText.textContent=`武器・装飾品を最適化中... ${i+1}/${results.length}`;
                     await new Promise(resolve=>setTimeout(resolve,0));
                     if(generation!==searchGeneration)return;
-                    const r=optimizePattern(results[i]);
+                    const r=await optimizePattern(results[i]);
+                    if(generation!==searchGeneration)return;
                     optimizationIncomplete ||= !r.optimizationComplete;
                     if(!r.noMatch)processed.push(r);
                 }
@@ -1373,7 +1415,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const groups = new Map();
                 filtered.forEach(r => {
-                    const key = `${r.h.n}-${r.c.n}-${r.a.n}-${r.w.n}-${r.l.n}`;
+                    const key = JSON.stringify([r.h, r.c, r.a, r.w, r.l].map(item => [item.p, item.n]));
                     if (!groups.has(key)) groups.set(key, []);
                     groups.get(key).push(r);
                 });
@@ -1445,7 +1487,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                     note.textContent=`追加条件で再配置中... ${i+1}/${patterns.length}`;
                                     await new Promise(resolve=>setTimeout(resolve,0));
                                     if(generation!==searchGeneration)return;
-                                    const optimized=optimizePattern(patterns[i],requiredNext);
+                                    const optimized=await optimizePattern(patterns[i],requiredNext);
+                                    if(generation!==searchGeneration)return;
                                     complete&&=optimized.optimizationComplete;
                                     if(!optimized.noMatch&&(!best||optimized.stats.value>best.stats.value)){best=optimized;bestIndex=i;}
                                 }
@@ -1483,7 +1526,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                                     button.textContent=note.textContent;
                                                     await new Promise(resolve=>setTimeout(resolve,0));
                                                     if(generation!==searchGeneration)return;
-                                                    const adopted=optimizePattern(patterns[i],requiredNext);
+                                                    const adopted=await optimizePattern(patterns[i],requiredNext);
+                                                    if(generation!==searchGeneration)return;
                                                     complete&&=adopted.optimizationComplete;
                                                     if(!adopted.noMatch&&(!best||adopted.stats.value>best.stats.value)){best=adopted;bestIndex=i;}
                                                 }
@@ -1507,6 +1551,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 resultCountEl.textContent = `${uniqueResults.length} sets`;
                 if (!interrupted) {
                     statusText.textContent = `検索完了! ${uniqueResults.length}種類の防具構成・${filtered.length}パターンが見つかりました。各構成の物理期待値が最良の1パターンを表示しています。${optimizationIncomplete?'（一部の再配置探索は上限に到達・最大値未確定）':'（検出候補内の再配置探索完了）'}${uniqueResults.length>100 ? '（画面表示は先頭100構成）' : ''}`;
+                }
+                else {
+                    statusText.textContent = `検索結果が30構成に達したため探索を中断しました。検出済みの${uniqueResults.length}種類の防具構成・${filtered.length}パターンを表示しています。条件をさらに絞り込んでください。${optimizationIncomplete?'（一部の再配置探索は上限に到達・最大値未確定）':''}`;
                 }
 
 
@@ -1707,7 +1754,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const setName = prompt('マイセット（計算機と共有）としての保存名を入力してください:', `セット#${idx}`);
             if (!setName) return;
             
-            const sets = JSON.parse(localStorage.getItem('mhwilds_mysets') || '{}');
+            const sets = getMySets();
             const data = {
                 currentSkillLevels: { ...resultState.currentSkillLevels },
                 weaponTypeId: resultState.weaponTypeId,
@@ -1716,8 +1763,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 parts:[...resultState.parts],bonuses:[...resultState.bonuses],
                 asst_build_data: resultState.asst_build_data
             };
+            if (Object.hasOwn(sets,setName) && !confirm(`「${setName}」は既に保存されています。現在の武器・装備結果で置き換えますか？`)) return;
             sets[setName] = data;
-            localStorage.setItem('mhwilds_mysets', JSON.stringify(sets));
+            if (!savedStorage.writeJSON(MYSET_STORAGE_KEY, sets, isSavedSets)) return;
             updateMySetList();
             alert(`「${setName}」を計算機ページのマイセットとして保存しました。`);
         };
@@ -1765,7 +1813,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentLoadedMySetName = null;
 
     function getMySets() {
-        try { return JSON.parse(localStorage.getItem(MYSET_STORAGE_KEY) || '{}'); } catch(e) { return {}; }
+        return savedStorage.readJSON(MYSET_STORAGE_KEY, Object.create(null), isSavedSets);
     }
 
     function updateMySetList() {
@@ -1803,7 +1851,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         
         // 保存されたスキルを適用
-        const skillData = data.currentSkillLevels || data.skills || {};
+        const skillData = normalizeSkillLevels(data.currentSkillLevels || data.skills || {});
         Object.entries(skillData).forEach(([sid, lvl]) => {
             if (cachedSkillSelects[sid]) {
                 const sel = cachedSkillSelects[sid];
@@ -1827,11 +1875,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const name = prompt('現在の検索条件（スキル構成）をマイセットとして保存します。名前を入力してください:', currentLoadedMySetName || '');
         if (!name) return;
         const sets = getMySets();
+        if (sets[name]?.asst_build_data || sets[name]?.weaponTypeId) {
+            if (!confirm(`「${name}」には武器・装備情報が保存されています。検索条件だけで置き換えると、それらの情報は失われます。置き換えますか？`)) return;
+        }
         sets[name] = {
             currentSkillLevels: { ...targetSkills },
             timestamp: Date.now()
         };
-        localStorage.setItem(MYSET_STORAGE_KEY, JSON.stringify(sets));
+        if (!savedStorage.writeJSON(MYSET_STORAGE_KEY, sets, isSavedSets)) return;
         currentLoadedMySetName = name;
         updateMySetList();
         alert(`「${name}」を保存しました。計算機ページでも読み込み可能です。`);
@@ -1842,7 +1893,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!name || !confirm(`マイセット「${name}」を削除しますか？`)) return;
         const sets = getMySets();
         delete sets[name];
-        localStorage.setItem(MYSET_STORAGE_KEY, JSON.stringify(sets));
+        if (!savedStorage.writeJSON(MYSET_STORAGE_KEY, sets, isSavedSets)) return;
         if (currentLoadedMySetName === name) currentLoadedMySetName = null;
         updateMySetList();
     });

@@ -570,6 +570,7 @@
     <script type="module">
         import { TALISMAN_GROUPS, TALISMAN_SLOTS, TALISMAN_COMBINATIONS } from './js/data/talisman.js';
         import { DAMAGE_RELATED_SKILLS } from './js/data/damage_skills.js';
+        import { savedStorage, isFavoriteSkills, isFavoriteTalismans } from './js/modules/storage.js';
         import { SKILLS } from './js/data/skills.js';
         import { SKILL_ICON_MAP } from './js/data/skill_icons.js';
 
@@ -586,21 +587,28 @@
         const favOnlyToggle = document.getElementById('fav-only-toggle');
 
         // Favorites System (Talismans)
-        let favorites = JSON.parse(localStorage.getItem('mhwilds_fav_talismans') || '[]');
+        let favorites = savedStorage.readJSON('mhwilds_fav_talismans', [], isFavoriteTalismans);
 
         // Favorite Skills System (Added)
-        let favSkills = JSON.parse(localStorage.getItem('mhwilds_fav_skills') || '[]');
+        let favSkills = savedStorage.readJSON('mhwilds_fav_skills', [], isFavoriteSkills);
 
         // Load fav only toggle state
-        favOnlyToggle.checked = localStorage.getItem('mhwilds_talisman_fav_only') === 'true';
+        favOnlyToggle.checked = savedStorage.readText('mhwilds_talisman_fav_only') === 'true';
         favOnlyToggle.onchange = () => {
-            localStorage.setItem('mhwilds_talisman_fav_only', favOnlyToggle.checked);
+            if (!savedStorage.writeText('mhwilds_talisman_fav_only', favOnlyToggle.checked)) {
+                favOnlyToggle.checked = savedStorage.readText('mhwilds_talisman_fav_only') === 'true';
+                return;
+            }
             updateSkill1Dropdown();
         };
 
         function saveFavorites() {
-            localStorage.setItem('mhwilds_fav_talismans', JSON.stringify(favorites));
+            if (!savedStorage.writeJSON('mhwilds_fav_talismans', favorites, isFavoriteTalismans)) {
+                favorites = savedStorage.readJSON('mhwilds_fav_talismans', [], isFavoriteTalismans);
+                return false;
+            }
             updateFavDisplay();
+            return true;
         }
 
         function toggleFavorite(res) {
@@ -611,7 +619,7 @@
             } else {
                 favorites.push(res);
             }
-            saveFavorites();
+            if (!saveFavorites()) return;
             performSearch(true);
         }
 

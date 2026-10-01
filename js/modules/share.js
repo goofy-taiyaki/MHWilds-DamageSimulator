@@ -1,3 +1,16 @@
+import { SKILLS } from '../data/skills.js';
+export function normalizeSkillLevels(value) {
+    const result = Object.create(null);
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return result;
+    for (const skill of SKILLS) {
+        const raw = value[skill.id];
+        if (!['number','string'].includes(typeof raw) || String(raw).trim()==='') continue;
+        const level = Number(raw);
+        if (Number.isInteger(level) && level > 0 && level <= skill.maxLevel) result[skill.id] = level;
+    }
+    return result;
+}
+
 /**
  * ビルド共有用のURL生成・解析モジュール
  */
@@ -15,6 +28,14 @@ export const BuildShare = {
         }
         for (const levels of [state.currentSkillLevels, state.skills].filter(Boolean)) {
             if (!Object.values(levels).every(x => Number.isInteger(Number(x)) && Number(x) >= 0 && Number(x) <= 100)) return false;
+        }
+        for (const key of ['motionValue','elementModValue']) {
+            if (state[key] === undefined) continue;
+            const values = Array.isArray(state[key]) ? state[key] : String(state[key]).split(/[+,]/);
+            if (!values.length || !values.every(v=>['number','string'].includes(typeof v) && String(v).trim()!=='' && Number.isFinite(Number(v)) && Number(v)>=0)) return false;
+        }
+        for (const [recordValue, keys] of [[state.bowgunSettings,['rapidFire','chaseShot']], [state.weaponSpecificParams,['dbDemonMode']]]) {
+            for (const key of keys) if (recordValue?.[key] !== undefined && typeof recordValue[key] !== 'boolean') return false;
         }
         const build = state.asst_build_data;
         if (build?.decos != null && (!Array.isArray(build.decos) || !build.decos.every(d => record(d) && typeof d.n === 'string' && (d.p == null || typeof d.p === 'string')))) return false;
